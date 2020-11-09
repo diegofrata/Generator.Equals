@@ -34,7 +34,7 @@ jobs:
         echo "::set-env name=VERSION::${VERSION}"
     - name: Pack
       run: |
-        dotnet pack Generator.Equals/Generator.Equals.csproj /p:PackageVersion=$VERSION /p:Version=$VERSION -c Release -o publish
-        dotnet pack Generator.Equals.Runtime/Generator.Equals.Runtime.csproj /p:PackageVersion=$VERSION /p:Version=$VERSION -c Release -o publish
+        dotnet pack Generator.Equals/Generator.Equals.csproj /p:PackageVersion=$VERSION /p:Version=$VERSION -c Release -o ./publish
+        dotnet pack Generator.Equals.Runtime/Generator.Equals.Runtime.csproj /p:PackageVersion=$VERSION /p:Version=$VERSION -c Release -o ./publish
     - name: Publish
-      run: dotnet nuget push publish/*.nupkg -s https://api.nuget.org/v3/index.json -k $NUGET_API_KEY --skip-duplicate
+      run: dotnet nuget push ./publish/*.nupkg -s https://api.nuget.org/v3/index.json -k $NUGET_API_KEY --skip-duplicate
