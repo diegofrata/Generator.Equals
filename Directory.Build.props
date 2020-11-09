@@ -1,0 +1,19 @@
+﻿<Project>
+    <PropertyGroup>
+        <Nullable>enable</Nullable>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <LangVersion>preview</LangVersion>
+    </PropertyGroup>
+    
+    <PropertyGroup>
+        <PackageId>$(ProjectName)</PackageId>
+        <PackageVersion>0.1.0-alpha1</PackageVersion>
+        <Version>0.1.0-alpha1</Version>
+        <Authors>Diego Frata</Authors>
+        <RepositoryUrl>https://github.com/diegofrata/Generator.Equals</RepositoryUrl>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <Description>A source code generator for automatically implementing IEquatable&lt;T&gt; using only attributes.</Description>
+        <PackageTags>source generator, equality, equals, equatable</PackageTags>
+        <NoPackageAnalysis>true</NoPackageAnalysis>
+    </PropertyGroup>
+</Project>
