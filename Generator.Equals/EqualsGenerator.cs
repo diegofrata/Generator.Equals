@@ -53,7 +53,7 @@ namespace Generator.Equals
                 context.AddSource(fileName, source);
             }
 
-            static string EscapeFileName(string fileName) => Path.GetInvalidFileNameChars().Aggregate(new StringBuilder(fileName), (s, c) => s.Replace(c, '_')).ToString();
+            static string EscapeFileName(string fileName) => new [] {'<', '>', ','}.Aggregate(new StringBuilder(fileName), (s, c) => s.Replace(c, '_')).ToString();
         }
 
         class SyntaxReceiver : ISyntaxReceiver
