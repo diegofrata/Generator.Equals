@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals
@@ -15,17 +16,24 @@ namespace Generator.Equals
 
             var typeName = property.Type.ToNullableFQF();
 
-            if (property.HasAttribute(attributesMetadata.SequenceEquality))
+            if (property.HasAttribute(attributesMetadata.DictionaryEquality))
+            {
+                var types = property.GetIDictionaryTypeArguments();
+
+                sb.AppendLine(
+                    $"&& global::Generator.Equals.DictionaryEqualityComparer<{string.Join(", ", types)}>.Instance.Equals({propertyName}!, other.{propertyName}!)");
+            }
+            else if (property.HasAttribute(attributesMetadata.SequenceEquality))
             {
                 var types = property.GetIEnumerableTypeArguments();
 
                 sb.AppendLine(
-                    $"&& global::Generator.Equals.SequenceEqualityComparer<{string.Join(", ", types)}>.Instance.Equals({propertyName}, other.{propertyName})");
+                    $"&& global::Generator.Equals.SequenceEqualityComparer<{string.Join(", ", types)}>.Instance.Equals({propertyName}!, other.{propertyName}!)");
             }
             else
             {
                 sb.AppendLine(
-                    $"&& global::System.Collections.Generic.EqualityComparer<{typeName}>.Default.Equals({propertyName}, other.{propertyName})");
+                    $"&& global::System.Collections.Generic.EqualityComparer<{typeName}>.Default.Equals({propertyName}!, other.{propertyName}!)");
             }
         }
 
@@ -39,9 +47,15 @@ namespace Generator.Equals
 
             var typeName = property.Type.ToNullableFQF();
 
-            sb.Append($"hashCode.Add(this.{propertyName}, ");
+            sb.Append($"hashCode.Add(this.{propertyName}!, ");
 
-            if (property.HasAttribute(attributesMetadata.SequenceEquality))
+            if (property.HasAttribute(attributesMetadata.DictionaryEquality))
+            {
+                var types = property.GetIDictionaryTypeArguments();
+                sb.Append(
+                    $"global::Generator.Equals.DictionaryEqualityComparer<{string.Join(", ", types)}>.Instance");
+            }
+            else if (property.HasAttribute(attributesMetadata.SequenceEquality))
             {
                 var types = property.GetIEnumerableTypeArguments();
                 sb.Append(

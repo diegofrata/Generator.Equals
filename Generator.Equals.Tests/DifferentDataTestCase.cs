@@ -11,7 +11,7 @@ namespace Generator.Equals.Tests
         public virtual EqualConstraint Constraint(object value) => Is.Not.EqualTo(value);
 
         [Test]
-        public void Equality()
+        public virtual void Equality()
         {
             var value1 = Factory1();
             var value2 = Factory2();
@@ -20,7 +20,7 @@ namespace Generator.Equals.Tests
         }
         
         [Test]
-        public void HashCode()
+        public virtual void HashCode()
         {
             var value1 = Factory1();
             var value2 = Factory2();

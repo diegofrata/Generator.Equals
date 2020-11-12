@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
@@ -62,17 +65,19 @@ namespace Generator.Equals.Tests
                     [Equatable]
                     public partial class Data
                     {
-                        public Data(string name, int age)
+                        public Data(string name, int age, string? surname)
                         {
                             Name = name;
                             Age = age;
+                            Surname = surname;
                         }
 
                         public string Name { get; }
                         public int Age { get; }
+                        public string? Surname { get; }
                     }
 
-                    public override object Factory() => new Data("Dave", 35);
+                    public override object Factory() => new Data("Dave", 35, null);
                 }
 
                 [TestFixture]
@@ -132,14 +137,25 @@ namespace Generator.Equals.Tests
 
                         public string Name { get; }
                         public int Age { get; }
-                        
-                        [SequenceEquality]
-                        public string[] Addresses { get; }
+
+                        [SequenceEquality] public string[] Addresses { get; }
                     }
 
                     public override object Factory() => new Data("Dave", 35, new[] {"10 Downing St"});
                 }
-                
+
+                [TestFixture]
+                public partial class NullableSequenceEquality : SameDataTestCase
+                {
+                    [Equatable]
+                    public partial class Data
+                    {
+                        [SequenceEquality] public string[]? Addresses { get; set; }
+                    }
+
+                    public override object Factory() => new Data();
+                }
+
                 [TestFixture]
                 public partial class IgnoreEquality : SameDataTestCase
                 {
@@ -153,12 +169,36 @@ namespace Generator.Equals.Tests
                         }
 
                         public string Name { get; }
-                        
-                        [IgnoreEquality]
-                        public int Age { get; }
+
+                        [IgnoreEquality] public int Age { get; }
                     }
 
                     public override object Factory() => new Data("Dave", 35);
+                }
+
+                [TestFixture]
+                public partial class DictionaryEquality : SameDataTestCase
+                {
+                    [Equatable]
+                    public partial class Data
+                    {
+                        [DictionaryEquality] public Dictionary<string, int>? Properties { get; init; }
+                    }
+
+                    public override object Factory()
+                    {
+                        var randomSort = new Random();
+
+                        // This should generate objects with the same contents, but different orders, thus proving
+                        // that dictionary equality is being used instead of the normal sequence equality.
+                        return new Data
+                        {
+                            Properties = Enumerable
+                                .Range(1, 1000)
+                                .OrderBy(x => randomSort.NextDouble())
+                                .ToDictionary(x => x.ToString(), x => x)
+                        };
+                    }
                 }
             }
 
@@ -195,16 +235,15 @@ namespace Generator.Equals.Tests
                         {
                             Addresses = addresses;
                         }
-                        
-                        [SequenceEquality]
-                        public string[] Addresses { get; }
+
+                        [SequenceEquality] public string[] Addresses { get; }
                     }
 
                     public override object Factory1() => new Data(new[] {"10 Downing St"});
                     public override object Factory2() => new Data(new[] {"Bricklane"});
                 }
-                
-                
+
+
                 [TestFixture]
                 public partial class IgnoreEquality : DifferentDataTestCase
                 {
@@ -218,14 +257,33 @@ namespace Generator.Equals.Tests
                         }
 
                         public string Name { get; }
-                        
-                        [IgnoreEquality]
-                        public int Age { get; }
+
+                        [IgnoreEquality] public int Age { get; }
                     }
 
                     public override EqualConstraint Constraint(object value) => Is.EqualTo(value);
                     public override object Factory1() => new Data("Dave", 35);
                     public override object Factory2() => new Data("Dave", 77);
+                }
+
+                [TestFixture]
+                public partial class DictionaryEquality : DifferentDataTestCase
+                {
+                    [Equatable]
+                    public partial class Data
+                    {
+                        [DictionaryEquality] public Dictionary<string, int>? Properties { get; init; }
+                    }
+
+                    public override object Factory1() => new Data
+                    {
+                        Properties = Enumerable.Range(1, 1000).ToDictionary(x => x.ToString(), x => x)
+                    };
+
+                    public override object Factory2() => new Data
+                    {
+                        Properties = Enumerable.Range(2, 999).ToDictionary(x => x.ToString(), x => x)
+                    };
                 }
             }
         }

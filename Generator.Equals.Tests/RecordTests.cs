@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
@@ -90,13 +93,51 @@ namespace Generator.Equals.Tests
 
                     public override object Factory() => new Data("Dave", 35, new[] {"10 Downing St"});
                 }
-                
+
+                [TestFixture]
+                public partial class NullableSequenceEquality : SameDataTestCase
+                {
+                    [Equatable]
+                    public partial record Data(
+                        [property: SequenceEquality] string[]? Addresses = null
+                    );
+
+                    public override object Factory() => new Data();
+                }
+
                 [TestFixture]
                 public partial class IgnoreEquality : SameDataTestCase
                 {
                     [Equatable]
                     public partial record Data(string Name, [property: IgnoreEquality] int Age);
+
                     public override object Factory() => new Data("Dave", 35);
+                }
+                
+                [TestFixture]
+                public partial class DictionaryEquality : SameDataTestCase
+                {
+                    [Equatable]
+                    public partial record Data
+                    {
+                        [DictionaryEquality]
+                        public Dictionary<string, int>? Properties { get; init; }
+                    }
+
+                    public override object Factory()
+                    {
+                        var randomSort = new Random();
+                        
+                        // This should generate objects with the same contents, but different orders, thus proving
+                        // that dictionary equality is being used instead of the normal sequence equality.
+                        return new Data
+                        {
+                            Properties = Enumerable
+                                .Range(1, 1000)
+                                .OrderBy(x => randomSort.NextDouble())
+                                .ToDictionary(x => x.ToString(), x => x)
+                        };
+                    }
                 }
             }
 
@@ -132,6 +173,26 @@ namespace Generator.Equals.Tests
                     public override EqualConstraint Constraint(object value) => Is.EqualTo(value);
                     public override object Factory1() => new Data("Dave", 35);
                     public override object Factory2() => new Data("Dave", 77);
+                }
+
+                [TestFixture]
+                public partial class DictionaryEquality : DifferentDataTestCase
+                {
+                    [Equatable]
+                    public partial record Data
+                    {
+                        [DictionaryEquality] public Dictionary<string, int>? Properties { get; init; }
+                    }
+
+                    public override object Factory1() => new Data
+                    {
+                        Properties = Enumerable.Range(1, 1000).ToDictionary(x => x.ToString(), x => x)
+                    };
+
+                    public override object Factory2() => new Data
+                    {
+                        Properties = Enumerable.Range(2, 999).ToDictionary(x => x.ToString(), x => x)
+                    };
                 }
             }
         }

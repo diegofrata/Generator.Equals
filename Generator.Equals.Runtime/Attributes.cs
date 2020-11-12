@@ -13,6 +13,11 @@ namespace Generator.Equals
     }
     
     [AttributeUsage(AttributeTargets.Property)]
+    public class DictionaryEqualityAttribute : Attribute
+    {
+    }
+    
+    [AttributeUsage(AttributeTargets.Property)]
     public class IgnoreEqualityAttribute : Attribute
     {
     }

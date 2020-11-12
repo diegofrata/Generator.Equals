@@ -35,20 +35,27 @@ namespace Generator.Equals
         public static bool HasAttribute(this ISymbol symbol, INamedTypeSymbol attribute) =>
             GetAttribute(symbol, attribute) != null;
 
+        public static ImmutableArray<ITypeSymbol> GetInterfaceTypeArguments(this IPropertySymbol property, string interfaceFqn)
+        {
+            var @interface = property.Type.AllInterfaces
+                .FirstOrDefault(x => x.OriginalDefinition.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == interfaceFqn);
+
+            if (@interface == null)
+                throw new Exception($"Type {property.Type} does not implement IEnumerable<T>.");
+
+            var types = @interface.TypeArguments;
+            
+            return types;
+        }
         
         public static ImmutableArray<ITypeSymbol> GetIEnumerableTypeArguments(this IPropertySymbol property)
         {
-            // TODO: Find a better way to find the generic type of IEnumerable<T>.
-            var enumerableInterface = property.Type.AllInterfaces.FirstOrDefault(x =>
-                x.OriginalDefinition.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ==
-                "global::System.Collections.Generic.IEnumerable<T>");
-
-            if (enumerableInterface == null)
-                throw new Exception($"Type {property.Type} does not implement IEnumerable<T>.");
-
-            var types = enumerableInterface.TypeArguments;
-            
-            return types;
+            return GetInterfaceTypeArguments(property, "global::System.Collections.Generic.IEnumerable<T>");
+        }
+        
+        public static ImmutableArray<ITypeSymbol> GetIDictionaryTypeArguments(this IPropertySymbol property)
+        {
+            return GetInterfaceTypeArguments(property, "global::System.Collections.Generic.IDictionary<TKey, TValue>");
         }
     }
 }
