@@ -12,7 +12,7 @@ namespace Generator.Equals.Tests
         public class StandardBehavior : RecordsTests
         {
             [TestFixture]
-            public class ClassWithPrimitives : EqualityTestCase
+            public class ClassWithPrimitives : SameDataTestCase
             {
                 public class Data
                 {
@@ -31,7 +31,7 @@ namespace Generator.Equals.Tests
             }
 
             [TestFixture]
-            public class DistinctInstances : InequalityTestCase
+            public class DistinctInstances : DifferentDataTestCase
             {
                 public class Data
                 {
@@ -54,10 +54,10 @@ namespace Generator.Equals.Tests
         public partial class GeneratedBehavior : RecordsTests
         {
             [TestFixture]
-            public partial class Equality : GeneratedBehavior
+            public partial class SameData : GeneratedBehavior
             {
                 [TestFixture]
-                public partial class ClassWithPrimitives : EqualityTestCase
+                public partial class ClassWithPrimitives : SameDataTestCase
                 {
                     [Equatable]
                     public partial class Data
@@ -76,7 +76,7 @@ namespace Generator.Equals.Tests
                 }
 
                 [TestFixture]
-                public partial class ClassWithArrayButNoEqualityAttribute : EqualityTestCase
+                public partial class ClassWithArrayButNoEqualityAttribute : SameDataTestCase
                 {
                     [Equatable]
                     public partial class Data
@@ -99,7 +99,7 @@ namespace Generator.Equals.Tests
                 }
 
                 [TestFixture]
-                public partial class ClassWithSequenceEquality : EqualityTestCase
+                public partial class SequenceEquality : SameDataTestCase
                 {
                     [Equatable]
                     public partial class Data
@@ -120,13 +120,34 @@ namespace Generator.Equals.Tests
 
                     public override object Factory() => new Data("Dave", 35, new[] {"10 Downing St"});
                 }
+                
+                [TestFixture]
+                public partial class IgnoreEquality : SameDataTestCase
+                {
+                    [Equatable]
+                    public partial class Data
+                    {
+                        public Data(string name, int age)
+                        {
+                            Name = name;
+                            Age = age;
+                        }
+
+                        public string Name { get; }
+                        
+                        [IgnoreEquality]
+                        public int Age { get; }
+                    }
+
+                    public override object Factory() => new Data("Dave", 35);
+                }
             }
 
             [TestFixture]
-            public partial class Inequality : GeneratedBehavior
+            public partial class DifferentData : GeneratedBehavior
             {
                 [TestFixture]
-                public partial class ClassWithPrimitives : InequalityTestCase
+                public partial class ClassWithPrimitives : DifferentDataTestCase
                 {
                     [Equatable]
                     public partial class Data
@@ -146,7 +167,7 @@ namespace Generator.Equals.Tests
                 }
 
                 [TestFixture]
-                public partial class ClassWithArray : InequalityTestCase
+                public partial class SequenceEquality : DifferentDataTestCase
                 {
                     [Equatable]
                     public partial class Data
@@ -162,6 +183,30 @@ namespace Generator.Equals.Tests
 
                     public override object Factory1() => new Data(new[] {"10 Downing St"});
                     public override object Factory2() => new Data(new[] {"Bricklane"});
+                }
+                
+                
+                [TestFixture]
+                public partial class IgnoreEquality : DifferentDataTestCase
+                {
+                    [Equatable]
+                    public partial class Data
+                    {
+                        public Data(string name, int age)
+                        {
+                            Name = name;
+                            Age = age;
+                        }
+
+                        public string Name { get; }
+                        
+                        [IgnoreEquality]
+                        public int Age { get; }
+                    }
+
+                    public override EqualConstraint Constraint(object value) => Is.EqualTo(value);
+                    public override object Factory1() => new Data("Dave", 35);
+                    public override object Factory2() => new Data("Dave", 77);
                 }
             }
         }

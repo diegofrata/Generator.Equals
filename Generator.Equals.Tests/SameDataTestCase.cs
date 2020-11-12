@@ -3,18 +3,17 @@ using NUnit.Framework.Constraints;
 
 namespace Generator.Equals.Tests
 {
-    public abstract class InequalityTestCase
+    public abstract class SameDataTestCase
     {
-        public abstract object Factory1();
-        public abstract object Factory2();
+        public abstract object Factory();
 
-        public virtual EqualConstraint Constraint(object value) => Is.Not.EqualTo(value);
+        public virtual EqualConstraint Constraint(object value) => Is.EqualTo(value);
 
         [Test]
         public void Equality()
         {
-            var value1 = Factory1();
-            var value2 = Factory2();
+            var value1 = Factory();
+            var value2 = Factory();
             
             Assert.That(value1, Constraint(value2));
         }
@@ -22,8 +21,8 @@ namespace Generator.Equals.Tests
         [Test]
         public void HashCode()
         {
-            var value1 = Factory1();
-            var value2 = Factory2();
+            var value1 = Factory();
+            var value2 = Factory();
             
             Assert.That(value1.GetHashCode(), Constraint(value2.GetHashCode()));
         }

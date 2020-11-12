@@ -24,7 +24,8 @@ namespace Generator.Equals
 
             var attributesMetadata = new AttributesMetadata(
                 context.Compilation.GetTypeByMetadataName("Generator.Equals.EquatableAttribute")!,
-                context.Compilation.GetTypeByMetadataName("Generator.Equals.SequenceEqualityAttribute")!
+                context.Compilation.GetTypeByMetadataName("Generator.Equals.SequenceEqualityAttribute")!,
+                context.Compilation.GetTypeByMetadataName("Generator.Equals.IgnoreEqualityAttribute")!
             );
 
             foreach (var node in s.CandidateSyntaxes)

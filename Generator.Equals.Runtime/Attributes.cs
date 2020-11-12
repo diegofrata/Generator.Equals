@@ -11,4 +11,9 @@ namespace Generator.Equals
     public class SequenceEqualityAttribute : Attribute
     {
     }
+    
+    [AttributeUsage(AttributeTargets.Property)]
+    public class IgnoreEqualityAttribute : Attribute
+    {
+    }
 }

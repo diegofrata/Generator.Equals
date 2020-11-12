@@ -8,6 +8,9 @@ namespace Generator.Equals
         public static void BuildPropertyEquality(AttributesMetadata attributesMetadata, StringBuilder sb,
             IPropertySymbol property)
         {
+            if (property.HasAttribute(attributesMetadata.IgnoreEquality))
+                return;
+
             var propertyName = property.ToFQF();
 
             var typeName = property.Type.ToNullableFQF();
@@ -25,10 +28,13 @@ namespace Generator.Equals
                     $"&& global::System.Collections.Generic.EqualityComparer<{typeName}>.Default.Equals({propertyName}, other.{propertyName})");
             }
         }
-        
+
         public static void BuildPropertyHashCode(IPropertySymbol property, AttributesMetadata attributesMetadata,
             StringBuilder sb)
         {
+            if (property.HasAttribute(attributesMetadata.IgnoreEquality))
+                return;
+
             var propertyName = property.ToFQF();
 
             var typeName = property.Type.ToNullableFQF();
@@ -45,7 +51,7 @@ namespace Generator.Equals
             {
                 sb.Append($"global::System.Collections.Generic.EqualityComparer<{typeName}>.Default");
             }
-            
+
             sb.AppendLine(");");
         }
     }
