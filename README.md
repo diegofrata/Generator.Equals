@@ -43,13 +43,13 @@ partial class MyClass
 
 Below is a list of all supported comparers. Would you like something else added? Let me know by raising an issue or sending a PR!
 
-###Default
+### Default
 
 This is the comparer that's used when a property has no attributes indicating otherwise. The generated code will use 
 ```EqualityComparer<T>.Default``` for both equals and hashing operation.
 
 
-###IgnoreEquality
+### IgnoreEquality
 
 ```c#
 [IgnoreEquality] 
@@ -59,7 +59,7 @@ public string Name { get; set; }
 As the name implies, the property is ignored during Equals and GetHashCode calls!
 
 
-###SequenceEquality
+### SequenceEquality
 
 ```c#
 [SequenceEquality] 
