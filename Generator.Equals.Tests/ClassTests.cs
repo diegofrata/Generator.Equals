@@ -76,6 +76,25 @@ namespace Generator.Equals.Tests
                 }
 
                 [TestFixture]
+                public partial class GenericClass : SameDataTestCase
+                {
+                    [Equatable]
+                    public partial class Data<TName, TAge>
+                    {
+                        public Data(TName name, TAge age)
+                        {
+                            Name = name;
+                            Age = age;
+                        }
+
+                        public TName Name { get; }
+                        public TAge Age { get; }
+                    }
+
+                    public override object Factory() => new Data<string, int>("Dave", 35);
+                }
+
+                [TestFixture]
                 public partial class ClassWithArrayButNoEqualityAttribute : SameDataTestCase
                 {
                     [Equatable]

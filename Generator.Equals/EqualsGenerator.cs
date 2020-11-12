@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -47,9 +49,11 @@ namespace Generator.Equals
                     _ => throw new Exception("should not have gotten here.")
                 };
 
-                var fileName = $"{symbol!.ToDisplayString()}.Generator.Equals.g.cs"!;
+                var fileName = $"{EscapeFileName(symbol!.ToDisplayString())}.Generator.Equals.g.cs"!;
                 context.AddSource(fileName, source);
             }
+
+            static string EscapeFileName(string fileName) => Path.GetInvalidFileNameChars().Aggregate(new StringBuilder(fileName), (s, c) => s.Replace(c, '_')).ToString();
         }
 
         class SyntaxReceiver : ISyntaxReceiver

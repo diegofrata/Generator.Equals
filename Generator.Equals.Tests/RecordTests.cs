@@ -55,6 +55,15 @@ namespace Generator.Equals.Tests
                 }
 
                 [TestFixture]
+                public partial class GenericRecord : SameDataTestCase
+                {
+                    [Equatable]
+                    public partial record Data<TName, TAge>(TName Name, TAge Age);
+
+                    public override object Factory() => new Data<string, int>("Dave", 35);
+                }
+
+                [TestFixture]
                 public partial class RecordWithArrayButNoEqualityAttribute : SameDataTestCase
                 {
                     [Equatable]
