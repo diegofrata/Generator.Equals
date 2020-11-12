@@ -1,58 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals
 {
-    static class RecordEqualityGenerator
+    class RecordEqualityGenerator : EqualityGeneratorBase
     {
-        static IEnumerable<(IPropertySymbol symbol, string PropertyName)> GetRecordProperties(ITypeSymbol symbol)
-        {
-            foreach (var property in symbol.GetMembers().OfType<IPropertySymbol>())
-            {
-                var propertyName = property.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-
-                if (propertyName == "EqualityContract")
-                    continue;
-
-                yield return (property, propertyName);
-            }
-        }
-
-        static AttributeData? GetAttribute(ISymbol symbol, INamedTypeSymbol attribute)
-        {
-            return symbol.GetAttributes().FirstOrDefault(x =>
-                x.AttributeClass?.Equals(attribute, SymbolEqualityComparer.Default) == true);
-        }
-
-        static bool HasAttribute(ISymbol symbol, INamedTypeSymbol attribute) =>
-            GetAttribute(symbol, attribute) != null;
-        
-        static IEnumerable<string> GetIEnumerableTypeArguments(IPropertySymbol property)
-        {
-            // TODO: Find a better way to find the generic type of IEnumerable<T>.
-            var enumerableInterface = property.Type.AllInterfaces.FirstOrDefault(x =>
-                x.OriginalDefinition.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ==
-                "global::System.Collections.Generic.IEnumerable<T>");
-
-            if (enumerableInterface == null)
-                throw new Exception($"Type {property.Type} does not implement IEnumerable<T>.");
-
-            var types = enumerableInterface.TypeArguments.Select(x => x.ToDisplayString(
-                    SymbolDisplayFormat.FullyQualifiedFormat.WithMiscellaneousOptions(
-                        SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier
-                    )
-                )
-            );
-            return types;
-        }
-
         static void BuildEquals(ITypeSymbol symbol, AttributesMetadata attributesMetadata, StringBuilder sb)
         {
-            var symbolName = symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-            var baseTypeName = symbol.BaseType?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            var symbolName = symbol.ToFQF();
+            var baseTypeName = symbol.BaseType?.ToFQF();
 
             sb.AppendLine("#nullable enable");
 
@@ -64,24 +20,14 @@ namespace Generator.Equals
                 ? "return other is not null && EqualityContract == other.EqualityContract"
                 : $"return base.Equals(({baseTypeName}?)other)");
 
-            foreach (var (property, propertyName) in GetRecordProperties(symbol))
+            foreach (var property in symbol.GetProperties())
             {
-                var typeName = property.Type.ToDisplayString(
-                    SymbolDisplayFormat.FullyQualifiedFormat.WithMiscellaneousOptions(
-                        SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier)
-                );
+                var propertyName = property.ToFQF();
 
-                if (HasAttribute(property, attributesMetadata.SequenceEquality))
-                {
-                    var types = GetIEnumerableTypeArguments(property);
-                    sb.AppendLine(
-                        $"&& global::Generator.Equals.SequenceEqualityComparer<{string.Join(", ", types)}>.Instance.Equals({propertyName}, other.{propertyName})");
-                }
-                else
-                {
-                    sb.AppendLine(
-                        $"&& global::System.Collections.Generic.EqualityComparer<{typeName}>.Default.Equals({propertyName}, other.{propertyName})");
-                }
+                if (propertyName == "EqualityContract")
+                    continue;
+
+                BuildPropertyEquality(attributesMetadata, sb, property);
             }
 
             sb.AppendLine(";");
@@ -92,7 +38,7 @@ namespace Generator.Equals
 
         static void BuildGetHashCode(ITypeSymbol symbol, AttributesMetadata attributesMetadata, StringBuilder sb)
         {
-            var baseTypeName = symbol.BaseType?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            var baseTypeName = symbol.BaseType?.ToFQF();
 
             sb.AppendLine("#nullable enable");
 
@@ -104,26 +50,14 @@ namespace Generator.Equals
                 ? "hashCode.Add(this.EqualityContract);"
                 : "hashCode.Add(base.GetHashCode());");
 
-            foreach (var (property, propertyName) in GetRecordProperties(symbol))
+            foreach (var property in symbol.GetProperties())
             {
-                var typeName = property.Type.ToDisplayString(
-                    SymbolDisplayFormat.FullyQualifiedFormat.WithMiscellaneousOptions(
-                        SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier)
-                );
+                var propertyName = property.ToFQF();
 
-                sb.Append($"hashCode.Add(this.{propertyName}, ");
+                if (propertyName == "EqualityContract")
+                    continue;
 
-                if (HasAttribute(property, attributesMetadata.SequenceEquality))
-                {
-                    var types = GetIEnumerableTypeArguments(property);
-                    sb.Append($"global::Generator.Equals.SequenceEqualityComparer<{string.Join(", ", types)}>.Instance");
-                }
-                else
-                {
-                    sb.Append($"global::System.Collections.Generic.EqualityComparer<{typeName}>.Default");
-                }
-
-                sb.AppendLine(");");
+                BuildPropertyHashCode(property, attributesMetadata, sb);
             }
 
             sb.AppendLine("return hashCode.ToHashCode();");
@@ -131,7 +65,6 @@ namespace Generator.Equals
 
             sb.AppendLine("#nullable restore");
         }
-
 
         public static string Generate(ITypeSymbol symbol, AttributesMetadata attributesMetadata)
         {

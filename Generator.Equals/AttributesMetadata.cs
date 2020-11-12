@@ -2,7 +2,7 @@
 
 namespace Generator.Equals
 {
-    class AttributesMetadata
+    public class AttributesMetadata
     {
         public INamedTypeSymbol Equatable { get; }
         public INamedTypeSymbol SequenceEquality { get; }

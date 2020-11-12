@@ -31,6 +31,7 @@ namespace Generator.Equals
             {
                 var model = context.Compilation.GetSemanticModel(node.SyntaxTree);
                 var symbol = model.GetDeclaredSymbol(node, context.CancellationToken) as ITypeSymbol;
+
                 var equatableAttributeData = symbol?.GetAttributes().FirstOrDefault(x =>
                     x.AttributeClass?.Equals(attributesMetadata.Equatable, SymbolEqualityComparer.Default) ==
                     true);
@@ -40,8 +41,8 @@ namespace Generator.Equals
 
                 var source = node switch
                 {
-                    RecordDeclarationSyntax rds => RecordEqualityGenerator.Generate(symbol!, attributesMetadata),
-                    ClassDeclarationSyntax cds => ClassEqualityGenerator.Generate(symbol!, attributesMetadata),
+                    RecordDeclarationSyntax => RecordEqualityGenerator.Generate(symbol!, attributesMetadata),
+                    ClassDeclarationSyntax => ClassEqualityGenerator.Generate(symbol!, attributesMetadata),
                     _ => throw new Exception("should not have gotten here.")
                 };
 

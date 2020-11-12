@@ -1,10 +1,11 @@
-using System;
+using System.Diagnostics.CodeAnalysis;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
 namespace Generator.Equals.Tests
 {
     [TestFixture]
+    [SuppressMessage("ReSharper", "PartialTypeWithSinglePart")]
     public partial class RecordsTests
     {
         [TestFixture]
@@ -54,13 +55,28 @@ namespace Generator.Equals.Tests
                 }
 
                 [TestFixture]
-                public partial class RecordWithArray : EqualityTestCase
+                public partial class RecordWithArrayButNoEqualityAttribute : EqualityTestCase
                 {
                     [Equatable]
                     public partial record Data(
                         string Name,
                         int Age,
-                        [property: SequenceEquality()] string[] Addresses
+                        string[] Addresses
+                    );
+
+                    public override EqualConstraint Constraint(object value) => Is.Not.EqualTo(value);
+
+                    public override object Factory() => new Data("Dave", 35, new[] {"10 Downing St"});
+                }
+
+                [TestFixture]
+                public partial class RecordWithSequenceEquality : EqualityTestCase
+                {
+                    [Equatable]
+                    public partial record Data(
+                        string Name,
+                        int Age,
+                        [property: SequenceEquality] string[] Addresses1 
                     );
 
                     public override object Factory() => new Data("Dave", 35, new[] {"10 Downing St"});
