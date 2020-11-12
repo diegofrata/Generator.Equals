@@ -1,7 +1,6 @@
+![Nuget](https://img.shields.io/nuget/v/Generator.Equals)
 # Generator.Equals
-A source code generator for automatically implementing IEquatable&lt;T> using only attributes.
-
-This is a work in progress and at moment only C# 9 records are implemented -- which is what I needed for my own use case! Support for classes and other functions will come soon.
+A source code generator for automatically implementing IEquatable&lt;T&gt; using only attributes.
 
 ----------------
 ## Usage
@@ -27,3 +26,46 @@ class Program
     }
 }
 ```
+Not using records? Generator.Equals also support classes.
+
+```c#
+using Generator.Equals;
+
+[Equatable]
+partial class MyClass
+{
+    [SequenceEquality] 
+    public string[] Fruits { get; set; }
+);
+```
+
+## Supported Comparers
+
+Below is a list of all supported comparers. Would you like something else added? Let me know by raising an issue or sending a PR!
+
+###Default
+
+This is the comparer that's used when a property has no attributes indicating otherwise. The generated code will use 
+```EqualityComparer<T>.Default``` for both equals and hashing operation.
+
+
+###IgnoreEquality
+
+```c#
+[IgnoreEquality] 
+public string Name { get; set; }
+```
+
+As the name implies, the property is ignored during Equals and GetHashCode calls!
+
+
+###SequenceEquality
+
+```c#
+[SequenceEquality] 
+public string[] Fruits { get; set; }
+```
+
+This equality comparer will compare properties based as a sequence instead of a reference. This works just like ```Enumerable.SequenceEqual```, which assumes both lists are of the same size and same sort.
+
+Bear in mind that the property has to implement IEnumerable<T> and the that the items themselves implement equality (you can use Generator.Equals in the items too!).
