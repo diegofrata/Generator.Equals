@@ -22,12 +22,12 @@ namespace Generator.Equals
 
             var comparer = EqualityComparer<TValue>.Default;
 
-            foreach (var (key, xValue) in x)
+            foreach (var pair in x)
             {
-                if (!y.TryGetValue(key, out var yValue))
+                if (!y.TryGetValue(pair.Key, out var yValue))
                     return false;
 
-                if (!comparer.Equals(xValue, yValue))
+                if (!comparer.Equals(pair.Value, yValue))
                     return false;
             }
 

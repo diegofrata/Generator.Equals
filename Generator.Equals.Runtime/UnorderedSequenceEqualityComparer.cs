@@ -30,10 +30,14 @@ namespace Generator.Equals
 
             foreach (var s in x)
             {
-                if (cnt.TryAdd(s, 1))
-                    continue;
-
-                cnt[s]++;
+                if (cnt.TryGetValue(s, out var v))
+                {
+                    cnt[s] = v + 1;
+                }
+                else
+                {
+                    cnt[s] = 1;
+                }
             }
 
             foreach (var s in y)

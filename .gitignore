@@ -3,3 +3,4 @@ bin
 obj
 *.DotSettings
 *.DotSettings.user
+.vs

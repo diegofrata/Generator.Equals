@@ -89,7 +89,6 @@ This equality comparer will compare properties as an unordered sequence instead 
 As with SequenceEquality, bear in mind that the property has to implement IEnumerable<T> and the that the items themselves implement equality (you can use Generator.Equals in the items too!).
 
 
-
 ### DictionaryEquality
 
 ```c#
@@ -97,5 +96,4 @@ As with SequenceEquality, bear in mind that the property has to implement IEnume
 public IDictionary<string, object> Properties { get; set; }
 ```
 
-This equality comparer will compare keys and values in both dictionaries and will only return true if it's an exact match. The hash function for this comparer is not too smart, returning only the number of entries as the hash.  
-This equality comparer will compare keys and values in both dictionaries and will only return true if it's an exact match. The hash function for this comparer is not too smart, returning only the number of entries as the hash.  
+This equality comparer will compare keys and values in both dictionaries and will only return true if it's an exact match. The hash function for this comparer is not too smart, returning only the number of entries as the hash.   
