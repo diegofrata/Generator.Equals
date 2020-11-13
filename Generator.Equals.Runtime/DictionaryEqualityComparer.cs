@@ -6,7 +6,7 @@ namespace Generator.Equals
 {
     public class DictionaryEqualityComparer<TKey, TValue> : IEqualityComparer<IDictionary<TKey, TValue>>
     {
-        public static DictionaryEqualityComparer<TKey, TValue> Instance { get; } =
+        public static DictionaryEqualityComparer<TKey, TValue> Default { get; } =
             new DictionaryEqualityComparer<TKey, TValue>();
 
         public bool Equals(IDictionary<TKey, TValue>? x, IDictionary<TKey, TValue>? y)

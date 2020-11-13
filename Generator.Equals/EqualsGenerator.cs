@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Generator.Equals
 {
     [Generator]
-    class EqualsGenerator : ISourceGenerator
+    internal class EqualsGenerator : ISourceGenerator
     {
         public void Initialize(GeneratorInitializationContext context)
         {
@@ -28,7 +28,8 @@ namespace Generator.Equals
                 context.Compilation.GetTypeByMetadataName("Generator.Equals.EquatableAttribute")!,
                 context.Compilation.GetTypeByMetadataName("Generator.Equals.SequenceEqualityAttribute")!,
                 context.Compilation.GetTypeByMetadataName("Generator.Equals.IgnoreEqualityAttribute")!,
-                context.Compilation.GetTypeByMetadataName("Generator.Equals.DictionaryEqualityAttribute")!
+                context.Compilation.GetTypeByMetadataName("Generator.Equals.DictionaryEqualityAttribute")!,
+                context.Compilation.GetTypeByMetadataName("Generator.Equals.UnorderedSequenceEqualityAttribute")!
             );
 
             foreach (var node in s.CandidateSyntaxes)
@@ -59,7 +60,7 @@ namespace Generator.Equals
 
         class SyntaxReceiver : ISyntaxReceiver
         {
-            private readonly List<SyntaxNode> _candidateSyntaxes = new List<SyntaxNode>();
+            readonly List<SyntaxNode> _candidateSyntaxes = new List<SyntaxNode>();
 
             public IReadOnlyList<SyntaxNode> CandidateSyntaxes => _candidateSyntaxes;
 

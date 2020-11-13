@@ -11,7 +11,7 @@ namespace Generator.Equals
     public class SequenceEqualityAttribute : Attribute
     {
     }
-    
+
     [AttributeUsage(AttributeTargets.Property)]
     public class DictionaryEqualityAttribute : Attribute
     {
@@ -19,6 +19,11 @@ namespace Generator.Equals
     
     [AttributeUsage(AttributeTargets.Property)]
     public class IgnoreEqualityAttribute : Attribute
+    {
+    }
+
+    [AttributeUsage(AttributeTargets.Property)]
+    public class UnorderedSequenceEqualityAttribute : Attribute
     {
     }
 }

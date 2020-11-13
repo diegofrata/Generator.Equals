@@ -139,6 +139,31 @@ namespace Generator.Equals.Tests
                         };
                     }
                 }
+
+                [TestFixture]
+                public partial class UnorderedSequenceEquality : SameDataTestCase
+                {
+                    [Equatable]
+                    public partial record Data
+                    {
+                        [UnorderedSequenceEquality] public List<int>? Properties { get; set; }
+                    }
+
+                    public override object Factory()
+                    {
+                        var randomSort = new Random();
+
+                        // This should generate objects with the same contents, but different orders, thus proving
+                        // that dictionary equality is being used instead of the normal sequence equality.
+                        return new Data
+                        {
+                            Properties = Enumerable
+                                .Range(1, 1000)
+                                .OrderBy(_ => randomSort.NextDouble())
+                                .ToList()
+                        };
+                    }
+                }
             }
 
             [TestFixture]
@@ -192,6 +217,26 @@ namespace Generator.Equals.Tests
                     public override object Factory2() => new Data
                     {
                         Properties = Enumerable.Range(2, 999).ToDictionary(x => x.ToString(), x => x)
+                    };
+                }
+
+                [TestFixture]
+                public partial class UnorderedSequenceEquality : DifferentDataTestCase
+                {
+                    [Equatable]
+                    public partial record Data
+                    {
+                        [UnorderedSequenceEquality] public List<int>? Properties { get; set; }
+                    }
+
+                    public override object Factory1() => new Data
+                    {
+                        Properties = Enumerable.Range(1, 1000).ToList()
+                    };
+
+                    public override object Factory2() => new Data
+                    {
+                        Properties = Enumerable.Range(1, 999).ToList()
                     };
                 }
             }

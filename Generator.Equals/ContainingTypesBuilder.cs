@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Generator.Equals
 {
-    static class ContainingTypesBuilder
+    internal static class ContainingTypesBuilder
     {
         static IEnumerable<INamespaceOrTypeSymbol> ContainingNamespaceAndTypes(ISymbol symbol, bool includeSelf)
         {

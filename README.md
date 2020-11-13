@@ -70,12 +70,24 @@ As the name implies, the property is ignored during Equals and GetHashCode calls
 
 ```c#
 [SequenceEquality] 
-public string[] Fruits { get; set; }
+public string[] Fruits { get; set; } // Fruits have to be in the same order for the array to be considered equal.
 ```
 
-This equality comparer will compare properties based as a sequence instead of a reference. This works just like ```Enumerable.SequenceEqual```, which assumes both lists are of the same size and same sort.
+This equality comparer will compare properties as a sequence instead of a reference. This works just like ```Enumerable.SequenceEqual```, which assumes both lists are of the same size and same sort.
 
 Bear in mind that the property has to implement IEnumerable<T> and the that the items themselves implement equality (you can use Generator.Equals in the items too!).
+
+### UnorderedSequenceEquality
+
+```c#
+[UnorderedSequenceEquality] 
+public string[] Fruits { get; set; } // Does not care about the order of the fruits!
+```
+
+This equality comparer will compare properties as an unordered sequence instead of a reference. This works just like ```Enumerable.SequenceEqual```, but it does not care about the order as long as the all values (including the repetitions) are present.
+
+As with SequenceEquality, bear in mind that the property has to implement IEnumerable<T> and the that the items themselves implement equality (you can use Generator.Equals in the items too!).
+
 
 
 ### DictionaryEquality
