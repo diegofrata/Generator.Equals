@@ -22,7 +22,7 @@ namespace Generator.Equals
 
         public void Execute(GeneratorExecutionContext context)
         {
-            if (context.SyntaxReceiver is not SyntaxReceiver s) return;
+            if (!(context.SyntaxReceiver is SyntaxReceiver s)) return;
 
             var attributesMetadata = new AttributesMetadata(
                 context.Compilation.GetTypeByMetadataName("Generator.Equals.EquatableAttribute")!,
@@ -46,8 +46,8 @@ namespace Generator.Equals
 
                 var source = node switch
                 {
-                    RecordDeclarationSyntax => RecordEqualityGenerator.Generate(symbol!, attributesMetadata),
-                    ClassDeclarationSyntax => ClassEqualityGenerator.Generate(symbol!, attributesMetadata),
+                    RecordDeclarationSyntax _ => RecordEqualityGenerator.Generate(symbol!, attributesMetadata),
+                    ClassDeclarationSyntax _ => ClassEqualityGenerator.Generate(symbol!, attributesMetadata),
                     _ => throw new Exception("should not have gotten here.")
                 };
 
@@ -66,7 +66,7 @@ namespace Generator.Equals
 
             public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
             {
-                if (syntaxNode is not ClassDeclarationSyntax c && syntaxNode is not RecordDeclarationSyntax)
+                if (!(syntaxNode is ClassDeclarationSyntax c) && !(syntaxNode is RecordDeclarationSyntax))
                     return;
 
                 _candidateSyntaxes.Add(syntaxNode);

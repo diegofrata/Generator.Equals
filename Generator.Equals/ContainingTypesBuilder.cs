@@ -29,7 +29,7 @@ namespace Generator.Equals
             {
                 symbol = symbol.ContainingSymbol;
 
-                if (symbol is not INamespaceOrTypeSymbol namespaceOrTypeSymbol)
+                if (!(symbol is INamespaceOrTypeSymbol namespaceOrTypeSymbol))
                     yield break;
 
                 yield return namespaceOrTypeSymbol;
