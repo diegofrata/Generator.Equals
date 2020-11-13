@@ -29,8 +29,10 @@ namespace Generator.Equals.Tests
                     public int Age { get; }
                 }
 
-                public override EqualConstraint Constraint(object value) => Is.Not.EqualTo(value);
+                public override bool Expected => false;
                 public override object Factory() => new Data("Dave", 35);
+                public override bool EqualsOperator(object value1, object value2) => (Data) value1 == (Data) value2;
+                public override bool NotEqualsOperator(object value1, object value2) => (Data) value1 != (Data) value2;
             }
 
             [TestFixture]
@@ -50,6 +52,8 @@ namespace Generator.Equals.Tests
 
                 public override object Factory1() => new Data("Dave", 35);
                 public override object Factory2() => new Data("John", 25);
+                public override bool EqualsOperator(object value1, object value2) => (Data) value1 == (Data) value2;
+                public override bool NotEqualsOperator(object value1, object value2) => (Data) value1 != (Data) value2;
             }
         }
 
@@ -78,6 +82,8 @@ namespace Generator.Equals.Tests
                     }
 
                     public override object Factory() => new Data("Dave", 35, null);
+                    public override bool EqualsOperator(object value1, object value2) => (Data) value1 == (Data) value2;
+                    public override bool NotEqualsOperator(object value1, object value2) => (Data) value1 != (Data) value2;
                 }
 
                 [TestFixture]
@@ -97,6 +103,8 @@ namespace Generator.Equals.Tests
                     }
 
                     public override object Factory() => new Data<string, int>("Dave", 35);
+                    public override bool EqualsOperator(object value1, object value2) => (Data<string, int>) value1 == (Data<string, int>) value2;
+                    public override bool NotEqualsOperator(object value1, object value2) => (Data<string, int>) value1 != (Data<string, int>) value2;
                 }
 
                 [TestFixture]
@@ -117,9 +125,11 @@ namespace Generator.Equals.Tests
                         public string[] Addresses { get; }
                     }
 
-                    public override EqualConstraint Constraint(object value) => Is.Not.EqualTo(value);
+                    public override bool Expected => false;
 
                     public override object Factory() => new Data("Dave", 35, new[] {"10 Downing St"});
+                    public override bool EqualsOperator(object value1, object value2) => (Data) value1 == (Data) value2;
+                    public override bool NotEqualsOperator(object value1, object value2) => (Data) value1 != (Data) value2;
                 }
 
                 [TestFixture]
@@ -142,6 +152,8 @@ namespace Generator.Equals.Tests
                     }
 
                     public override object Factory() => new Data("Dave", 35, new[] {"10 Downing St"});
+                    public override bool EqualsOperator(object value1, object value2) => (Data) value1 == (Data) value2;
+                    public override bool NotEqualsOperator(object value1, object value2) => (Data) value1 != (Data) value2;
                 }
 
                 [TestFixture]
@@ -154,6 +166,8 @@ namespace Generator.Equals.Tests
                     }
 
                     public override object Factory() => new Data();
+                    public override bool EqualsOperator(object value1, object value2) => (Data) value1 == (Data) value2;
+                    public override bool NotEqualsOperator(object value1, object value2) => (Data) value1 != (Data) value2;
                 }
 
                 [TestFixture]
@@ -174,6 +188,8 @@ namespace Generator.Equals.Tests
                     }
 
                     public override object Factory() => new Data("Dave", 35);
+                    public override bool EqualsOperator(object value1, object value2) => (Data) value1 == (Data) value2;
+                    public override bool NotEqualsOperator(object value1, object value2) => (Data) value1 != (Data) value2;
                 }
 
                 [TestFixture]
@@ -199,6 +215,8 @@ namespace Generator.Equals.Tests
                                 .ToDictionary(x => x.ToString(), x => x)
                         };
                     }
+                    public override bool EqualsOperator(object value1, object value2) => (Data) value1 == (Data) value2;
+                    public override bool NotEqualsOperator(object value1, object value2) => (Data) value1 != (Data) value2;
                 }
 
 
@@ -225,6 +243,8 @@ namespace Generator.Equals.Tests
                                 .ToList()
                         };
                     }
+                    public override bool EqualsOperator(object value1, object value2) => (Data) value1 == (Data) value2;
+                    public override bool NotEqualsOperator(object value1, object value2) => (Data) value1 != (Data) value2;
                 }
             }
 
@@ -249,6 +269,8 @@ namespace Generator.Equals.Tests
 
                     public override object Factory1() => new Data("Dave", 35);
                     public override object Factory2() => new Data("Joe", 77);
+                    public override bool EqualsOperator(object value1, object value2) => (Data) value1 == (Data) value2;
+                    public override bool NotEqualsOperator(object value1, object value2) => (Data) value1 != (Data) value2;
                 }
 
                 [TestFixture]
@@ -267,6 +289,8 @@ namespace Generator.Equals.Tests
 
                     public override object Factory1() => new Data(new[] {"10 Downing St"});
                     public override object Factory2() => new Data(new[] {"Bricklane"});
+                    public override bool EqualsOperator(object value1, object value2) => (Data) value1 == (Data) value2;
+                    public override bool NotEqualsOperator(object value1, object value2) => (Data) value1 != (Data) value2;
                 }
 
 
@@ -287,9 +311,11 @@ namespace Generator.Equals.Tests
                         [IgnoreEquality] public int Age { get; }
                     }
 
-                    public override EqualConstraint Constraint(object value) => Is.EqualTo(value);
+                    public override bool Expected => true;
                     public override object Factory1() => new Data("Dave", 35);
                     public override object Factory2() => new Data("Dave", 77);
+                    public override bool EqualsOperator(object value1, object value2) => (Data) value1 == (Data) value2;
+                    public override bool NotEqualsOperator(object value1, object value2) => (Data) value1 != (Data) value2;
                 }
 
                 [TestFixture]
@@ -310,6 +336,8 @@ namespace Generator.Equals.Tests
                     {
                         Properties = Enumerable.Range(2, 999).ToDictionary(x => x.ToString(), x => x)
                     };
+                    public override bool EqualsOperator(object value1, object value2) => (Data) value1 == (Data) value2;
+                    public override bool NotEqualsOperator(object value1, object value2) => (Data) value1 != (Data) value2;
                 }
 
                 [TestFixture]
@@ -330,6 +358,8 @@ namespace Generator.Equals.Tests
                     {
                         Properties = Enumerable.Range(1, 1001).ToList()
                     };
+                    public override bool EqualsOperator(object value1, object value2) => (Data) value1 == (Data) value2;
+                    public override bool NotEqualsOperator(object value1, object value2) => (Data) value1 != (Data) value2;
                 }
             }
         }

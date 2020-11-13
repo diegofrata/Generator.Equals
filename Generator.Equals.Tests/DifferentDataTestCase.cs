@@ -8,24 +8,48 @@ namespace Generator.Equals.Tests
         public abstract object Factory1();
         public abstract object Factory2();
 
-        public virtual EqualConstraint Constraint(object value) => Is.Not.EqualTo(value);
+
+        public virtual bool Expected => false;
+
 
         [Test]
-        public virtual void Equality()
+        public void EqualsObject()
         {
-            var value1 = Factory1();
-            var value2 = Factory2();
-            
-            Assert.That(value1, Constraint(value2));
+            object value1 = Factory1();
+            object value2 = Factory2();
+
+            Assert.That(value1.Equals(value2), Is.EqualTo(Expected));
         }
-        
+
         [Test]
-        public virtual void HashCode()
+        public void EqualsOperator()
         {
             var value1 = Factory1();
             var value2 = Factory2();
-            
-            Assert.That(value1.GetHashCode(), Constraint(value2.GetHashCode()));
+
+            Assert.That(EqualsOperator(value1, value2), Is.EqualTo(Expected));
+        }
+
+        public abstract bool EqualsOperator(object value1, object value2);
+
+        [Test]
+        public void NotEqualsOperator()
+        {
+            var value1 = Factory1();
+            var value2 = Factory2();
+
+            Assert.That(NotEqualsOperator(value1, value2), Is.Not.EqualTo(Expected));
+        }
+
+        public abstract bool NotEqualsOperator(object value1, object value2);
+
+        [Test]
+        public void HashCode()
+        {
+            var value1 = Factory1();
+            var value2 = Factory2();
+
+            Assert.That(value1.GetHashCode() == value2.GetHashCode(), Is.EqualTo(Expected));
         }
     }
 }
