@@ -13,7 +13,7 @@ namespace Generator.Equals
             if (ReferenceEquals(x, y))
                 return true;
 
-            if (x is null || y is null)
+            if (x == null || y == null)
                 return false;
 
             return x.SequenceEqual(y);
@@ -21,7 +21,7 @@ namespace Generator.Equals
 
         public int GetHashCode(IEnumerable<T>? obj)
         {
-            if (obj is null) 
+            if (obj == null)
                 return 0;
             
             var hashCode = new HashCode();

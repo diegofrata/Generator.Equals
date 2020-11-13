@@ -17,7 +17,7 @@ namespace Generator.Equals
                 : $"public virtual bool Equals({symbolName}? other) {{");
 
             sb.AppendLine(baseTypeName == "object"
-                ? "return other is not null && EqualityContract == other.EqualityContract"
+                ? "return !ReferenceEquals(other, null) && EqualityContract == other.EqualityContract"
                 : $"return base.Equals(({baseTypeName}?)other)");
 
             foreach (var property in symbol.GetProperties())

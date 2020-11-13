@@ -23,7 +23,7 @@ namespace Generator.Equals
             if (ReferenceEquals(x, y))
                 return true;
 
-            if (x is null || y is null)
+            if (x == null || y == null)
                 return false;
 
             var cnt = new Dictionary<T, int>(_equalityComparer);
@@ -59,7 +59,7 @@ namespace Generator.Equals
         {
             var hashCode = 0;
 
-            if (obj is null)
+            if (obj == null)
                 return hashCode;
 
             foreach (var t in obj)

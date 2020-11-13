@@ -4,7 +4,7 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <RootNamespace>Generator.Equals</RootNamespace>
         <IsPackable>true</IsPackable>
-        <LangVersion>8</LangVersion>
+        <LangVersion>8.0</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>

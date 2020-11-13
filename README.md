@@ -6,9 +6,8 @@ A source code generator for automatically implementing IEquatable&lt;T&gt; using
 ## Requirements
 
 In order to use this library, you must:
-* Use the latest .NET 5.0 SDK (make sure you don't have any Preview or RC versions installed);
-* Use a framework that supports .NET Standard >= 2.1;
-* Set your project's C# ```LangVersion``` property to 9.0 or higher.
+* Use a target framework that supports .NET Standard >= 2.0 (eg. .NET Core 3.1 or .NET 5.0);
+* Set your project's C# ```LangVersion``` property to 8.0 or higher.
 
 ## Usage
 

@@ -18,7 +18,7 @@ namespace Generator.Equals
             sb.AppendLine($"public bool Equals({symbolName}? other) {{");
 
             sb.AppendLine(baseTypeName == "object"
-                ? "return other is not null && this.GetType() == other.GetType()"
+                ? "return !ReferenceEquals(other, null) && this.GetType() == other.GetType()"
                 : $"return base.Equals(other as {baseTypeName})");
 
             foreach (var property in symbol.GetProperties())

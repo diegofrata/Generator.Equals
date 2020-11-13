@@ -14,7 +14,7 @@ namespace Generator.Equals
             if (ReferenceEquals(x, y))
                 return true;
 
-            if (x is null || y is null)
+            if (x == null || y == null)
                 return false;
 
             if (x.Count != y.Count)

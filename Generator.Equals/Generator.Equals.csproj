@@ -7,7 +7,7 @@
     <!-- Generates a package at build -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <!-- Do not include the generator as a lib dependency -->
-    <LangVersion>8</LangVersion>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
 
@@ -20,8 +20,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Generator.Equals.Runtime\Generator.Equals.Runtime.csproj" />
 
-        <!-- Package the generator in the analyzer directory of the nuget package -->
-        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+    <!-- Package the generator in the analyzer directory of the nuget package -->
+    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
   </ItemGroup>
 
 </Project>
