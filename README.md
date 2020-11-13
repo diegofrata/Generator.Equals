@@ -43,7 +43,7 @@ partial class MyClass
 {
     [SequenceEquality] 
     public string[] Fruits { get; set; }
-);
+}
 ```
 
 ## Supported Comparers
