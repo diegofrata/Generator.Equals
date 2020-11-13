@@ -1,10 +1,10 @@
+#if NET5_0
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
-
 namespace Generator.Equals.Tests
 {
     [TestFixture]
@@ -198,3 +198,4 @@ namespace Generator.Equals.Tests
         }
     }
 }
+#endif

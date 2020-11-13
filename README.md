@@ -3,6 +3,13 @@
 A source code generator for automatically implementing IEquatable&lt;T&gt; using only attributes.
 
 ----------------
+## Requirements
+
+In order to use this library, you must:
+* Use the latest .NET 5.0 SDK (make sure you don't have any Preview or RC versions installed);
+* Use a framework that supports .NET Standard >= 2.1;
+* Set your project's C# ```LangVersion``` property to 9.0 or higher.
+
 ## Usage
 
 The below sample shows how to use Generator.Equals to override the default equality implementation for a C# record, enhancing it with the ability to determine the equality between the array contents of the record.
@@ -78,4 +85,5 @@ Bear in mind that the property has to implement IEnumerable<T> and the that the 
 public IDictionary<string, object> Properties { get; set; }
 ```
 
+This equality comparer will compare keys and values in both dictionaries and will only return true if it's an exact match. The hash function for this comparer is not too smart, returning only the number of entries as the hash.  
 This equality comparer will compare keys and values in both dictionaries and will only return true if it's an exact match. The hash function for this comparer is not too smart, returning only the number of entries as the hash.  

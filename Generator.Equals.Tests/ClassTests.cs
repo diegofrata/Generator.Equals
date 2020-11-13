@@ -12,7 +12,7 @@ namespace Generator.Equals.Tests
     public partial class ClassTests
     {
         [TestFixture]
-        public class StandardBehavior : RecordsTests
+        public class StandardBehavior : ClassTests
         {
             [TestFixture]
             public class ClassWithPrimitives : SameDataTestCase
@@ -54,7 +54,7 @@ namespace Generator.Equals.Tests
         }
 
         [TestFixture]
-        public partial class GeneratedBehavior : RecordsTests
+        public partial class GeneratedBehavior : ClassTests
         {
             [TestFixture]
             public partial class SameData : GeneratedBehavior
