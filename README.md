@@ -81,18 +81,21 @@ Bear in mind that the property has to implement IEnumerable<T> and the that the 
 ```c#
 [UnorderedSequenceEquality] 
 public string[] Fruits { get; set; } // Does not care about the order of the fruits!
+
+[UnorderedSequenceEquality] 
+public IDictionary<string, object> Properties { get; set; } // Works with dictionaries too!
 ```
 
 This equality comparer will compare properties as an unordered sequence instead of a reference. This works just like ```Enumerable.SequenceEqual```, but it does not care about the order as long as the all values (including the repetitions) are present.
 
-As with SequenceEquality, bear in mind that the property has to implement IEnumerable<T> and the that the items themselves implement equality (you can use Generator.Equals in the items too!).
+As with SequenceEquality, bear in mind that the property (or key and values if using a dictionary) has to implement IEnumerable<T> and the that the items themselves implement equality (you can use Generator.Equals in the items too!).
 
 
-### DictionaryEquality
+### SequenceEquality
 
 ```c#
-[DictionaryEquality] 
-public IDictionary<string, object> Properties { get; set; }
+[ReferenceEquality] 
+public string Name { get; set; } // Will only return true if strings are the same reference (eg. when used with string.Intern)
 ```
 
-This equality comparer will compare keys and values in both dictionaries and will only return true if it's an exact match. The hash function for this comparer is not too smart, returning only the number of entries as the hash.   
+This will ignore whatever equality is implemented for a particular object and compare references instead.

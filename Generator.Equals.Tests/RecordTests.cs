@@ -138,7 +138,7 @@ namespace Generator.Equals.Tests
                     [Equatable]
                     public partial record Data
                     {
-                        [DictionaryEquality]
+                        [UnorderedSequenceEquality]
                         public Dictionary<string, int>? Properties { get; init; }
                     }
 
@@ -183,6 +183,16 @@ namespace Generator.Equals.Tests
                                 .ToList()
                         };
                     }
+                    public override bool EqualsOperator(object value1, object value2) => (Data) value1 == (Data) value2;
+                    public override bool NotEqualsOperator(object value1, object value2) => (Data) value1 != (Data) value2;
+                }
+                
+                [TestFixture]
+                public partial class ReferenceEquality : SameDataTestCase
+                {
+                    [Equatable]
+                    public partial record Data([property: ReferenceEquality]string Name);
+                    public override object Factory() => new Data(string.Intern($"Dave{35}"));
                     public override bool EqualsOperator(object value1, object value2) => (Data) value1 == (Data) value2;
                     public override bool NotEqualsOperator(object value1, object value2) => (Data) value1 != (Data) value2;
                 }
@@ -234,7 +244,7 @@ namespace Generator.Equals.Tests
                     [Equatable]
                     public partial record Data
                     {
-                        [DictionaryEquality] public Dictionary<string, int>? Properties { get; init; }
+                        [UnorderedSequenceEquality] public Dictionary<string, int>? Properties { get; init; }
                     }
 
                     public override object Factory1() => new Data
@@ -268,6 +278,17 @@ namespace Generator.Equals.Tests
                     {
                         Properties = Enumerable.Range(1, 999).ToList()
                     };
+                    public override bool EqualsOperator(object value1, object value2) => (Data) value1 == (Data) value2;
+                    public override bool NotEqualsOperator(object value1, object value2) => (Data) value1 != (Data) value2;
+                }
+                
+                [TestFixture]
+                public partial class ReferenceEquality : DifferentDataTestCase
+                {
+                    [Equatable]
+                    public partial record Data([property: ReferenceEquality]string Name);
+                    public override object Factory1() => new Data($"Dave{35}");
+                    public override object Factory2() => new Data($"Dave{35}");
                     public override bool EqualsOperator(object value1, object value2) => (Data) value1 == (Data) value2;
                     public override bool NotEqualsOperator(object value1, object value2) => (Data) value1 != (Data) value2;
                 }

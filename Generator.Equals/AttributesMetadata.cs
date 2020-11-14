@@ -7,22 +7,21 @@ namespace Generator.Equals
         public INamedTypeSymbol Equatable { get; }
         public INamedTypeSymbol SequenceEquality { get; }
         public INamedTypeSymbol IgnoreEquality { get; }
-        public INamedTypeSymbol DictionaryEquality { get; }
         public INamedTypeSymbol UnorderedSequenceEquality { get; }
+        public INamedTypeSymbol ReferenceEquality { get; }
 
         public AttributesMetadata(
             INamedTypeSymbol equatable,
             INamedTypeSymbol sequenceEquality,
             INamedTypeSymbol ignoreEquality,
-            INamedTypeSymbol dictionaryEquality,
-            INamedTypeSymbol unorderedSequenceEquality
-        )
+            INamedTypeSymbol unorderedSequenceEquality, 
+            INamedTypeSymbol referenceEquality)
         {
             Equatable = equatable;
             SequenceEquality = sequenceEquality;
             IgnoreEquality = ignoreEquality;
-            DictionaryEquality = dictionaryEquality;
             UnorderedSequenceEquality = unorderedSequenceEquality;
+            ReferenceEquality = referenceEquality;
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -28,8 +27,8 @@ namespace Generator.Equals
                 context.Compilation.GetTypeByMetadataName("Generator.Equals.EquatableAttribute")!,
                 context.Compilation.GetTypeByMetadataName("Generator.Equals.SequenceEqualityAttribute")!,
                 context.Compilation.GetTypeByMetadataName("Generator.Equals.IgnoreEqualityAttribute")!,
-                context.Compilation.GetTypeByMetadataName("Generator.Equals.DictionaryEqualityAttribute")!,
-                context.Compilation.GetTypeByMetadataName("Generator.Equals.UnorderedSequenceEqualityAttribute")!
+                context.Compilation.GetTypeByMetadataName("Generator.Equals.UnorderedSequenceEqualityAttribute")!,
+                context.Compilation.GetTypeByMetadataName("Generator.Equals.ReferenceEqualityAttribute")!
             );
 
             foreach (var node in s.CandidateSyntaxes)

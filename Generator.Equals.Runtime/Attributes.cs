@@ -13,17 +13,17 @@ namespace Generator.Equals
     }
 
     [AttributeUsage(AttributeTargets.Property)]
-    public class DictionaryEqualityAttribute : Attribute
-    {
-    }
-    
-    [AttributeUsage(AttributeTargets.Property)]
     public class IgnoreEqualityAttribute : Attribute
     {
     }
 
     [AttributeUsage(AttributeTargets.Property)]
     public class UnorderedSequenceEqualityAttribute : Attribute
+    {
+    }
+    
+    [AttributeUsage(AttributeTargets.Property)]
+    public class ReferenceEqualityAttribute : Attribute
     {
     }
 }

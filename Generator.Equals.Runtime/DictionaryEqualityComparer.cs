@@ -1,11 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 namespace Generator.Equals
 {
     public class DictionaryEqualityComparer<TKey, TValue> : IEqualityComparer<IDictionary<TKey, TValue>>
     {
+        static readonly EqualityComparer<TValue> ValueEqualityComparer = EqualityComparer<TValue>.Default;
+
+        static readonly EqualityComparer<KeyValuePair<TKey, TValue>> EqualityComparer =
+            EqualityComparer<KeyValuePair<TKey, TValue>>.Default;
+
         public static DictionaryEqualityComparer<TKey, TValue> Default { get; } =
             new DictionaryEqualityComparer<TKey, TValue>();
 
@@ -20,14 +23,12 @@ namespace Generator.Equals
             if (x.Count != y.Count)
                 return false;
 
-            var comparer = EqualityComparer<TValue>.Default;
-
             foreach (var pair in x)
             {
                 if (!y.TryGetValue(pair.Key, out var yValue))
                     return false;
 
-                if (!comparer.Equals(pair.Value, yValue))
+                if (!ValueEqualityComparer.Equals(pair.Value, yValue))
                     return false;
             }
 
@@ -36,8 +37,15 @@ namespace Generator.Equals
 
         public int GetHashCode(IDictionary<TKey, TValue>? obj)
         {
-            // There's no easy way to hash a dictionary.
-            return obj?.Count ?? 0;
+            var hashCode = 0;
+
+            if (obj == null)
+                return hashCode;
+
+            foreach (var t in obj)
+                hashCode ^= EqualityComparer.GetHashCode(t) & 0x7FFFFFFF;
+
+            return hashCode;
         }
     }
 }
