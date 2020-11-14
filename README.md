@@ -91,7 +91,7 @@ This equality comparer will compare properties as an unordered sequence instead 
 As with SequenceEquality, bear in mind that the property (or key and values if using a dictionary) has to implement IEnumerable<T> and the that the items themselves implement equality (you can use Generator.Equals in the items too!).
 
 
-### SequenceEquality
+### ReferenceEquality
 
 ```c#
 [ReferenceEquality] 
