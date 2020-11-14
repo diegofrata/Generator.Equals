@@ -133,7 +133,7 @@ namespace Generator.Equals.Tests
                 }
 
                 [TestFixture]
-                public partial class SequenceEquality : SameDataTestCase
+                public partial class OrderedEquality : SameDataTestCase
                 {
                     [Equatable]
                     public partial class Data
@@ -148,7 +148,7 @@ namespace Generator.Equals.Tests
                         public string Name { get; }
                         public int Age { get; }
 
-                        [SequenceEquality] public string[] Addresses { get; }
+                        [OrderedEquality] public string[] Addresses { get; }
                     }
 
                     public override object Factory() => new Data("Dave", 35, new[] {"10 Downing St"});
@@ -157,12 +157,12 @@ namespace Generator.Equals.Tests
                 }
 
                 [TestFixture]
-                public partial class NullableSequenceEquality : SameDataTestCase
+                public partial class NullableOrderedEquality : SameDataTestCase
                 {
                     [Equatable]
                     public partial class Data
                     {
-                        [SequenceEquality] public string[]? Addresses { get; set; }
+                        [OrderedEquality] public string[]? Addresses { get; set; }
                     }
 
                     public override object Factory() => new Data();
@@ -198,7 +198,7 @@ namespace Generator.Equals.Tests
                     [Equatable]
                     public partial class Data
                     {
-                        [UnorderedSequenceEquality] public Dictionary<string, int>? Properties { get; set; }
+                        [UnorderedEquality] public Dictionary<string, int>? Properties { get; set; }
                     }
 
                     public override object Factory()
@@ -220,12 +220,12 @@ namespace Generator.Equals.Tests
                 }
                 
                 [TestFixture]
-                public partial class UnorderedSequenceEquality : SameDataTestCase
+                public partial class UnorderedEquality : SameDataTestCase
                 {
                     [Equatable]
                     public partial class Data
                     {
-                        [UnorderedSequenceEquality] public List<int>? Properties { get; set; }
+                        [UnorderedEquality] public List<int>? Properties { get; set; }
                     }
 
                     public override object Factory()
@@ -296,7 +296,7 @@ namespace Generator.Equals.Tests
                 }
 
                 [TestFixture]
-                public partial class SequenceEquality : DifferentDataTestCase
+                public partial class OrderedEquality : DifferentDataTestCase
                 {
                     [Equatable]
                     public partial class Data
@@ -306,7 +306,7 @@ namespace Generator.Equals.Tests
                             Addresses = addresses;
                         }
 
-                        [SequenceEquality] public string[] Addresses { get; }
+                        [OrderedEquality] public string[] Addresses { get; }
                     }
 
                     public override object Factory1() => new Data(new[] {"10 Downing St"});
@@ -345,7 +345,7 @@ namespace Generator.Equals.Tests
                     [Equatable]
                     public partial class Data
                     {
-                        [UnorderedSequenceEquality] public Dictionary<string, int>? Properties { get; set; }
+                        [UnorderedEquality] public Dictionary<string, int>? Properties { get; set; }
                     }
 
                     public override object Factory1() => new Data
@@ -362,12 +362,12 @@ namespace Generator.Equals.Tests
                 }
 
                 [TestFixture]
-                public partial class UnorderedSequenceEquality : DifferentDataTestCase
+                public partial class UnorderedEquality : DifferentDataTestCase
                 {
                     [Equatable]
                     public partial class Data
                     {
-                        [UnorderedSequenceEquality] public List<int>? Properties { get; set; }
+                        [UnorderedEquality] public List<int>? Properties { get; set; }
                     }
 
                     public override object Factory1() => new Data

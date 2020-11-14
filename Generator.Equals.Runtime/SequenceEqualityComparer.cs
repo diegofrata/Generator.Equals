@@ -4,11 +4,11 @@ using System.Linq;
 
 namespace Generator.Equals
 {
-    public class SequenceEqualityComparer<T> : IEqualityComparer<IEnumerable<T>>
+    public class OrderedEqualityComparer<T> : IEqualityComparer<IEnumerable<T>>
     {
         static readonly EqualityComparer<T> EqualityComparer = EqualityComparer<T>.Default;
 
-        public static SequenceEqualityComparer<T> Default { get; } = new SequenceEqualityComparer<T>();
+        public static OrderedEqualityComparer<T> Default { get; } = new OrderedEqualityComparer<T>();
 
         public bool Equals(IEnumerable<T>? x, IEnumerable<T>? y)
         {

@@ -18,7 +18,7 @@ using Generator.Equals;
 
 [Equatable]
 partial record MyRecord(
-    [property: SequenceEquality] string[] Fruits
+    [property: OrderedEquality] string[] Fruits
 );
 
 class Program
@@ -40,7 +40,7 @@ using Generator.Equals;
 [Equatable]
 partial class MyClass
 {
-    [SequenceEquality] 
+    [OrderedEquality] 
     public string[] Fruits { get; set; }
 }
 ```
@@ -65,10 +65,10 @@ public string Name { get; set; }
 As the name implies, the property is ignored during Equals and GetHashCode calls!
 
 
-### SequenceEquality
+### OrderedEquality
 
 ```c#
-[SequenceEquality] 
+[OrderedEquality] 
 public string[] Fruits { get; set; } // Fruits have to be in the same order for the array to be considered equal.
 ```
 
@@ -76,19 +76,19 @@ This equality comparer will compare properties as a sequence instead of a refere
 
 Bear in mind that the property has to implement IEnumerable<T> and the that the items themselves implement equality (you can use Generator.Equals in the items too!).
 
-### UnorderedSequenceEquality
+### UnorderedEquality
 
 ```c#
-[UnorderedSequenceEquality] 
+[UnorderedEquality] 
 public string[] Fruits { get; set; } // Does not care about the order of the fruits!
 
-[UnorderedSequenceEquality] 
+[UnorderedEquality] 
 public IDictionary<string, object> Properties { get; set; } // Works with dictionaries too!
 ```
 
 This equality comparer will compare properties as an unordered sequence instead of a reference. This works just like ```Enumerable.SequenceEqual```, but it does not care about the order as long as the all values (including the repetitions) are present.
 
-As with SequenceEquality, bear in mind that the property (or key and values if using a dictionary) has to implement IEnumerable<T> and the that the items themselves implement equality (you can use Generator.Equals in the items too!).
+As with OrderedEquality, bear in mind that the property (or key and values if using a dictionary) has to implement IEnumerable<T> and the that the items themselves implement equality (you can use Generator.Equals in the items too!).
 
 
 ### ReferenceEquality

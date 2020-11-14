@@ -16,7 +16,7 @@ namespace Generator.Equals
 
             var typeName = property.Type.ToNullableFQF();
 
-            if (property.HasAttribute(attributesMetadata.UnorderedSequenceEquality))
+            if (property.HasAttribute(attributesMetadata.UnorderedEquality))
             {
                 var types = property.GetIDictionaryTypeArguments();
 
@@ -29,15 +29,15 @@ namespace Generator.Equals
                 {
                     types = property.GetIEnumerableTypeArguments()!;
                     sb.AppendLine(
-                        $"&& global::Generator.Equals.UnorderedSequenceEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals({propertyName}!, other.{propertyName}!)");
+                        $"&& global::Generator.Equals.UnorderedEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals({propertyName}!, other.{propertyName}!)");
                 }
             }
-            else if (property.HasAttribute(attributesMetadata.SequenceEquality))
+            else if (property.HasAttribute(attributesMetadata.OrderedEquality))
             {
                 var types = property.GetIEnumerableTypeArguments()!;
 
                 sb.AppendLine(
-                    $"&& global::Generator.Equals.SequenceEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals({propertyName}!, other.{propertyName}!)");
+                    $"&& global::Generator.Equals.OrderedEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals({propertyName}!, other.{propertyName}!)");
             }
             else if (property.HasAttribute(attributesMetadata.ReferenceEquality))
             {
@@ -63,7 +63,7 @@ namespace Generator.Equals
 
             sb.Append($"hashCode.Add(this.{propertyName}!, ");
 
-            if (property.HasAttribute(attributesMetadata.UnorderedSequenceEquality))
+            if (property.HasAttribute(attributesMetadata.UnorderedEquality))
             {
                 var types = property.GetIDictionaryTypeArguments();
 
@@ -76,14 +76,14 @@ namespace Generator.Equals
                 {
                     types = property.GetIEnumerableTypeArguments()!;
                     sb.Append(
-                        $"global::Generator.Equals.UnorderedSequenceEqualityComparer<{string.Join(", ", types.Value)}>.Default");
+                        $"global::Generator.Equals.UnorderedEqualityComparer<{string.Join(", ", types.Value)}>.Default");
                 }
             }
-            else if (property.HasAttribute(attributesMetadata.SequenceEquality))
+            else if (property.HasAttribute(attributesMetadata.OrderedEquality))
             {
                 var types = property.GetIEnumerableTypeArguments()!;
                 sb.Append(
-                    $"global::Generator.Equals.SequenceEqualityComparer<{string.Join(", ", types.Value)}>.Default");
+                    $"global::Generator.Equals.OrderedEqualityComparer<{string.Join(", ", types.Value)}>.Default");
             }
             else if (property.HasAttribute(attributesMetadata.ReferenceEquality))
             {

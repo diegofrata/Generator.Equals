@@ -5,22 +5,22 @@ namespace Generator.Equals
     public class AttributesMetadata
     {
         public INamedTypeSymbol Equatable { get; }
-        public INamedTypeSymbol SequenceEquality { get; }
+        public INamedTypeSymbol OrderedEquality { get; }
         public INamedTypeSymbol IgnoreEquality { get; }
-        public INamedTypeSymbol UnorderedSequenceEquality { get; }
+        public INamedTypeSymbol UnorderedEquality { get; }
         public INamedTypeSymbol ReferenceEquality { get; }
 
         public AttributesMetadata(
             INamedTypeSymbol equatable,
-            INamedTypeSymbol sequenceEquality,
+            INamedTypeSymbol orderedEquality,
             INamedTypeSymbol ignoreEquality,
-            INamedTypeSymbol unorderedSequenceEquality, 
+            INamedTypeSymbol unorderedEquality, 
             INamedTypeSymbol referenceEquality)
         {
             Equatable = equatable;
-            SequenceEquality = sequenceEquality;
+            OrderedEquality = orderedEquality;
             IgnoreEquality = ignoreEquality;
-            UnorderedSequenceEquality = unorderedSequenceEquality;
+            UnorderedEquality = unorderedEquality;
             ReferenceEquality = referenceEquality;
         }
     }

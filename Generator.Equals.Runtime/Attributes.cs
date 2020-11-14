@@ -8,7 +8,7 @@ namespace Generator.Equals
     }
 
     [AttributeUsage(AttributeTargets.Property)]
-    public class SequenceEqualityAttribute : Attribute
+    public class OrderedEqualityAttribute : Attribute
     {
     }
 
@@ -18,7 +18,7 @@ namespace Generator.Equals
     }
 
     [AttributeUsage(AttributeTargets.Property)]
-    public class UnorderedSequenceEqualityAttribute : Attribute
+    public class UnorderedEqualityAttribute : Attribute
     {
     }
     
