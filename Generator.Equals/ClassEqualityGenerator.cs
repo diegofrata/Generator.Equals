@@ -12,8 +12,8 @@ namespace Generator.Equals
 
             sb.AppendLine("#nullable enable");
 
-            sb.AppendLine($"public static bool operator ==({symbolName} a, {symbolName} b) => a.Equals(b);");
-            sb.AppendLine($"public static bool operator !=({symbolName} a, {symbolName} b) => !a.Equals(b);");
+            sb.AppendLine($"public static bool operator ==({symbolName}? a, {symbolName}? b) => global::System.Collections.Generic.EqualityComparer<{symbolName}>.Default.Equals(a, b);");
+            sb.AppendLine($"public static bool operator !=({symbolName}? a, {symbolName}? b) => !(a == b);");
             sb.AppendLine($"public override bool Equals(object? obj) => Equals(obj as {symbolName});");
             sb.AppendLine($"public bool Equals({symbolName}? other) {{");
 
