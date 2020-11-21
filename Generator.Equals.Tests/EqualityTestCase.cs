@@ -3,15 +3,14 @@ using NUnit.Framework.Constraints;
 
 namespace Generator.Equals.Tests
 {
-    public abstract class DifferentDataTestCase
+    public abstract class EqualityTestCase
     {
         public abstract object Factory1();
-        public abstract object Factory2();
-
-
-        public virtual bool Expected => false;
-
-
+        public virtual object Factory2() => Factory1();
+        public virtual bool Expected => true;
+        public abstract bool EqualsOperator(object value1, object value2);
+        public abstract bool NotEqualsOperator(object value1, object value2);
+        
         [Test]
         public void EqualsObject()
         {
@@ -30,7 +29,6 @@ namespace Generator.Equals.Tests
             Assert.That(EqualsOperator(value1, value2), Is.EqualTo(Expected));
         }
 
-        public abstract bool EqualsOperator(object value1, object value2);
 
         [Test]
         public void NotEqualsOperator()
@@ -41,7 +39,6 @@ namespace Generator.Equals.Tests
             Assert.That(NotEqualsOperator(value1, value2), Is.Not.EqualTo(Expected));
         }
 
-        public abstract bool NotEqualsOperator(object value1, object value2);
 
         [Test]
         public void HashCode()
