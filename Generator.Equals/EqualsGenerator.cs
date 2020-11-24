@@ -28,7 +28,8 @@ namespace Generator.Equals
                 context.Compilation.GetTypeByMetadataName("Generator.Equals.OrderedEqualityAttribute")!,
                 context.Compilation.GetTypeByMetadataName("Generator.Equals.IgnoreEqualityAttribute")!,
                 context.Compilation.GetTypeByMetadataName("Generator.Equals.UnorderedEqualityAttribute")!,
-                context.Compilation.GetTypeByMetadataName("Generator.Equals.ReferenceEqualityAttribute")!
+                context.Compilation.GetTypeByMetadataName("Generator.Equals.ReferenceEqualityAttribute")!,
+                context.Compilation.GetTypeByMetadataName("Generator.Equals.SetEqualityAttribute")!
             );
 
             foreach (var node in s.CandidateSyntaxes)

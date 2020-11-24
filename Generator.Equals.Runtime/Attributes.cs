@@ -26,4 +26,9 @@ namespace Generator.Equals
     public class ReferenceEqualityAttribute : Attribute
     {
     }
+    
+    [AttributeUsage(AttributeTargets.Property)]
+    public class SetEqualityAttribute : Attribute
+    {
+    }
 }

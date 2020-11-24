@@ -44,6 +44,13 @@ namespace Generator.Equals
                 sb.AppendLine(
                     $"&& global::Generator.Equals.ReferenceEqualityComparer<{typeName}>.Default.Equals({propertyName}!, other.{propertyName}!)");
             }
+            else if (property.HasAttribute(attributesMetadata.SetEquality))
+            {
+                var types = property.GetIEnumerableTypeArguments()!;
+
+                sb.AppendLine(
+                    $"&& global::Generator.Equals.SetEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals({propertyName}!, other.{propertyName}!)");
+            }
             else
             {
                 sb.AppendLine(
@@ -88,6 +95,12 @@ namespace Generator.Equals
             else if (property.HasAttribute(attributesMetadata.ReferenceEquality))
             {
                 sb.Append($"global::Generator.Equals.ReferenceEqualityComparer<{typeName}>.Default");
+            }
+            else if (property.HasAttribute(attributesMetadata.SetEquality))
+            {
+                var types = property.GetIEnumerableTypeArguments()!;
+                sb.Append(
+                    $"global::Generator.Equals.SetEqualityComparer<{string.Join(", ", types.Value)}>.Default");
             }
             else
             {

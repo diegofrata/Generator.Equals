@@ -41,7 +41,7 @@ namespace Generator.Equals.Tests
 
 
         [Test]
-        public void HashCode()
+        public virtual void HashCode()
         {
             var value1 = Factory1();
             var value2 = Factory2();

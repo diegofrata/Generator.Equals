@@ -6,7 +6,7 @@ namespace Generator.Equals
     public class UnorderedEqualityComparer<T> : IEqualityComparer<IEnumerable<T>>
     {
         static readonly IEqualityComparer<T> EqualityComparer = EqualityComparer<T>.Default;
-        
+
         public static IEqualityComparer<IEnumerable<T>> Default { get; } = new UnorderedEqualityComparer<T>();
 
         public bool Equals(IEnumerable<T>? x, IEnumerable<T>? y)
@@ -23,14 +23,14 @@ namespace Generator.Equals
 
             var cnt = new Dictionary<T, int>(EqualityComparer);
 
-            foreach (var s in x) 
+            foreach (var s in x)
                 cnt[s] = (cnt.TryGetValue(s, out var v) ? v : 0) + 1;
 
             foreach (var s in y)
             {
                 if (!cnt.ContainsKey(s))
                     return false;
-                
+
                 cnt[s]--;
             }
 
@@ -45,7 +45,8 @@ namespace Generator.Equals
                 return hashCode;
 
             foreach (var t in obj)
-                hashCode ^= EqualityComparer.GetHashCode(t) & 0x7FFFFFFF;
+                if (t != null)
+                    hashCode ^= EqualityComparer.GetHashCode(t) & 0x7FFFFFFF;
 
             return hashCode;
         }

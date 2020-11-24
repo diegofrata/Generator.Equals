@@ -90,7 +90,16 @@ This equality comparer will compare properties as an unordered sequence instead 
 
 As with OrderedEquality, bear in mind that the property (or key and values if using a dictionary) has to implement IEnumerable<T> and the that the items themselves implement equality (you can use Generator.Equals in the items too!).
 
+### SetEquality
 
+```c#
+[SetEquality] 
+public HashSet<string> Fruits { get; set; } // Fruits can be in any order and it can be repeated
+```
+
+This equality comparer will do a set comparison, using ```SetEquals``` whenever the underlying collection implements `ISet<T>`, otherwise falling back to  manually comparing both collections, which can be expensive for large collections.
+
+Hashing always returns 0 for this type of equality,
 ### ReferenceEquality
 
 ```c#

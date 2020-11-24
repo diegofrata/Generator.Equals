@@ -11,7 +11,8 @@ namespace Generator.Equals
             var baseTypeName = symbol.BaseType?.ToFQF();
 
             sb.AppendLine("#nullable enable");
-
+            
+            sb.AppendLine("[global::System.Runtime.CompilerServices.CompilerGenerated]");
             sb.AppendLine(symbol.IsSealed
                 ? $"public bool Equals({symbolName}? other) {{"
                 : $"public virtual bool Equals({symbolName}? other) {{");
@@ -41,7 +42,8 @@ namespace Generator.Equals
             var baseTypeName = symbol.BaseType?.ToFQF();
 
             sb.AppendLine("#nullable enable");
-
+            
+            sb.AppendLine("[global::System.Runtime.CompilerServices.CompilerGenerated]");
             sb.AppendLine(@"public override int GetHashCode() {
                 var hashCode = new global::System.HashCode();
             ");
