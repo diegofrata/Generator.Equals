@@ -31,7 +31,7 @@ jobs:
       run: |
         VERSION=`git describe --tags`
         echo "Publishing Version: ${VERSION}"
-        echo "::set-env name=VERSION::${VERSION}"
+        echo "VERSION=${VERSION}" >> $GITHUB_ENV
     - name: Pack
       run: |
         dotnet pack Generator.Equals/Generator.Equals.csproj /p:PackageVersion=$VERSION /p:Version=$VERSION -c Release -o ./publish
