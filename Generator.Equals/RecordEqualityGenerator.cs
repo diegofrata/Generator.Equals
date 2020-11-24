@@ -12,7 +12,7 @@ namespace Generator.Equals
 
             sb.AppendLine("#nullable enable");
             
-            sb.AppendLine("[global::System.Runtime.CompilerServices.CompilerGenerated]");
+            sb.AppendLine(GeneratedCodeAttributeDeclaration);
             sb.AppendLine(symbol.IsSealed
                 ? $"public bool Equals({symbolName}? other) {{"
                 : $"public virtual bool Equals({symbolName}? other) {{");
@@ -43,7 +43,7 @@ namespace Generator.Equals
 
             sb.AppendLine("#nullable enable");
             
-            sb.AppendLine("[global::System.Runtime.CompilerServices.CompilerGenerated]");
+            sb.AppendLine(GeneratedCodeAttributeDeclaration);
             sb.AppendLine(@"public override int GetHashCode() {
                 var hashCode = new global::System.HashCode();
             ");

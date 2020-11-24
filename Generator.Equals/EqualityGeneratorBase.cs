@@ -6,6 +6,8 @@ namespace Generator.Equals
 {
     internal class EqualityGeneratorBase
     {
+        protected const string GeneratedCodeAttributeDeclaration = "[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"Generator.Equals\", \"1.0.0.0\")]";
+
         public static void BuildPropertyEquality(AttributesMetadata attributesMetadata, StringBuilder sb,
             IPropertySymbol property)
         {

@@ -12,16 +12,16 @@ namespace Generator.Equals
 
             sb.AppendLine("#nullable enable");
 
-            sb.AppendLine("[global::System.Runtime.CompilerServices.CompilerGenerated]");
+            sb.AppendLine(GeneratedCodeAttributeDeclaration);
             sb.AppendLine($"public static bool operator ==({symbolName}? a, {symbolName}? b) => global::System.Collections.Generic.EqualityComparer<{symbolName}>.Default.Equals(a, b);");
             
-            sb.AppendLine("[global::System.Runtime.CompilerServices.CompilerGenerated]");
+            sb.AppendLine(GeneratedCodeAttributeDeclaration);
             sb.AppendLine($"public static bool operator !=({symbolName}? a, {symbolName}? b) => !(a == b);");
             
-            sb.AppendLine("[global::System.Runtime.CompilerServices.CompilerGenerated]");
+            sb.AppendLine(GeneratedCodeAttributeDeclaration);
             sb.AppendLine($"public override bool Equals(object? obj) => Equals(obj as {symbolName});");
             
-            sb.AppendLine("[global::System.Runtime.CompilerServices.CompilerGenerated]");
+            sb.AppendLine(GeneratedCodeAttributeDeclaration);
             sb.AppendLine($"public bool Equals({symbolName}? other) {{");
 
             sb.AppendLine(baseTypeName == "object"
@@ -45,7 +45,7 @@ namespace Generator.Equals
 
             sb.AppendLine("#nullable enable");
 
-            sb.AppendLine("[global::System.Runtime.CompilerServices.CompilerGenerated]");
+            sb.AppendLine(GeneratedCodeAttributeDeclaration);
             sb.AppendLine(@"public override int GetHashCode() {
                 var hashCode = new global::System.HashCode();
             ");
