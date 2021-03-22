@@ -8,6 +8,22 @@ namespace Generator.Equals
     {
         protected const string GeneratedCodeAttributeDeclaration = "[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"Generator.Equals\", \"1.0.0.0\")]";
 
+        protected const string EqualsOperatorCodeComment = @"/// <summary>
+        /// Indicates whether the current object is equal to another object of the same type.
+        /// </summary>
+        /// <param name=""left"">The left object</param>
+        /// <param name=""right"">The right object</param>
+        /// <returns>true if the current object is equal to the other parameter; otherwise, false.</returns>";
+
+        protected const string NotEqualsOperatorCodeComment = @"/// <summary>
+        /// Indicates whether the current object is not equal to another object of the same type.
+        /// </summary>
+        /// <param name=""left"">The left object</param>
+        /// <param name=""right"">The right object</param>
+        /// <returns>true if the current object is not equal to the other parameter; otherwise, false.</returns>";
+
+        protected const string InheritDocComment = "/// <inheritdoc/>";
+
         public static void BuildPropertyEquality(AttributesMetadata attributesMetadata, StringBuilder sb,
             IPropertySymbol property)
         {

@@ -11,7 +11,8 @@ namespace Generator.Equals
             var baseTypeName = symbol.BaseType?.ToFQF();
 
             sb.AppendLine("#nullable enable");
-            
+
+            sb.AppendLine(InheritDocComment);
             sb.AppendLine(GeneratedCodeAttributeDeclaration);
             sb.AppendLine(symbol.IsSealed
                 ? $"public bool Equals({symbolName}? other) {{"
@@ -42,7 +43,8 @@ namespace Generator.Equals
             var baseTypeName = symbol.BaseType?.ToFQF();
 
             sb.AppendLine("#nullable enable");
-            
+
+            sb.AppendLine(InheritDocComment);
             sb.AppendLine(GeneratedCodeAttributeDeclaration);
             sb.AppendLine(@"public override int GetHashCode() {
                 var hashCode = new global::System.HashCode();
