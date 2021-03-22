@@ -12,15 +12,19 @@ namespace Generator.Equals
 
             sb.AppendLine("#nullable enable");
 
+            sb.AppendLine(EqualsOperatorCodeComment);
             sb.AppendLine(GeneratedCodeAttributeDeclaration);
             sb.AppendLine($"public static bool operator ==({symbolName}? a, {symbolName}? b) => global::System.Collections.Generic.EqualityComparer<{symbolName}>.Default.Equals(a, b);");
-            
+
+            sb.AppendLine(NotEqualsOperatorCodeComment);
             sb.AppendLine(GeneratedCodeAttributeDeclaration);
             sb.AppendLine($"public static bool operator !=({symbolName}? a, {symbolName}? b) => !(a == b);");
-            
+
+            sb.AppendLine(InheritDocComment);
             sb.AppendLine(GeneratedCodeAttributeDeclaration);
             sb.AppendLine($"public override bool Equals(object? obj) => Equals(obj as {symbolName});");
-            
+
+            sb.AppendLine(InheritDocComment);
             sb.AppendLine(GeneratedCodeAttributeDeclaration);
             sb.AppendLine($"public bool Equals({symbolName}? other) {{");
 
@@ -45,6 +49,7 @@ namespace Generator.Equals
 
             sb.AppendLine("#nullable enable");
 
+            sb.AppendLine(InheritDocComment);
             sb.AppendLine(GeneratedCodeAttributeDeclaration);
             sb.AppendLine(@"public override int GetHashCode() {
                 var hashCode = new global::System.HashCode();
