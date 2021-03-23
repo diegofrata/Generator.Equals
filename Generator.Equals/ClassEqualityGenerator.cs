@@ -14,11 +14,11 @@ namespace Generator.Equals
 
             sb.AppendLine(EqualsOperatorCodeComment);
             sb.AppendLine(GeneratedCodeAttributeDeclaration);
-            sb.AppendLine($"public static bool operator ==({symbolName}? a, {symbolName}? b) => global::System.Collections.Generic.EqualityComparer<{symbolName}>.Default.Equals(a, b);");
+            sb.AppendLine($"public static bool operator ==({symbolName}? left, {symbolName}? right) => global::System.Collections.Generic.EqualityComparer<{symbolName}>.Default.Equals(left, right);");
 
             sb.AppendLine(NotEqualsOperatorCodeComment);
             sb.AppendLine(GeneratedCodeAttributeDeclaration);
-            sb.AppendLine($"public static bool operator !=({symbolName}? a, {symbolName}? b) => !(a == b);");
+            sb.AppendLine($"public static bool operator !=({symbolName}? left, {symbolName}? right) => !(left == right);");
 
             sb.AppendLine(InheritDocComment);
             sb.AppendLine(GeneratedCodeAttributeDeclaration);
