@@ -14,7 +14,7 @@ namespace Generator.Equals
 
             sb.AppendLine(EqualsOperatorCodeComment);
             sb.AppendLine(GeneratedCodeAttributeDeclaration);
-            sb.AppendLine($"public static bool operator ==({symbolName}? left, {symbolName}? right) => global::System.Collections.Generic.EqualityComparer<{symbolName}>.Default.Equals(left, right);");
+            sb.AppendLine($"public static bool operator ==({symbolName}? left, {symbolName}? right) => global::System.Collections.Generic.EqualityComparer<{symbolName}?>.Default.Equals(left, right);");
 
             sb.AppendLine(NotEqualsOperatorCodeComment);
             sb.AppendLine(GeneratedCodeAttributeDeclaration);
