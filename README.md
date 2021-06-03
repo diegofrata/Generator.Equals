@@ -108,3 +108,38 @@ public string Name { get; set; } // Will only return true if strings are the sam
 ```
 
 This will ignore whatever equality is implemented for a particular object and compare references instead.
+
+### CustomEquality
+
+```c#
+class LengthEqualityComparer : IEqualityComparer<string>
+{
+    public static readonly LengthEqualityComparer Default = new();
+
+    public bool Equals(string? x, string? y) => x?.Length == y?.Length;
+
+    public int GetHashCode(string obj) => obj.Length.GetHashCode();
+}
+
+class NameEqualityComparer 
+{
+    public static readonly IEqualityComparer<string> Default = new SomeCustomComparer();
+}
+
+
+[CustomEquality(typeof(LengthEqualityComparer))] 
+public string Name1 { get; set; } // Will use LengthEqualityComparer to compare the values of Name1.
+
+[CustomEquality(typeof(NameEqualityComparer))] 
+public string Name2 { get; set; } // Will use NameEqualityComparer.Default to compare values of Name2.
+
+[CustomEquality(typeof(StringComparer), nameof(StringComparer.OrdinalIgnoreCase))] 
+public string Name2 { get; set; } // Will use StringComparer.OrdinalIgnoreCase to compare values of Name2.
+```
+
+This attribute allows you to specify a custom comparer for a particular property. For it to work, the type passed as an
+argument to CustomEqualityAttribute should fulfill AT LEAST one of the following:
+
+* Have a static field/property named Default returning a valid IEqualityComparer<T> instance for the target type;
+* Have a static field/property with the same name passed to the CustomComparerAttribute returning a valid IEqualityComparer<T> instance for the target type;
+* Implement IEqualityComparer<T> and expose a parameterless constructor.

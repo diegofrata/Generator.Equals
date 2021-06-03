@@ -9,8 +9,8 @@ namespace Generator.Equals
         public INamedTypeSymbol IgnoreEquality { get; }
         public INamedTypeSymbol UnorderedEquality { get; }
         public INamedTypeSymbol ReferenceEquality { get; }
-        
         public INamedTypeSymbol SetEquality { get; }
+        public INamedTypeSymbol CustomEquality { get; }
 
         public AttributesMetadata(
             INamedTypeSymbol equatable,
@@ -18,7 +18,8 @@ namespace Generator.Equals
             INamedTypeSymbol ignoreEquality,
             INamedTypeSymbol unorderedEquality, 
             INamedTypeSymbol referenceEquality, 
-            INamedTypeSymbol setEquality)
+            INamedTypeSymbol setEquality,
+            INamedTypeSymbol customEquality)
         {
             Equatable = equatable;
             OrderedEquality = orderedEquality;
@@ -26,6 +27,7 @@ namespace Generator.Equals
             UnorderedEquality = unorderedEquality;
             ReferenceEquality = referenceEquality;
             SetEquality = setEquality;
+            CustomEquality = customEquality;
         }
     }
 }

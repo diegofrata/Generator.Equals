@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 using Microsoft.CodeAnalysis;
 
@@ -69,6 +71,23 @@ namespace Generator.Equals
                 sb.AppendLine(
                     $"&& global::Generator.Equals.SetEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals({propertyName}!, other.{propertyName}!)");
             }
+            else if (property.HasAttribute(attributesMetadata.CustomEquality))
+            {
+                var attribute = property.GetAttribute(attributesMetadata.CustomEquality);
+                var comparerType = (INamedTypeSymbol) attribute?.ConstructorArguments[0].Value!;
+                var comparerMemberName = (string) attribute?.ConstructorArguments[1].Value!;
+
+                if (comparerType.GetMembers().Any(x => x.Name == comparerMemberName && x.IsStatic) || comparerType.GetProperties().Any(x => x.Name == comparerMemberName && x.IsStatic))
+                {
+                    sb.AppendLine(
+                        $"&& {comparerType.ToFQF()}.{comparerMemberName}.Equals({propertyName}!, other.{propertyName}!)");
+                }
+                else
+                {
+                    sb.AppendLine(
+                        $"&& new {comparerType.ToFQF()}().Equals({propertyName}!, other.{propertyName}!)");
+                }
+            }
             else
             {
                 sb.AppendLine(
@@ -119,6 +138,21 @@ namespace Generator.Equals
                 var types = property.GetIEnumerableTypeArguments()!;
                 sb.Append(
                     $"global::Generator.Equals.SetEqualityComparer<{string.Join(", ", types.Value)}>.Default");
+            }
+            else if (property.HasAttribute(attributesMetadata.CustomEquality))
+            {
+                var attribute = property.GetAttribute(attributesMetadata.CustomEquality);
+                var comparerType = (INamedTypeSymbol) attribute?.ConstructorArguments[0].Value!;
+                var comparerMemberName = (string) attribute?.ConstructorArguments[1].Value!;
+
+                if (comparerType.GetMembers().Any(x => x.Name == comparerMemberName && x.IsStatic) || comparerType.GetProperties().Any(x => x.Name == comparerMemberName && x.IsStatic))
+                {
+                    sb.AppendLine($"{comparerType.ToFQF()}.{comparerMemberName}");
+                }
+                else
+                {
+                    sb.AppendLine($"new {comparerType.ToFQF()}()");
+                }
             }
             else
             {

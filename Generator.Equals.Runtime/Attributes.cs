@@ -31,4 +31,18 @@ namespace Generator.Equals
     public class SetEqualityAttribute : Attribute
     {
     }
+
+
+    [AttributeUsage(AttributeTargets.Property)]
+    public class CustomEqualityAttribute: Attribute
+    {
+        public Type EqualityType { get; }
+        public string FieldOrPropertyName { get; }
+
+        public CustomEqualityAttribute(Type equalityType, string fieldOrPropertyName = "Default")
+        {
+            EqualityType = equalityType;
+            FieldOrPropertyName = fieldOrPropertyName;
+        }
+    }
 }
