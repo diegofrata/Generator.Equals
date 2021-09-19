@@ -1,38 +1,45 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Generator.Equals
 {
+    [Conditional("GENERATOR_EQUALS")]
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
     public class EquatableAttribute : Attribute
     {
     }
 
+    [Conditional("GENERATOR_EQUALS")]
     [AttributeUsage(AttributeTargets.Property)]
     public class OrderedEqualityAttribute : Attribute
     {
     }
 
+    [Conditional("GENERATOR_EQUALS")]
     [AttributeUsage(AttributeTargets.Property)]
     public class IgnoreEqualityAttribute : Attribute
     {
     }
 
+    [Conditional("GENERATOR_EQUALS")]
     [AttributeUsage(AttributeTargets.Property)]
     public class UnorderedEqualityAttribute : Attribute
     {
     }
-    
+
+    [Conditional("GENERATOR_EQUALS")]
     [AttributeUsage(AttributeTargets.Property)]
     public class ReferenceEqualityAttribute : Attribute
     {
     }
-    
+
+    [Conditional("GENERATOR_EQUALS")]
     [AttributeUsage(AttributeTargets.Property)]
     public class SetEqualityAttribute : Attribute
     {
     }
 
-
+    [Conditional("GENERATOR_EQUALS")]
     [AttributeUsage(AttributeTargets.Property)]
     public class CustomEqualityAttribute: Attribute
     {
