@@ -10,7 +10,12 @@ namespace Generator.Equals
     {
         public static IEnumerable<IPropertySymbol> GetProperties(this ITypeSymbol symbol)
         {
-            foreach (var property in symbol.GetMembers().OfType<IPropertySymbol>())
+            var properties = symbol
+                .GetMembers()
+                .OfType<IPropertySymbol>()
+                .Where(x => !x.IsStatic && !x.IsIndexer);
+            
+            foreach (var property in properties)
                 yield return property;
         }
 
