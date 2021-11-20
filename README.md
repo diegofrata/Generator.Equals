@@ -1,4 +1,4 @@
-![Nuget](https://img.shields.io/nuget/v/Generator.Equals)
+[![Nuget](https://img.shields.io/nuget/v/Generator.Equals)](https://www.nuget.org/packages/Generator.Equals/)
 # Generator.Equals
 A source code generator for automatically implementing IEquatable&lt;T&gt; using only attributes.
 
