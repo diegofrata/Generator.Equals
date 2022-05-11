@@ -11,6 +11,9 @@ namespace Generator.Equals
             var baseTypeName = symbol.BaseType?.ToFQF();
 
             sb.AppendLine("#nullable enable");
+            
+            // Obsolete with no comment, obsolete with comment
+            sb.AppendLine("#pragma warning disable CS0612,CS0618");
 
             sb.AppendLine(InheritDocComment);
             sb.AppendLine(GeneratedCodeAttributeDeclaration);
@@ -35,6 +38,7 @@ namespace Generator.Equals
             sb.AppendLine(";");
             sb.AppendLine("}");
 
+            sb.AppendLine("#pragma warning restore CS0612,CS0618");
             sb.AppendLine("#nullable restore");
         }
 
@@ -43,6 +47,9 @@ namespace Generator.Equals
             var baseTypeName = symbol.BaseType?.ToFQF();
 
             sb.AppendLine("#nullable enable");
+            
+            // Obsolete with no comment, obsolete with comment
+            sb.AppendLine("#pragma warning disable CS0612,CS0618");
 
             sb.AppendLine(InheritDocComment);
             sb.AppendLine(GeneratedCodeAttributeDeclaration);
@@ -67,6 +74,7 @@ namespace Generator.Equals
             sb.AppendLine("return hashCode.ToHashCode();");
             sb.AppendLine("}");
 
+            sb.AppendLine("#pragma warning restore CS0612,CS0618");
             sb.AppendLine("#nullable restore");
         }
 
