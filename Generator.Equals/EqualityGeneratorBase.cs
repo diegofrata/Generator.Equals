@@ -10,6 +10,10 @@ namespace Generator.Equals
     {
         protected const string GeneratedCodeAttributeDeclaration = "[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"Generator.Equals\", \"1.0.0.0\")]";
 
+        // Obsolete with no comment + obsolete with comment
+        protected const string SuppressObsoleteWarningsPragma = "#pragma warning disable CS0612,CS0618";
+        protected const string RestoreObsoleteWarningsPragma = "#pragma warning restore CS0612,CS0618";
+
         protected const string EqualsOperatorCodeComment = @"/// <summary>
         /// Indicates whether the object on the left is equal to the object on the right.
         /// </summary>
