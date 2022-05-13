@@ -10,9 +10,6 @@ namespace Generator.Equals
             var symbolName = symbol.ToFQF();
             var baseTypeName = symbol.BaseType?.ToFQF();
 
-            sb.AppendLine("#nullable enable");
-            sb.AppendLine(SuppressObsoleteWarningsPragma);
-
             sb.AppendLine(InheritDocComment);
             sb.AppendLine(GeneratedCodeAttributeDeclaration);
             sb.AppendLine(symbol.IsSealed
@@ -35,17 +32,11 @@ namespace Generator.Equals
 
             sb.AppendLine(";");
             sb.AppendLine("}");
-
-            sb.AppendLine(RestoreObsoleteWarningsPragma);
-            sb.AppendLine("#nullable restore");
         }
 
         static void BuildGetHashCode(ITypeSymbol symbol, AttributesMetadata attributesMetadata, StringBuilder sb)
         {
             var baseTypeName = symbol.BaseType?.ToFQF();
-
-            sb.AppendLine("#nullable enable");
-            sb.AppendLine(SuppressObsoleteWarningsPragma);
 
             sb.AppendLine(InheritDocComment);
             sb.AppendLine(GeneratedCodeAttributeDeclaration);
@@ -69,18 +60,20 @@ namespace Generator.Equals
 
             sb.AppendLine("return hashCode.ToHashCode();");
             sb.AppendLine("}");
-
-            sb.AppendLine(RestoreObsoleteWarningsPragma);
-            sb.AppendLine("#nullable restore");
         }
 
         public static string Generate(ITypeSymbol symbol, AttributesMetadata attributesMetadata)
         {
             var code = ContainingTypesBuilder.Build(symbol, includeSelf: true, content: sb =>
             {
+                sb.AppendLine(EnableNullableContext);
+                sb.AppendLine(SuppressObsoleteWarningsPragma);
+                
                 BuildEquals(symbol, attributesMetadata, sb);
-
                 BuildGetHashCode(symbol, attributesMetadata, sb);
+
+                sb.AppendLine(RestoreObsoleteWarningsPragma);
+                sb.AppendLine(RestoreNullableContext);
             });
 
             return code;
