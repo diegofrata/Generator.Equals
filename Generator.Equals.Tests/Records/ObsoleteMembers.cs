@@ -18,7 +18,6 @@ namespace Generator.Equals.Tests.Records
             // , [property: Obsolete(DiagnosticId = "CUSTOM0001")] string OtherDiagnosticCode = ""
             );
 
-#pragma warning disable CS0618
         [TestFixture]
         public class EqualsTest : EqualityTestCase
         {
@@ -37,6 +36,5 @@ namespace Generator.Equals.Tests.Records
             public override bool EqualsOperator(object value1, object value2) => (Data)value1 == (Data)value2;
             public override bool NotEqualsOperator(object value1, object value2) => (Data)value1 != (Data)value2;
         }
-#pragma warning restore CS0618
     }
 }

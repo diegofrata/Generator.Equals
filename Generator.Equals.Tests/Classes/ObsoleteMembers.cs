@@ -40,7 +40,6 @@ namespace Generator.Equals.Tests.Classes
             // public string? OtherDiagnosticCode { get; }
         }
 
-#pragma warning disable CS0618
         [TestFixture]
         public class EqualsTest : EqualityTestCase
         {
@@ -59,6 +58,5 @@ namespace Generator.Equals.Tests.Classes
             public override bool EqualsOperator(object value1, object value2) => (Data) value1 == (Data) value2;
             public override bool NotEqualsOperator(object value1, object value2) => (Data) value1 != (Data) value2;
         }
-#pragma warning restore CS0618
     }
 }
