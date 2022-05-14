@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using Microsoft.CodeAnalysis;
-using System;
 
 namespace Generator.Equals
 {
