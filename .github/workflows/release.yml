@@ -20,7 +20,7 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '5.0.x'
+        dotnet-version: '6.0.x'
     - name: Install dependencies
       run: dotnet restore
     - name: Build
@@ -36,5 +36,6 @@ jobs:
       run: |
         dotnet pack Generator.Equals/Generator.Equals.csproj /p:PackageVersion=$VERSION /p:Version=$VERSION -c Release -o ./publish
         dotnet pack Generator.Equals.Runtime/Generator.Equals.Runtime.csproj /p:PackageVersion=$VERSION /p:Version=$VERSION -c Release -o ./publish
-    - name: Publish
+    - name: Publish  
+      if: startsWith(github.ref, 'refs/tags')
       run: dotnet nuget push './publish/**/*.nupkg' -s https://api.nuget.org/v3/index.json -k $NUGET_API_KEY --skip-duplicate
