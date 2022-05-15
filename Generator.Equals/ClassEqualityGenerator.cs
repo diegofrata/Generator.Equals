@@ -10,8 +10,6 @@ namespace Generator.Equals
             var symbolName = symbol.ToFQF();
             var baseTypeName = symbol.BaseType?.ToFQF();
 
-            sb.AppendLine("#nullable enable");
-
             sb.AppendLine(EqualsOperatorCodeComment);
             sb.AppendLine(GeneratedCodeAttributeDeclaration);
             sb.AppendLine($"public static bool operator ==({symbolName}? left, {symbolName}? right) => global::System.Collections.Generic.EqualityComparer<{symbolName}?>.Default.Equals(left, right);");
@@ -39,15 +37,11 @@ namespace Generator.Equals
 
             sb.AppendLine(";");
             sb.AppendLine("}");
-
-            sb.AppendLine("#nullable restore");
         }
 
         static void BuildGetHashCode(ITypeSymbol symbol, AttributesMetadata attributesMetadata, StringBuilder sb)
         {
             var baseTypeName = symbol.BaseType?.ToFQF();
-
-            sb.AppendLine("#nullable enable");
 
             sb.AppendLine(InheritDocComment);
             sb.AppendLine(GeneratedCodeAttributeDeclaration);
@@ -66,8 +60,6 @@ namespace Generator.Equals
 
             sb.AppendLine("return hashCode.ToHashCode();");
             sb.AppendLine("}");
-
-            sb.AppendLine("#nullable restore");
         }
         
         public static string Generate(ITypeSymbol symbol, AttributesMetadata attributesMetadata)
@@ -77,8 +69,14 @@ namespace Generator.Equals
                 var typeName = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
                 sb.AppendLine($"partial class {typeName} : global::System.IEquatable<{typeName}> {{");
 
+                sb.AppendLine(EnableNullableContext);
+                sb.AppendLine(SuppressObsoleteWarningsPragma);
+
                 BuildEquals(symbol, attributesMetadata, sb);
                 BuildGetHashCode(symbol, attributesMetadata, sb);
+
+                sb.AppendLine(RestoreObsoleteWarningsPragma);
+                sb.AppendLine(RestoreNullableContext);
 
                 sb.AppendLine("}");
             });
