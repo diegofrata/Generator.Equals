@@ -33,6 +33,8 @@ namespace Generator.Equals
                 context.Compilation.GetTypeByMetadataName("Generator.Equals.CustomEqualityAttribute")!
             );
 
+            var handledSymbols = new HashSet<string>();
+
             foreach (var node in s.CandidateSyntaxes)
             {
                 var model = context.Compilation.GetSemanticModel(node.SyntaxTree);
@@ -45,6 +47,13 @@ namespace Generator.Equals
                 if (equatableAttributeData == null)
                     continue;
 
+                var symbolDisplayString = symbol!.ToDisplayString();
+
+                if (handledSymbols.Contains(symbolDisplayString))
+                    continue;
+
+                handledSymbols.Add(symbolDisplayString);
+
                 var source = node switch
                 {
                     RecordDeclarationSyntax _ => RecordEqualityGenerator.Generate(symbol!, attributesMetadata),
@@ -52,7 +61,7 @@ namespace Generator.Equals
                     _ => throw new Exception("should not have gotten here.")
                 };
 
-                var fileName = $"{EscapeFileName(symbol!.ToDisplayString())}.Generator.Equals.g.cs"!;
+                var fileName = $"{EscapeFileName(symbolDisplayString)}.Generator.Equals.g.cs"!;
                 context.AddSource(fileName, source);
             }
 
