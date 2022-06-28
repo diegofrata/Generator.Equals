@@ -4,9 +4,18 @@ namespace Generator.Equals
 {
     public class SetEqualityComparer<T> : IEqualityComparer<IEnumerable<T>>
     {
-        static readonly EqualityComparer<T> EqualityComparer = EqualityComparer<T>.Default;
-        
         public static SetEqualityComparer<T> Default { get; } = new SetEqualityComparer<T>();
+        
+        public IEqualityComparer<T> EqualityComparer { get; }
+
+        public SetEqualityComparer() : this(EqualityComparer<T>.Default)
+        {
+        }
+
+        public SetEqualityComparer(IEqualityComparer<T> equalityComparer)
+        {
+            EqualityComparer = equalityComparer;
+        }
 
         public bool Equals(IEnumerable<T>? x, IEnumerable<T>? y)
         {

@@ -6,9 +6,18 @@ namespace Generator.Equals
 {
     public class OrderedEqualityComparer<T> : IEqualityComparer<IEnumerable<T>>
     {
-        static readonly EqualityComparer<T> EqualityComparer = EqualityComparer<T>.Default;
-
         public static OrderedEqualityComparer<T> Default { get; } = new OrderedEqualityComparer<T>();
+
+        public IEqualityComparer<T> EqualityComparer { get; }
+
+        public OrderedEqualityComparer() : this(EqualityComparer<T>.Default)
+        {
+        }
+
+        public OrderedEqualityComparer(IEqualityComparer<T> equalityComparer)
+        {
+            EqualityComparer = equalityComparer;
+        }
 
         public bool Equals(IEnumerable<T>? x, IEnumerable<T>? y)
         {

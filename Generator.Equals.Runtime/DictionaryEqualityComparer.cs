@@ -1,16 +1,47 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Generator.Equals
 {
     public class DictionaryEqualityComparer<TKey, TValue> : IEqualityComparer<IDictionary<TKey, TValue>>
     {
-        static readonly EqualityComparer<TValue> ValueEqualityComparer = EqualityComparer<TValue>.Default;
+        class KeyPairEqualityComparer : IEqualityComparer<KeyValuePair<TKey, TValue>>
+        {
+            readonly IEqualityComparer<TValue> _valueEqualityComparer;
 
-        static readonly EqualityComparer<KeyValuePair<TKey, TValue>> EqualityComparer =
-            EqualityComparer<KeyValuePair<TKey, TValue>>.Default;
+            public KeyPairEqualityComparer(IEqualityComparer<TValue> valueEqualityComparer)
+            {
+                _valueEqualityComparer = valueEqualityComparer;
+            }
+            
+            public bool Equals(KeyValuePair<TKey, TValue> x, KeyValuePair<TKey, TValue> y)
+            {
+                return Equals(x.Key, y.Key) && _valueEqualityComparer.Equals(x.Value, y.Value);
+            }
+
+            public int GetHashCode(KeyValuePair<TKey, TValue> obj)
+            {
+                return HashCode.Combine(obj.Key, _valueEqualityComparer.GetHashCode(obj.Value));
+            }
+        }
+        
 
         public static DictionaryEqualityComparer<TKey, TValue> Default { get; } =
             new DictionaryEqualityComparer<TKey, TValue>();
+
+        readonly KeyPairEqualityComparer _keyPairEqualityComparer;
+        
+        public IEqualityComparer<TValue> ValueEqualityComparer { get; }
+
+        public DictionaryEqualityComparer() : this(EqualityComparer<TValue>.Default)
+        {
+        }
+        
+        public DictionaryEqualityComparer(IEqualityComparer<TValue> valueEqualityComparer)
+        {
+            _keyPairEqualityComparer = new KeyPairEqualityComparer(valueEqualityComparer);
+            ValueEqualityComparer = valueEqualityComparer;
+        }
 
         public bool Equals(IDictionary<TKey, TValue>? x, IDictionary<TKey, TValue>? y)
         {
@@ -43,7 +74,7 @@ namespace Generator.Equals
                 return hashCode;
 
             foreach (var t in obj)
-                hashCode ^= EqualityComparer.GetHashCode(t) & 0x7FFFFFFF;
+                hashCode ^= _keyPairEqualityComparer.GetHashCode(t) & 0x7FFFFFFF;
 
             return hashCode;
         }
