@@ -7,6 +7,16 @@ namespace Generator.Equals
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
     public class EquatableAttribute : Attribute
     {
+        /// <summary>
+        /// IEquatable will only be generated for explicitly defined attributes.
+        /// </summary>
+        public bool Explicit { get; set; }
+    }
+
+    [Conditional("GENERATOR_EQUALS")]
+    [AttributeUsage(AttributeTargets.Property)]
+    public class DefaultEqualityAttribute : Attribute
+    {
     }
 
     [Conditional("GENERATOR_EQUALS")]

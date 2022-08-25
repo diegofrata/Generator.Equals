@@ -5,7 +5,7 @@ namespace Generator.Equals
 {
     internal class ClassEqualityGenerator : EqualityGeneratorBase
     {
-        static void BuildEquals(ITypeSymbol symbol, AttributesMetadata attributesMetadata, StringBuilder sb)
+        static void BuildEquals(ITypeSymbol symbol, AttributesMetadata attributesMetadata, StringBuilder sb, bool explicitMode)
         {
             var symbolName = symbol.ToFQF();
             var baseTypeName = symbol.BaseType?.ToFQF();
@@ -32,14 +32,14 @@ namespace Generator.Equals
 
             foreach (var property in symbol.GetProperties())
             {
-                BuildPropertyEquality(attributesMetadata, sb, property);
+                BuildPropertyEquality(attributesMetadata, sb, property, explicitMode);
             }
 
             sb.AppendLine(";");
             sb.AppendLine("}");
         }
 
-        static void BuildGetHashCode(ITypeSymbol symbol, AttributesMetadata attributesMetadata, StringBuilder sb)
+        static void BuildGetHashCode(ITypeSymbol symbol, AttributesMetadata attributesMetadata, StringBuilder sb, bool explicitMode)
         {
             var baseTypeName = symbol.BaseType?.ToFQF();
 
@@ -55,14 +55,14 @@ namespace Generator.Equals
 
             foreach (var property in symbol.GetProperties())
             {
-                BuildPropertyHashCode(property, attributesMetadata, sb);
+                BuildPropertyHashCode(property, attributesMetadata, sb, explicitMode);
             }
 
             sb.AppendLine("return hashCode.ToHashCode();");
             sb.AppendLine("}");
         }
         
-        public static string Generate(ITypeSymbol symbol, AttributesMetadata attributesMetadata)
+        public static string Generate(ITypeSymbol symbol, AttributesMetadata attributesMetadata, bool explicitMode)
         {
             var code = ContainingTypesBuilder.Build(symbol, includeSelf: false, content: sb =>
             {
@@ -72,8 +72,8 @@ namespace Generator.Equals
                 sb.AppendLine(EnableNullableContext);
                 sb.AppendLine(SuppressObsoleteWarningsPragma);
 
-                BuildEquals(symbol, attributesMetadata, sb);
-                BuildGetHashCode(symbol, attributesMetadata, sb);
+                BuildEquals(symbol, attributesMetadata, sb, explicitMode);
+                BuildGetHashCode(symbol, attributesMetadata, sb, explicitMode);
 
                 sb.AppendLine(RestoreObsoleteWarningsPragma);
                 sb.AppendLine(RestoreNullableContext);
