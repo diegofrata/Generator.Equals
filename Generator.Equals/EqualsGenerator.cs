@@ -56,7 +56,7 @@ namespace Generator.Equals
                 handledSymbols.Add(symbolDisplayString);
 
                 var explicitMode = equatableAttributeData.NamedArguments
-                    .FirstOrDefault(static pair => pair.Key == "Explicit")
+                    .FirstOrDefault(pair => pair.Key == "Explicit")
                     .Value.Value is true;
                 var source = node switch
                 {

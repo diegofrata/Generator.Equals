@@ -7,7 +7,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <!-- Do not include the generator as a lib dependency -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
 
