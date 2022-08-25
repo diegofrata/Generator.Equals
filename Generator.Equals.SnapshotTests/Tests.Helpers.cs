@@ -1,9 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
-using Generator.Equals;
 
-namespace H.Generators.SnapshotTests;
+namespace Generator.Equals.SnapshotTests;
 
 [TestClass]
 public partial class Tests : VerifyBase
@@ -12,8 +11,9 @@ public partial class Tests : VerifyBase
     {
         return @$"
 #nullable enable
+using Generator.Equals;
 
-namespace Generator.Equals.SnapshotTests;
+namespace MyNamespace;
 ";
     }
 

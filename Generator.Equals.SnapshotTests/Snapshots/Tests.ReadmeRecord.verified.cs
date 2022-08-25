@@ -1,11 +1,11 @@
-﻿//HintName: Generator.Equals.SnapshotTests.MyRecord.Generator.Equals.g.cs
-namespace Generator.Equals.SnapshotTests {
+﻿//HintName: MyNamespace.MyRecord.Generator.Equals.g.cs
+namespace MyNamespace {
 partial record MyRecord {
 #nullable enable
 #pragma warning disable CS0612,CS0618
 /// <inheritdoc/>
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-public virtual bool Equals(global::Generator.Equals.SnapshotTests.MyRecord? other) {
+public virtual bool Equals(global::MyNamespace.MyRecord? other) {
 return !ReferenceEquals(other, null) && EqualityContract == other.EqualityContract
 && global::Generator.Equals.OrderedEqualityComparer<string>.Default.Equals(Fruits!, other.Fruits!)
 ;

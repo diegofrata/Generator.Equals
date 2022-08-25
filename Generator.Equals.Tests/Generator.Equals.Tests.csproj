@@ -2,8 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <LangVersion>latest</LangVersion>
         <IsPackable>false</IsPackable>
+        <ImplicitUsings>enable</ImplicitUsings>
         <NoWarn>NU1701</NoWarn>
     </PropertyGroup>
 

@@ -1,12 +1,14 @@
 ﻿using System.Runtime.CompilerServices;
+using DiffEngine;
 
-namespace H.Generators.SnapshotTests;
+namespace Generator.Equals.SnapshotTests;
 
 public static class ModuleInitializer
 {
     [ModuleInitializer]
     public static void Init()
     {
+        DiffTools.UseOrder(DiffTool.VisualStudioCode);
         VerifySourceGenerators.Enable();
     }
 }
