@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0</TargetFrameworks>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup Label="Base packages">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.10" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.10" />
+    <PackageReference Include="FluentAssertions" Version="6.7.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="Generator tests packages">
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing.MSTest" Version="1.1.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.2.0" />
+    <PackageReference Include="Verify.MSTest" Version="17.2.1" />
+    <PackageReference Include="Verify.SourceGenerators" Version="1.5.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="GlobalUsings">
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+    <Using Include="FluentAssertions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Generator.Equals.Runtime\Generator.Equals.Runtime.csproj" />
+    <ProjectReference Include="..\Generator.Equals\Generator.Equals.csproj" />
+  </ItemGroup>
+
+</Project>
