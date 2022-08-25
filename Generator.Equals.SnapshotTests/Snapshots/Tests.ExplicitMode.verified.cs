@@ -1,5 +1,5 @@
-﻿//HintName: Generator.Equals.SnapshotTests.MyClass.Generator.Equals.g.cs
-namespace Generator.Equals.SnapshotTests {
+﻿//HintName: MyNamespace.MyClass.Generator.Equals.g.cs
+namespace MyNamespace {
 partial class MyClass : global::System.IEquatable<MyClass> {
 #nullable enable
 #pragma warning disable CS0612,CS0618
@@ -10,7 +10,7 @@ partial class MyClass : global::System.IEquatable<MyClass> {
         /// <param name="right">The right object</param>
         /// <returns>true if the objects are equal; otherwise, false.</returns>
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-public static bool operator ==(global::Generator.Equals.SnapshotTests.MyClass? left, global::Generator.Equals.SnapshotTests.MyClass? right) => global::System.Collections.Generic.EqualityComparer<global::Generator.Equals.SnapshotTests.MyClass?>.Default.Equals(left, right);
+public static bool operator ==(global::MyNamespace.MyClass? left, global::MyNamespace.MyClass? right) => global::System.Collections.Generic.EqualityComparer<global::MyNamespace.MyClass?>.Default.Equals(left, right);
 /// <summary>
         /// Indicates whether the object on the left is not equal to the object on the right.
         /// </summary>
@@ -18,13 +18,13 @@ public static bool operator ==(global::Generator.Equals.SnapshotTests.MyClass? l
         /// <param name="right">The right object</param>
         /// <returns>true if the objects are not equal; otherwise, false.</returns>
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-public static bool operator !=(global::Generator.Equals.SnapshotTests.MyClass? left, global::Generator.Equals.SnapshotTests.MyClass? right) => !(left == right);
+public static bool operator !=(global::MyNamespace.MyClass? left, global::MyNamespace.MyClass? right) => !(left == right);
 /// <inheritdoc/>
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-public override bool Equals(object? obj) => Equals(obj as global::Generator.Equals.SnapshotTests.MyClass);
+public override bool Equals(object? obj) => Equals(obj as global::MyNamespace.MyClass);
 /// <inheritdoc/>
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-public bool Equals(global::Generator.Equals.SnapshotTests.MyClass? other) {
+public bool Equals(global::MyNamespace.MyClass? other) {
 return !ReferenceEquals(other, null) && this.GetType() == other.GetType()
 && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(Name!, other.Name!)
 ;

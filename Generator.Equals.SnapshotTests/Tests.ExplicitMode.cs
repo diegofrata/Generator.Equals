@@ -1,4 +1,4 @@
-﻿namespace H.Generators.SnapshotTests;
+﻿namespace Generator.Equals.SnapshotTests;
 
 public partial class Tests
 {
