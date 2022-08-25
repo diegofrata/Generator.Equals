@@ -5,6 +5,7 @@ namespace Generator.Equals
     public class AttributesMetadata
     {
         public INamedTypeSymbol Equatable { get; }
+        public INamedTypeSymbol DefaultEquality { get; }
         public INamedTypeSymbol OrderedEquality { get; }
         public INamedTypeSymbol IgnoreEquality { get; }
         public INamedTypeSymbol UnorderedEquality { get; }
@@ -14,6 +15,7 @@ namespace Generator.Equals
 
         public AttributesMetadata(
             INamedTypeSymbol equatable,
+            INamedTypeSymbol defaultEquality,
             INamedTypeSymbol orderedEquality,
             INamedTypeSymbol ignoreEquality,
             INamedTypeSymbol unorderedEquality, 
@@ -22,6 +24,7 @@ namespace Generator.Equals
             INamedTypeSymbol customEquality)
         {
             Equatable = equatable;
+            DefaultEquality = defaultEquality;
             OrderedEquality = orderedEquality;
             IgnoreEquality = ignoreEquality;
             UnorderedEquality = unorderedEquality;

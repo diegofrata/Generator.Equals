@@ -35,7 +35,7 @@ namespace Generator.Equals
         protected const string InheritDocComment = "/// <inheritdoc/>";
 
         public static void BuildPropertyEquality(AttributesMetadata attributesMetadata, StringBuilder sb,
-            IPropertySymbol property)
+            IPropertySymbol property, bool explicitMode)
         {
             if (property.HasAttribute(attributesMetadata.IgnoreEquality))
                 return;
@@ -96,7 +96,9 @@ namespace Generator.Equals
                         $"&& new {comparerType.ToFQF()}().Equals({propertyName}!, other.{propertyName}!)");
                 }
             }
-            else
+            else if (
+                !explicitMode ||
+                property.HasAttribute(attributesMetadata.DefaultEquality))
             {
                 sb.AppendLine(
                     $"&& global::System.Collections.Generic.EqualityComparer<{typeName}>.Default.Equals({propertyName}!, other.{propertyName}!)");
@@ -104,9 +106,18 @@ namespace Generator.Equals
         }
 
         public static void BuildPropertyHashCode(IPropertySymbol property, AttributesMetadata attributesMetadata,
-            StringBuilder sb)
+            StringBuilder sb, bool explicitMode)
         {
             if (property.HasAttribute(attributesMetadata.IgnoreEquality))
+                return;
+
+            if (explicitMode &&
+                !property.HasAttribute(attributesMetadata.DefaultEquality) &&
+                !property.HasAttribute(attributesMetadata.UnorderedEquality) &&
+                !property.HasAttribute(attributesMetadata.OrderedEquality) &&
+                !property.HasAttribute(attributesMetadata.ReferenceEquality) &&
+                !property.HasAttribute(attributesMetadata.SetEquality) &&
+                !property.HasAttribute(attributesMetadata.CustomEquality))
                 return;
 
             var propertyName = property.ToFQF();

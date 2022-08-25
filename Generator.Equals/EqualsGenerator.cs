@@ -25,6 +25,7 @@ namespace Generator.Equals
 
             var attributesMetadata = new AttributesMetadata(
                 context.Compilation.GetTypeByMetadataName("Generator.Equals.EquatableAttribute")!,
+                context.Compilation.GetTypeByMetadataName("Generator.Equals.DefaultEqualityAttribute")!,
                 context.Compilation.GetTypeByMetadataName("Generator.Equals.OrderedEqualityAttribute")!,
                 context.Compilation.GetTypeByMetadataName("Generator.Equals.IgnoreEqualityAttribute")!,
                 context.Compilation.GetTypeByMetadataName("Generator.Equals.UnorderedEqualityAttribute")!,
@@ -54,10 +55,13 @@ namespace Generator.Equals
 
                 handledSymbols.Add(symbolDisplayString);
 
+                var explicitMode = equatableAttributeData.NamedArguments
+                    .FirstOrDefault(static pair => pair.Key == "Explicit")
+                    .Value.Value is true;
                 var source = node switch
                 {
-                    RecordDeclarationSyntax _ => RecordEqualityGenerator.Generate(symbol!, attributesMetadata),
-                    ClassDeclarationSyntax _ => ClassEqualityGenerator.Generate(symbol!, attributesMetadata),
+                    RecordDeclarationSyntax _ => RecordEqualityGenerator.Generate(symbol!, attributesMetadata, explicitMode),
+                    ClassDeclarationSyntax _ => ClassEqualityGenerator.Generate(symbol!, attributesMetadata, explicitMode),
                     _ => throw new Exception("should not have gotten here.")
                 };
 
