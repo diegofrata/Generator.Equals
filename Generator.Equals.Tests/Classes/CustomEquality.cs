@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using NUnit.Framework;
 
 namespace Generator.Equals.Tests.Classes

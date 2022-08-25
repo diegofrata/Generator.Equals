@@ -3,11 +3,10 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <NoPackageAnalysis>true</NoPackageAnalysis>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <!-- Generates a package at build -->
-    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <!-- Do not include the generator as a lib dependency -->
-    <LangVersion>8.0</LangVersion>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
   </PropertyGroup>
 
 

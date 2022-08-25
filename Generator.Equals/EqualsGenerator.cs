@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Generator.Equals
 {
     [Generator]
-    internal class EqualsGenerator : ISourceGenerator
+    public class EqualsGenerator : ISourceGenerator
     {
         public void Initialize(GeneratorInitializationContext context)
         {
