@@ -143,3 +143,18 @@ argument to CustomEqualityAttribute should fulfill AT LEAST one of the following
 * Have a static field/property named Default returning a valid IEqualityComparer<T> instance for the target type;
 * Have a static field/property with the same name passed to the CustomComparerAttribute returning a valid IEqualityComparer<T> instance for the target type;
 * Implement IEqualityComparer<T> and expose a parameterless constructor.
+
+## Explicit Mode
+The generator allows you to explicitly specify which properties are used to generate the `IEquatable`.  
+To do this, set the `Explicit` property of `EquatableAttribute` to `true` and specify the required properties using `DefaultEqualityAttribute` or other attributes.
+```cs
+using Generator.Equals;
+
+[Equatable(Explicit = true)]
+partial class MyClass
+{
+    [DefaultEquality] 
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+}
+```
