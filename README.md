@@ -146,6 +146,7 @@ argument to CustomEqualityAttribute should fulfill AT LEAST one of the following
 
 ## Explicit Mode
 The generator allows you to explicitly specify which properties are used to generate the `IEquatable`.  
+
 To do this, set the `Explicit` property of `EquatableAttribute` to `true` and specify the required properties using `DefaultEqualityAttribute` or other attributes.
 ```cs
 using Generator.Equals;
@@ -153,8 +154,10 @@ using Generator.Equals;
 [Equatable(Explicit = true)]
 partial class MyClass
 {
+    // Only this property will be used for equality!
     [DefaultEquality] 
-    public string Name { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
+    public string Name { get; set; } = "Konstantin"; 
+    
+    public string Description { get; set; } = "";
 }
 ```
