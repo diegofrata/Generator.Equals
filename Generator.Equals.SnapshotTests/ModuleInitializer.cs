@@ -10,5 +10,6 @@ public static class ModuleInitializer
     {
         DiffTools.UseOrder(DiffTool.VisualStudioCode);
         VerifySourceGenerators.Enable();
+        ClipboardAccept.Enable();
     }
 }

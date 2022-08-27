@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using FluentAssertions;
+using Xunit;
 
 namespace Generator.Equals.Tests
 {
@@ -10,42 +11,40 @@ namespace Generator.Equals.Tests
         public abstract bool EqualsOperator(object value1, object value2);
         public abstract bool NotEqualsOperator(object value1, object value2);
         
-        [Test]
-        public void EqualsObject()
-        {
-            object value1 = Factory1();
-            object value2 = Factory2();
-
-            Assert.That(value1.Equals(value2), Is.EqualTo(Expected));
-        }
-
-        [Test]
-        public void EqualsOperator()
+        [Fact]
+        public void TestEqualsObject()
         {
             var value1 = Factory1();
             var value2 = Factory2();
-
-            Assert.That(EqualsOperator(value1, value2), Is.EqualTo(Expected));
+            var result = value1.Equals(value2);
+            result.Should().Be(Expected);
         }
 
-
-        [Test]
-        public void NotEqualsOperator()
+        [Fact]
+        public void TestEqualsOperator()
         {
             var value1 = Factory1();
             var value2 = Factory2();
-
-            Assert.That(NotEqualsOperator(value1, value2), Is.Not.EqualTo(Expected));
+            var result = EqualsOperator(value1, value2);
+            result.Should().Be(Expected);
         }
 
-
-        [Test]
-        public virtual void HashCode()
+        [Fact]
+        public void TestNotEqualsOperator()
         {
             var value1 = Factory1();
             var value2 = Factory2();
+            var result = NotEqualsOperator(value1, value2);
+            result.Should().NotBe(Expected);
+        }
 
-            Assert.That(value1.GetHashCode() == value2.GetHashCode(), Is.EqualTo(Expected));
+        [Fact]
+        public virtual void TestHashCode()
+        {
+            var value1 = Factory1();
+            var value2 = Factory2();
+            var result = value1.GetHashCode() == value2.GetHashCode();
+            result.Should().Be(Expected);
         }
     }
 }
