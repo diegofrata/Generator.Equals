@@ -1,48 +1,30 @@
-using NUnit.Framework;
-
 namespace Generator.Equals.Tests.Classes
 {
-    [TestFixture]
     public partial class GenericParameterEquality
     {
-        [Equatable]
-        public partial class Data<TName, TAge>
-        {
-            public Data(TName name, TAge age)
-            {
-                Name = name;
-                Age = age;
-            }
-
-            public TName Name { get; }
-            public TAge Age { get; }
-        }
-        
-        [TestFixture]
         public class EqualsTest : EqualityTestCase
         {
-            public override object Factory1() => new Data<string, int>("Dave", 35);
+            public override object Factory1() => new Sample<string, int>("Dave", 35);
 
             public override bool EqualsOperator(object value1, object value2) =>
-                (Data<string, int>) value1 == (Data<string, int>) value2;
+                (Sample<string, int>) value1 == (Sample<string, int>) value2;
 
             public override bool NotEqualsOperator(object value1, object value2) =>
-                (Data<string, int>) value1 != (Data<string, int>) value2;
+                (Sample<string, int>) value1 != (Sample<string, int>) value2;
         }
         
         
-        [TestFixture]
         public class NotEqualsTest : EqualityTestCase
         {
             public override bool Expected => false;
-            public override object Factory1() => new Data<string, int>("Dave", 35);
-            public override object Factory2() => new Data<string, int>("Dave", 37);
+            public override object Factory1() => new Sample<string, int>("Dave", 35);
+            public override object Factory2() => new Sample<string, int>("Dave", 37);
 
             public override bool EqualsOperator(object value1, object value2) =>
-                (Data<string, int>) value1 == (Data<string, int>) value2;
+                (Sample<string, int>) value1 == (Sample<string, int>) value2;
 
             public override bool NotEqualsOperator(object value1, object value2) =>
-                (Data<string, int>) value1 != (Data<string, int>) value2;
+                (Sample<string, int>) value1 != (Sample<string, int>) value2;
         }
     }
 }

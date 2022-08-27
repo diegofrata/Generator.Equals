@@ -2,14 +2,17 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
+[assembly: InternalsVisibleTo("Generator.Equals.SnapshotTests")]
+
 namespace Generator.Equals
 {
     [Generator]
-    public class EqualsGenerator : ISourceGenerator
+    class EqualsGenerator : ISourceGenerator
     {
         public void Initialize(GeneratorInitializationContext context)
         {
@@ -60,8 +63,10 @@ namespace Generator.Equals
                     .Value.Value is true;
                 var source = node switch
                 {
-                    RecordDeclarationSyntax _ => RecordEqualityGenerator.Generate(symbol!, attributesMetadata, explicitMode),
-                    ClassDeclarationSyntax _ => ClassEqualityGenerator.Generate(symbol!, attributesMetadata, explicitMode),
+                    RecordDeclarationSyntax _ => RecordEqualityGenerator.Generate(symbol!, attributesMetadata,
+                        explicitMode),
+                    ClassDeclarationSyntax _ => ClassEqualityGenerator.Generate(symbol!, attributesMetadata,
+                        explicitMode),
                     _ => throw new Exception("should not have gotten here.")
                 };
 
@@ -69,7 +74,8 @@ namespace Generator.Equals
                 context.AddSource(fileName, source);
             }
 
-            static string EscapeFileName(string fileName) => new [] {'<', '>', ','}.Aggregate(new StringBuilder(fileName), (s, c) => s.Replace(c, '_')).ToString();
+            static string EscapeFileName(string fileName) => new[] { '<', '>', ',' }
+                .Aggregate(new StringBuilder(fileName), (s, c) => s.Replace(c, '_')).ToString();
         }
 
         class SyntaxReceiver : ISyntaxReceiver

@@ -1,14 +1,16 @@
 ﻿using System.Runtime.CompilerServices;
 using DiffEngine;
 
-namespace Generator.Equals.SnapshotTests;
-
-public static class ModuleInitializer
+namespace Generator.Equals.SnapshotTests
 {
-    [ModuleInitializer]
-    public static void Init()
+    public static class ModuleInitializer
     {
-        DiffTools.UseOrder(DiffTool.VisualStudioCode);
-        VerifySourceGenerators.Enable();
+        [ModuleInitializer]
+        public static void Init()
+        {
+            DiffTools.UseOrder(DiffTool.VisualStudioCode);
+            VerifySourceGenerators.Enable();
+            ClipboardAccept.Enable();
+        }
     }
 }
