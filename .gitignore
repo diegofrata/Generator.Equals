@@ -4,4 +4,4 @@ obj
 *.DotSettings
 *.DotSettings.user
 .vs
-Generator.Equals.SnapshotTests/Classes/.DS_Store
+.DS_Store
