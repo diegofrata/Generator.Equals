@@ -1,16 +1,17 @@
-namespace Generator.Equals.Tests.Classes;
-
-public partial class DefaultBehavior
+namespace Generator.Equals.Tests.Classes
 {
-    public class Sample
+    public partial class DefaultBehavior
     {
-        public Sample(string name, int age)
+        public class Sample
         {
-            Name = name;
-            Age = age;
-        }
+            public Sample(string name, int age)
+            {
+                Name = name;
+                Age = age;
+            }
 
-        public string Name { get; }
-        public int Age { get; }
+            public string Name { get; }
+            public int Age { get; }
+        }
     }
 }

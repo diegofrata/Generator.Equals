@@ -1,15 +1,16 @@
-namespace Generator.Equals.Tests.Classes;
-
-public partial class OrderedEquality
+namespace Generator.Equals.Tests.Classes
 {
-    [Equatable]
-    public partial class Sample
+    public partial class OrderedEquality
     {
-        public Sample(string[] addresses)
+        [Equatable]
+        public partial class Sample
         {
-            Addresses = addresses;
-        }
+            public Sample(string[] addresses)
+            {
+                Addresses = addresses;
+            }
 
-        [OrderedEquality] public string[] Addresses { get; }
+            [OrderedEquality] public string[] Addresses { get; }
+        }
     }
 }

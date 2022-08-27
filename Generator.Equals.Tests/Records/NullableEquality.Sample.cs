@@ -1,10 +1,11 @@
-namespace Generator.Equals.Tests.Records;
-
-public partial class NullableEquality
+namespace Generator.Equals.Tests.Records
 {
-    [Equatable]
-    public partial record Sample
+    public partial class NullableEquality
     {
-        [OrderedEquality] public string[]? Addresses { get; init; }
+        [Equatable]
+        public partial record Sample
+        {
+            [OrderedEquality] public string[]? Addresses { get; init; }
+        }
     }
 }

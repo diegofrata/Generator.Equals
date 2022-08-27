@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 
-namespace Generator.Equals.Tests.Records;
-
-public partial class SetEquality
+namespace Generator.Equals.Tests.Records
 {
-    [Equatable]
-    public partial record Sample
+    public partial class SetEquality
     {
-        [SetEquality] public List<int>? Properties { get; set; }
+        [Equatable]
+        public partial record Sample
+        {
+            [SetEquality] public List<int>? Properties { get; set; }
+        }
     }
 }

@@ -1,18 +1,19 @@
 using System;
 
-namespace Generator.Equals.Tests.Classes;
-
-public partial class ObsoleteClass
+namespace Generator.Equals.Tests.Classes
 {
-    [Equatable]
-    [Obsolete("Make sure the obsolete on the object model does not add warnings")]
-    public partial class Sample
+    public partial class ObsoleteClass
     {
-        public Sample(string value)
+        [Equatable]
+        [Obsolete("Make sure the obsolete on the object model does not add warnings")]
+        public partial class Sample
         {
-            Something = value;
-        }
+            public Sample(string value)
+            {
+                Something = value;
+            }
 
-        public string Something { get; }
+            public string Something { get; }
+        }
     }
 }

@@ -1,17 +1,18 @@
-namespace Generator.Equals.Tests.Classes;
-
-public partial class GenericParameterEquality
+namespace Generator.Equals.Tests.Classes
 {
-    [Equatable]
-    public partial class Sample<TName, TAge>
+    public partial class GenericParameterEquality
     {
-        public Sample(TName name, TAge age)
+        [Equatable]
+        public partial class Sample<TName, TAge>
         {
-            Name = name;
-            Age = age;
-        }
+            public Sample(TName name, TAge age)
+            {
+                Name = name;
+                Age = age;
+            }
 
-        public TName Name { get; }
-        public TAge Age { get; }
+            public TName Name { get; }
+            public TAge Age { get; }
+        }
     }
 }

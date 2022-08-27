@@ -1,7 +1,8 @@
-namespace Generator.Equals.Tests.Records;
-
-public partial class PrimitiveEquality
+namespace Generator.Equals.Tests.Records
 {
-    [Equatable]
-    public partial record Sample(string Name, int Age);
+    public partial class PrimitiveEquality
+    {
+        [Equatable]
+        public partial record Sample(string Name, int Age);
+    }
 }

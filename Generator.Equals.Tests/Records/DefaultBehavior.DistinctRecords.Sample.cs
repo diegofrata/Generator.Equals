@@ -1,9 +1,10 @@
-namespace Generator.Equals.Tests.Records;
-
-public partial class DefaultBehavior
+namespace Generator.Equals.Tests.Records
 {
-    public partial class DistinctRecords
+    public partial class DefaultBehavior
     {
-        public record Sample(string Name, int Age);
+        public partial class DistinctRecords
+        {
+            public record Sample(string Name, int Age);
+        }
     }
 }

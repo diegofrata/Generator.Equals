@@ -1,17 +1,18 @@
-namespace Generator.Equals.Tests.Classes;
-
-public partial class PrimitiveEquality
+namespace Generator.Equals.Tests.Classes
 {
-    [Equatable]
-    public partial class Sample
+    public partial class PrimitiveEquality
     {
-        public Sample(string name, int age)
+        [Equatable]
+        public partial class Sample
         {
-            Name = name;
-            Age = age;
-        }
+            public Sample(string name, int age)
+            {
+                Name = name;
+                Age = age;
+            }
 
-        public string Name { get; }
-        public int Age { get; }
+            public string Name { get; }
+            public int Age { get; }
+        }
     }
 }

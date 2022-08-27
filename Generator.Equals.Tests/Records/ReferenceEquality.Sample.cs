@@ -1,7 +1,8 @@
-namespace Generator.Equals.Tests.Records;
-
-public partial class ReferenceEquality
+namespace Generator.Equals.Tests.Records
 {
-    [Equatable]
-    public partial record Sample([property: ReferenceEquality] string Name);
+    public partial class ReferenceEquality
+    {
+        [Equatable]
+        public partial record Sample([property: ReferenceEquality] string Name);
+    }
 }

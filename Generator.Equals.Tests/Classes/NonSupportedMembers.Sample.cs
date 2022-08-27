@@ -1,19 +1,20 @@
-namespace Generator.Equals.Tests.Classes;
-
-public partial class NonSupportedMembers
+namespace Generator.Equals.Tests.Classes
 {
-    [Equatable]
-    public partial class Sample
+    public partial class NonSupportedMembers
     {
-        public Sample(string name)
+        [Equatable]
+        public partial class Sample
         {
-            Name = name;
+            public Sample(string name)
+            {
+                Name = name;
+            }
+
+            public string Name { get; }
+
+            public static int StaticProperty { get; }
+
+            public int this[int index] => index;
         }
-
-        public string Name { get; }
-
-        public static int StaticProperty { get; }
-
-        public int this[int index] => index;
     }
 }

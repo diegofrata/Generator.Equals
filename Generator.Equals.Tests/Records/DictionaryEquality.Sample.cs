@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 
-namespace Generator.Equals.Tests.Records;
-
-public partial class DictionaryEquality
+namespace Generator.Equals.Tests.Records
 {
-    [Equatable]
-    public partial record Sample
+    public partial class DictionaryEquality
     {
-        [UnorderedEquality] public Dictionary<string, int>? Properties { get; init; }
+        [Equatable]
+        public partial record Sample
+        {
+            [UnorderedEquality] public Dictionary<string, int>? Properties { get; init; }
+        }
     }
 }

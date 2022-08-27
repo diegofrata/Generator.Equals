@@ -1,7 +1,8 @@
-namespace Generator.Equals.Tests.Records;
-
-public partial class ExplicitMode
+namespace Generator.Equals.Tests.Records
 {
-    [Equatable(Explicit = true)]
-    public partial record Sample(string Name, [property: DefaultEquality]int Age);
+    public partial class ExplicitMode
+    {
+        [Equatable(Explicit = true)]
+        public partial record Sample(string Name, [property: DefaultEquality]int Age);
+    }
 }

@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 
-namespace Generator.Equals.Tests.Classes;
-
-public partial class UnorderedEquality
+namespace Generator.Equals.Tests.Classes
 {
-    [Equatable]
-    public partial class Sample
+    public partial class UnorderedEquality
     {
-        [UnorderedEquality] public List<int>? Properties { get; set; }
+        [Equatable]
+        public partial class Sample
+        {
+            [UnorderedEquality] public List<int>? Properties { get; set; }
+        }
     }
 }

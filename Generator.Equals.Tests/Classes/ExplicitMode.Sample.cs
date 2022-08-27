@@ -1,19 +1,20 @@
-namespace Generator.Equals.Tests.Classes;
-
-public partial class ExplicitMode
+namespace Generator.Equals.Tests.Classes
 {
-    [Equatable(Explicit = true)]
-    public partial class Sample
+    public partial class ExplicitMode
     {
-        public Sample(string name, int age)
+        [Equatable(Explicit = true)]
+        public partial class Sample
         {
-            Name = name;
-            Age = age;
-        }
+            public Sample(string name, int age)
+            {
+                Name = name;
+                Age = age;
+            }
 
-        public string Name { get; }
+            public string Name { get; }
         
-        [DefaultEquality]
-        public int Age { get; }
+            [DefaultEquality]
+            public int Age { get; }
+        }
     }
 }
