@@ -30,8 +30,4 @@
         <ProjectReference Include="..\Generator.Equals\Generator.Equals.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Classes" />
-    </ItemGroup>
-
 </Project>

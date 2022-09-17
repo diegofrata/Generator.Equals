@@ -5,7 +5,12 @@ namespace Generator.Equals
 {
     internal class RecordEqualityGenerator : EqualityGeneratorBase
     {
-        static void BuildEquals(ITypeSymbol symbol, AttributesMetadata attributesMetadata, StringBuilder sb, bool explicitMode)
+        static void BuildEquals(
+            ITypeSymbol symbol,
+            AttributesMetadata attributesMetadata,
+            StringBuilder sb,
+            bool explicitMode,
+            bool ignoreInheritedMembers)
         {
             var symbolName = symbol.ToFQF();
             var baseTypeName = symbol.BaseType?.ToFQF();
@@ -16,7 +21,7 @@ namespace Generator.Equals
                 ? $"public bool Equals({symbolName}? other) {{"
                 : $"public virtual bool Equals({symbolName}? other) {{");
 
-            sb.AppendLine(baseTypeName == "object"
+            sb.AppendLine(baseTypeName == "object" || ignoreInheritedMembers
                 ? "return !ReferenceEquals(other, null) && EqualityContract == other.EqualityContract"
                 : $"return base.Equals(({baseTypeName}?)other)");
 
@@ -34,7 +39,12 @@ namespace Generator.Equals
             sb.AppendLine("}");
         }
 
-        static void BuildGetHashCode(ITypeSymbol symbol, AttributesMetadata attributesMetadata, StringBuilder sb, bool explicitMode)
+        static void BuildGetHashCode(
+            ITypeSymbol symbol,
+            AttributesMetadata attributesMetadata,
+            StringBuilder sb,
+            bool explicitMode,
+            bool ignoreInheritedMembers)
         {
             var baseTypeName = symbol.BaseType?.ToFQF();
 
@@ -44,7 +54,7 @@ namespace Generator.Equals
                 var hashCode = new global::System.HashCode();
             ");
 
-            sb.AppendLine(baseTypeName == "object"
+            sb.AppendLine(baseTypeName == "object" || ignoreInheritedMembers
                 ? "hashCode.Add(this.EqualityContract);"
                 : "hashCode.Add(base.GetHashCode());");
 
@@ -62,15 +72,19 @@ namespace Generator.Equals
             sb.AppendLine("}");
         }
 
-        public static string Generate(ITypeSymbol symbol, AttributesMetadata attributesMetadata, bool explicitMode)
+        public static string Generate(
+            ITypeSymbol symbol,
+            AttributesMetadata attributesMetadata,
+            bool explicitMode,
+            bool ignoreInheritedMembers)
         {
             var code = ContainingTypesBuilder.Build(symbol, includeSelf: true, content: sb =>
             {
                 sb.AppendLine(EnableNullableContext);
                 sb.AppendLine(SuppressObsoleteWarningsPragma);
                 
-                BuildEquals(symbol, attributesMetadata, sb, explicitMode);
-                BuildGetHashCode(symbol, attributesMetadata, sb, explicitMode);
+                BuildEquals(symbol, attributesMetadata, sb, explicitMode, ignoreInheritedMembers);
+                BuildGetHashCode(symbol, attributesMetadata, sb, explicitMode, ignoreInheritedMembers);
 
                 sb.AppendLine(RestoreObsoleteWarningsPragma);
                 sb.AppendLine(RestoreNullableContext);
