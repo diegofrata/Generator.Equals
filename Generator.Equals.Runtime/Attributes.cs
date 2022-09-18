@@ -11,6 +11,11 @@ namespace Generator.Equals
         /// IEquatable will only be generated for explicitly defined attributes.
         /// </summary>
         public bool Explicit { get; set; }
+
+        /// <summary>
+        /// Equality and hash code do not consider members of base classes.
+        /// </summary>
+        public bool IgnoreInheritedMembers { get; set; }
     }
 
     [Conditional("GENERATOR_EQUALS")]

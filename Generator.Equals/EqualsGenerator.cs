@@ -59,14 +59,17 @@ namespace Generator.Equals
                 handledSymbols.Add(symbolDisplayString);
 
                 var explicitMode = equatableAttributeData.NamedArguments
-                    .FirstOrDefault(pair => pair.Key == "Explicit")
+                    .FirstOrDefault(pair => pair.Key == nameof(EquatableAttribute.Explicit))
+                    .Value.Value is true;
+                var ignoreInheritedMembers = equatableAttributeData.NamedArguments
+                    .FirstOrDefault(pair => pair.Key == nameof(EquatableAttribute.IgnoreInheritedMembers))
                     .Value.Value is true;
                 var source = node switch
                 {
                     RecordDeclarationSyntax _ => RecordEqualityGenerator.Generate(symbol!, attributesMetadata,
-                        explicitMode),
+                        explicitMode, ignoreInheritedMembers),
                     ClassDeclarationSyntax _ => ClassEqualityGenerator.Generate(symbol!, attributesMetadata,
-                        explicitMode),
+                        explicitMode, ignoreInheritedMembers),
                     _ => throw new Exception("should not have gotten here.")
                 };
 
