@@ -144,7 +144,9 @@ argument to CustomEqualityAttribute should fulfill AT LEAST one of the following
 * Have a static field/property with the same name passed to the CustomComparerAttribute returning a valid IEqualityComparer<T> instance for the target type;
 * Implement IEqualityComparer<T> and expose a parameterless constructor.
 
-## Explicit Mode
+## Advanced Options
+
+### Explicit Mode
 The generator allows you to explicitly specify which properties are used to generate the `IEquatable`.  
 
 To do this, set the `Explicit` property of `EquatableAttribute` to `true` and specify the required properties using `DefaultEqualityAttribute` or other attributes.
@@ -159,5 +161,27 @@ partial class MyClass
     public string Name { get; set; } = "Konstantin"; 
     
     public string Description { get; set; } = "";
+}
+```
+
+
+### Ignore Inherited Members
+
+You can also choose to ignore members from parent classes/record by setting `IgnoreInheritedMembers` to true.
+
+```cs
+using Generator.Equals;
+
+class Person 
+{
+    public string Name { get; set; }
+}
+
+[Equatable(IgnoreInheritedMembers = true)]
+partial class Doctor : Person
+{
+    // Only members in the Doctor class will be used for comparison.
+    public string Id { get; set; }
+    public string Specialization { get; set; }
 }
 ```
