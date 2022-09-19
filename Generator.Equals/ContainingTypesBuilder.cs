@@ -36,10 +36,13 @@ namespace Generator.Equals
             }
         }
 
-        public static string Build(ISymbol symbol, Action<StringBuilder> content, bool includeSelf = false)
+        public static string Build(ISymbol symbol, Action<StringBuilder, int> content, bool includeSelf = false)
         {
-            var sb = new StringBuilder();
+            // The test cases use 3000 characters on average, and these are the minimum classes.
+            // It is also recommended to select a power of two as the initial value.
+            var sb = new StringBuilder(capacity: 4096);
             var symbols = ContainingNamespaceAndTypes(symbol, includeSelf).ToList();
+            var level = 0;
 
             for (var i = symbols.Count - 1; i >= 0; i--)
             {
@@ -47,8 +50,14 @@ namespace Generator.Equals
 
                 if (s.IsNamespace)
                 {
+                    sb.AppendLine();
+                    sb.AppendLine(EqualityGeneratorBase.EnableNullableContext);
+                    sb.AppendLine(EqualityGeneratorBase.SuppressObsoleteWarningsPragma);
+                    sb.AppendLine();
+
                     var namespaceName = s.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted));
-                    sb.AppendLine($"namespace {namespaceName} {{");
+                    sb.AppendLine($"namespace {namespaceName}");
+                    sb.AppendOpenBracket(ref level);
                 }
                 else
                 {
@@ -60,14 +69,14 @@ namespace Generator.Equals
                         .ValueText;
                  
                     var typeName = s.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
-                    sb.AppendLine($"partial {keyword} {typeName} {{");
+                    sb.AppendLine(level, $"partial {keyword} {typeName}");
+                    sb.AppendOpenBracket(ref level);
                 }
             }
 
-            content(sb);
-            sb.AppendLine();
+            content(sb, level);
 
-            symbols.Aggregate(sb, (builder, _) => sb.AppendLine("}"));
+            symbols.Aggregate(sb, (builder, _) => sb.AppendCloseBracket(ref level));
 
             return sb.ToString();
         }

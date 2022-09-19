@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
+﻿using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 
@@ -10,31 +8,31 @@ namespace Generator.Equals
     {
         protected const string GeneratedCodeAttributeDeclaration = "[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"Generator.Equals\", \"1.0.0.0\")]";
 
-        protected const string EnableNullableContext = "#nullable enable";
-        protected const string RestoreNullableContext = "#nullable restore";
+        internal const string EnableNullableContext = "#nullable enable";
 
         // CS0612: Obsolete with no comment
         // CS0618: obsolete with comment
-        protected const string SuppressObsoleteWarningsPragma = "#pragma warning disable CS0612,CS0618";
-        protected const string RestoreObsoleteWarningsPragma = "#pragma warning restore CS0612,CS0618";
+        internal const string SuppressObsoleteWarningsPragma = "#pragma warning disable CS0612,CS0618";
 
-        protected const string EqualsOperatorCodeComment = @"/// <summary>
-        /// Indicates whether the object on the left is equal to the object on the right.
-        /// </summary>
-        /// <param name=""left"">The left object</param>
-        /// <param name=""right"">The right object</param>
-        /// <returns>true if the objects are equal; otherwise, false.</returns>";
+        protected static readonly string[] EqualsOperatorCodeComment = @"
+/// <summary>
+/// Indicates whether the object on the left is equal to the object on the right.
+/// </summary>
+/// <param name=""left"">The left object</param>
+/// <param name=""right"">The right object</param>
+/// <returns>true if the objects are equal; otherwise, false.</returns>".ToLines();
 
-        protected const string NotEqualsOperatorCodeComment = @"/// <summary>
-        /// Indicates whether the object on the left is not equal to the object on the right.
-        /// </summary>
-        /// <param name=""left"">The left object</param>
-        /// <param name=""right"">The right object</param>
-        /// <returns>true if the objects are not equal; otherwise, false.</returns>";
+        protected static readonly string[] NotEqualsOperatorCodeComment = @"
+/// <summary>
+/// Indicates whether the object on the left is not equal to the object on the right.
+/// </summary>
+/// <param name=""left"">The left object</param>
+/// <param name=""right"">The right object</param>
+/// <returns>true if the objects are not equal; otherwise, false.</returns>".ToLines();
 
         protected const string InheritDocComment = "/// <inheritdoc/>";
 
-        public static void BuildPropertyEquality(AttributesMetadata attributesMetadata, StringBuilder sb,
+        public static void BuildPropertyEquality(AttributesMetadata attributesMetadata, StringBuilder sb, int level,
             IPropertySymbol property, bool explicitMode)
         {
             if (property.HasAttribute(attributesMetadata.IgnoreEquality))
@@ -50,13 +48,13 @@ namespace Generator.Equals
 
                 if (types != null)
                 {
-                    sb.AppendLine(
+                    sb.AppendLine(level,
                         $"&& global::Generator.Equals.DictionaryEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals({propertyName}!, other.{propertyName}!)");
                 }
                 else
                 {
                     types = property.GetIEnumerableTypeArguments()!;
-                    sb.AppendLine(
+                    sb.AppendLine(level,
                         $"&& global::Generator.Equals.UnorderedEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals({propertyName}!, other.{propertyName}!)");
                 }
             }
@@ -64,19 +62,19 @@ namespace Generator.Equals
             {
                 var types = property.GetIEnumerableTypeArguments()!;
 
-                sb.AppendLine(
+                sb.AppendLine(level,
                     $"&& global::Generator.Equals.OrderedEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals({propertyName}!, other.{propertyName}!)");
             }
             else if (property.HasAttribute(attributesMetadata.ReferenceEquality))
             {
-                sb.AppendLine(
+                sb.AppendLine(level,
                     $"&& global::Generator.Equals.ReferenceEqualityComparer<{typeName}>.Default.Equals({propertyName}!, other.{propertyName}!)");
             }
             else if (property.HasAttribute(attributesMetadata.SetEquality))
             {
                 var types = property.GetIEnumerableTypeArguments()!;
 
-                sb.AppendLine(
+                sb.AppendLine(level,
                     $"&& global::Generator.Equals.SetEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals({propertyName}!, other.{propertyName}!)");
             }
             else if (property.HasAttribute(attributesMetadata.CustomEquality))
@@ -87,12 +85,12 @@ namespace Generator.Equals
 
                 if (comparerType.GetMembers().Any(x => x.Name == comparerMemberName && x.IsStatic) || comparerType.GetProperties().Any(x => x.Name == comparerMemberName && x.IsStatic))
                 {
-                    sb.AppendLine(
+                    sb.AppendLine(level,
                         $"&& {comparerType.ToFQF()}.{comparerMemberName}.Equals({propertyName}!, other.{propertyName}!)");
                 }
                 else
                 {
-                    sb.AppendLine(
+                    sb.AppendLine(level,
                         $"&& new {comparerType.ToFQF()}().Equals({propertyName}!, other.{propertyName}!)");
                 }
             }
@@ -100,13 +98,17 @@ namespace Generator.Equals
                 !explicitMode ||
                 property.HasAttribute(attributesMetadata.DefaultEquality))
             {
-                sb.AppendLine(
+                sb.AppendLine(level,
                     $"&& global::System.Collections.Generic.EqualityComparer<{typeName}>.Default.Equals({propertyName}!, other.{propertyName}!)");
             }
         }
 
-        public static void BuildPropertyHashCode(IPropertySymbol property, AttributesMetadata attributesMetadata,
-            StringBuilder sb, bool explicitMode)
+        public static void BuildPropertyHashCode(
+            IPropertySymbol property,
+            AttributesMetadata attributesMetadata,
+            StringBuilder sb,
+            int level,
+            bool explicitMode)
         {
             if (property.HasAttribute(attributesMetadata.IgnoreEquality))
                 return;
@@ -124,7 +126,10 @@ namespace Generator.Equals
 
             var typeName = property.Type.ToNullableFQF();
 
-            sb.Append($"hashCode.Add(this.{propertyName}!, ");
+            sb.AppendLine(level, $"hashCode.Add(");
+            level++;
+            sb.AppendLine(level, $"this.{propertyName}!,");
+            sb.AppendMargin(level);
 
             if (property.HasAttribute(attributesMetadata.UnorderedEquality))
             {
@@ -166,11 +171,11 @@ namespace Generator.Equals
 
                 if (comparerType.GetMembers().Any(x => x.Name == comparerMemberName && x.IsStatic) || comparerType.GetProperties().Any(x => x.Name == comparerMemberName && x.IsStatic))
                 {
-                    sb.AppendLine($"{comparerType.ToFQF()}.{comparerMemberName}");
+                    sb.Append($"{comparerType.ToFQF()}.{comparerMemberName}");
                 }
                 else
                 {
-                    sb.AppendLine($"new {comparerType.ToFQF()}()");
+                    sb.Append($"new {comparerType.ToFQF()}()");
                 }
             }
             else
