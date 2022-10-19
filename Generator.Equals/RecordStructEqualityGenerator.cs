@@ -3,32 +3,40 @@ using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals
 {
-    internal class RecordEqualityGenerator : EqualityGeneratorBase
+    internal class RecordStructEqualityGenerator : EqualityGeneratorBase
     {
+        static void BuildNullableEquals(
+            ITypeSymbol symbol,
+            StringBuilder sb,
+            int level)
+        {
+            var symbolName = symbol.ToFQF();
+
+            sb.AppendLine(level, GeneratedCodeAttributeDeclaration);
+            sb.AppendLine(level,  $"public bool Equals({symbolName}? other)");
+            sb.AppendOpenBracket(ref level);
+
+            sb.AppendLine(level, "return other.HasValue && Equals(other.Value);");
+
+            sb.AppendCloseBracket(ref level);
+        }
+        
         static void BuildEquals(
             ITypeSymbol symbol,
             AttributesMetadata attributesMetadata,
             StringBuilder sb,
             int level,
-            bool explicitMode,
-            bool ignoreInheritedMembers)
+            bool explicitMode)
         {
             var symbolName = symbol.ToFQF();
-            var baseTypeName = symbol.BaseType?.ToFQF();
 
             sb.AppendLine(level, InheritDocComment);
             sb.AppendLine(level, GeneratedCodeAttributeDeclaration);
-            sb.AppendLine(level, symbol.IsSealed
-                ? $"public bool Equals({symbolName}? other)"
-                : $"public virtual bool Equals({symbolName}? other)");
+            sb.AppendLine(level,  $"public bool Equals({symbolName} other)");
             sb.AppendOpenBracket(ref level);
 
-            sb.AppendLine(level, "return");
+            sb.AppendLine(level, "return true");
             level++;
-
-            sb.AppendLine(level, baseTypeName == "object" || ignoreInheritedMembers
-                ? "!ReferenceEquals(other, null) && EqualityContract == other.EqualityContract"
-                : $"base.Equals(({baseTypeName}?)other)");
 
             foreach (var property in symbol.GetProperties())
             {
@@ -37,7 +45,7 @@ namespace Generator.Equals
                 if (propertyName == "EqualityContract")
                     continue;
 
-                BuildPropertyEquality(attributesMetadata, sb, level, property, explicitMode, true);
+                BuildPropertyEquality(attributesMetadata, sb, level, property, explicitMode,  false);
             }
 
             sb.AppendLine(level, ";");
@@ -51,21 +59,15 @@ namespace Generator.Equals
             AttributesMetadata attributesMetadata,
             StringBuilder sb,
             int level,
-            bool explicitMode,
-            bool ignoreInheritedMembers)
+            bool explicitMode)
         {
-            var baseTypeName = symbol.BaseType?.ToFQF();
-
             sb.AppendLine(level, InheritDocComment);
             sb.AppendLine(level, GeneratedCodeAttributeDeclaration);
             sb.AppendLine(level, @"public override int GetHashCode()");
             sb.AppendOpenBracket(ref level);
             sb.AppendLine(level, @"var hashCode = new global::System.HashCode();");
             sb.AppendLine(level);
-
-            sb.AppendLine(level, baseTypeName == "object" || ignoreInheritedMembers
-                ? "hashCode.Add(this.EqualityContract);"
-                : "hashCode.Add(base.GetHashCode());");
+            
 
             foreach (var property in symbol.GetProperties())
             {
@@ -74,7 +76,7 @@ namespace Generator.Equals
                 if (propertyName == "EqualityContract")
                     continue;
 
-                BuildPropertyHashCode(property, attributesMetadata, sb, level, explicitMode, true);
+                BuildPropertyHashCode(property, attributesMetadata, sb, level, explicitMode, false);
             }
 
             sb.AppendLine(level);
@@ -85,16 +87,19 @@ namespace Generator.Equals
         public static string Generate(
             ITypeSymbol symbol,
             AttributesMetadata attributesMetadata,
-            bool explicitMode,
-            bool ignoreInheritedMembers)
+            bool explicitMode)
         {
             var code = ContainingTypesBuilder.Build(symbol, includeSelf: true, content: (sb, level) =>
             {
-                BuildEquals(symbol, attributesMetadata, sb, level, explicitMode, ignoreInheritedMembers);
+                BuildEquals(symbol, attributesMetadata, sb, level, explicitMode);
+
+                sb.AppendLine(level);
+                
+                BuildNullableEquals(symbol, sb, level);
 
                 sb.AppendLine(level);
 
-                BuildGetHashCode(symbol, attributesMetadata, sb, level, explicitMode, ignoreInheritedMembers);
+                BuildGetHashCode(symbol, attributesMetadata, sb, level, explicitMode);
             });
 
             return code;

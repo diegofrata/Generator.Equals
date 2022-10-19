@@ -51,7 +51,7 @@ namespace Generator.Equals
 
             foreach (var property in symbol.GetProperties())
             {
-                BuildPropertyEquality(attributesMetadata, sb, level, property, explicitMode);
+                BuildPropertyEquality(attributesMetadata, sb, level, property, explicitMode,  true);
             }
 
             sb.AppendLine(level, ";");
@@ -84,7 +84,7 @@ namespace Generator.Equals
 
             foreach (var property in symbol.GetProperties())
             {
-                BuildPropertyHashCode(property, attributesMetadata, sb, level, explicitMode);
+                BuildPropertyHashCode(property, attributesMetadata, sb, level, explicitMode, true);
             }
 
             sb.AppendLine(level);

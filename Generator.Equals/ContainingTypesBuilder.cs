@@ -24,7 +24,7 @@ namespace Generator.Equals
         {
             if (includeSelf && symbol is INamespaceOrTypeSymbol self)
                 yield return self;
-            
+
             while (true)
             {
                 symbol = symbol.ContainingSymbol;
@@ -61,13 +61,23 @@ namespace Generator.Equals
                 }
                 else
                 {
-                    var keyword = s.DeclaringSyntaxReferences
+                    var typeDeclarationSyntax = s.DeclaringSyntaxReferences
                         .Select(x => x.GetSyntax())
                         .OfType<TypeDeclarationSyntax>()
-                        .First()
-                        .Keyword
-                        .ValueText;
-                 
+                        .First();
+
+                    string keyword;
+                    if (typeDeclarationSyntax.RawKind == 9068) //RecordStructDeclaration - this appears to be the only way to get it
+                    {
+                        keyword = "record struct";
+                    }
+                    else
+                    {
+                        keyword = typeDeclarationSyntax
+                            .Keyword
+                            .ValueText;
+                    }
+
                     var typeName = s.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
                     sb.AppendLine(level, $"partial {keyword} {typeName}");
                     sb.AppendOpenBracket(ref level);

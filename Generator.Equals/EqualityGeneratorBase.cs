@@ -33,8 +33,9 @@ namespace Generator.Equals
         protected const string InheritDocComment = "/// <inheritdoc/>";
 
         public static void BuildPropertyEquality(AttributesMetadata attributesMetadata, StringBuilder sb, int level,
-            IPropertySymbol property, bool explicitMode)
+            IPropertySymbol property, bool explicitMode, bool useNullForgivingOperators)
         {
+            var nf = useNullForgivingOperators ? "!" : "";
             if (property.HasAttribute(attributesMetadata.IgnoreEquality))
                 return;
 
@@ -49,13 +50,13 @@ namespace Generator.Equals
                 if (types != null)
                 {
                     sb.AppendLine(level,
-                        $"&& global::Generator.Equals.DictionaryEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals({propertyName}!, other.{propertyName}!)");
+                        $"&& global::Generator.Equals.DictionaryEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals({propertyName}{nf}, other.{propertyName}{nf})");
                 }
                 else
                 {
                     types = property.GetIEnumerableTypeArguments()!;
                     sb.AppendLine(level,
-                        $"&& global::Generator.Equals.UnorderedEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals({propertyName}!, other.{propertyName}!)");
+                        $"&& global::Generator.Equals.UnorderedEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals({propertyName}{nf}, other.{propertyName}{nf})");
                 }
             }
             else if (property.HasAttribute(attributesMetadata.OrderedEquality))
@@ -63,19 +64,19 @@ namespace Generator.Equals
                 var types = property.GetIEnumerableTypeArguments()!;
 
                 sb.AppendLine(level,
-                    $"&& global::Generator.Equals.OrderedEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals({propertyName}!, other.{propertyName}!)");
+                    $"&& global::Generator.Equals.OrderedEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals({propertyName}{nf}, other.{propertyName}{nf})");
             }
             else if (property.HasAttribute(attributesMetadata.ReferenceEquality))
             {
                 sb.AppendLine(level,
-                    $"&& global::Generator.Equals.ReferenceEqualityComparer<{typeName}>.Default.Equals({propertyName}!, other.{propertyName}!)");
+                    $"&& global::Generator.Equals.ReferenceEqualityComparer<{typeName}>.Default.Equals({propertyName}{nf}, other.{propertyName}{nf})");
             }
             else if (property.HasAttribute(attributesMetadata.SetEquality))
             {
                 var types = property.GetIEnumerableTypeArguments()!;
 
                 sb.AppendLine(level,
-                    $"&& global::Generator.Equals.SetEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals({propertyName}!, other.{propertyName}!)");
+                    $"&& global::Generator.Equals.SetEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals({propertyName}{nf}, other.{propertyName}{nf})");
             }
             else if (property.HasAttribute(attributesMetadata.CustomEquality))
             {
@@ -86,12 +87,12 @@ namespace Generator.Equals
                 if (comparerType.GetMembers().Any(x => x.Name == comparerMemberName && x.IsStatic) || comparerType.GetProperties().Any(x => x.Name == comparerMemberName && x.IsStatic))
                 {
                     sb.AppendLine(level,
-                        $"&& {comparerType.ToFQF()}.{comparerMemberName}.Equals({propertyName}!, other.{propertyName}!)");
+                        $"&& {comparerType.ToFQF()}.{comparerMemberName}.Equals({propertyName}{nf}, other.{propertyName}{nf})");
                 }
                 else
                 {
                     sb.AppendLine(level,
-                        $"&& new {comparerType.ToFQF()}().Equals({propertyName}!, other.{propertyName}!)");
+                        $"&& new {comparerType.ToFQF()}().Equals({propertyName}{nf}, other.{propertyName}{nf})");
                 }
             }
             else if (
@@ -99,7 +100,7 @@ namespace Generator.Equals
                 property.HasAttribute(attributesMetadata.DefaultEquality))
             {
                 sb.AppendLine(level,
-                    $"&& global::System.Collections.Generic.EqualityComparer<{typeName}>.Default.Equals({propertyName}!, other.{propertyName}!)");
+                    $"&& global::System.Collections.Generic.EqualityComparer<{typeName}>.Default.Equals({propertyName}{nf}, other.{propertyName}{nf})");
             }
         }
 
@@ -108,8 +109,9 @@ namespace Generator.Equals
             AttributesMetadata attributesMetadata,
             StringBuilder sb,
             int level,
-            bool explicitMode)
+            bool explicitMode, bool useNullForgivingOperators)
         {
+            var nf = useNullForgivingOperators ? "!" : "";
             if (property.HasAttribute(attributesMetadata.IgnoreEquality))
                 return;
 
@@ -128,7 +130,7 @@ namespace Generator.Equals
 
             sb.AppendLine(level, $"hashCode.Add(");
             level++;
-            sb.AppendLine(level, $"this.{propertyName}!,");
+            sb.AppendLine(level, $"this.{propertyName}{nf},");
             sb.AppendMargin(level);
 
             if (property.HasAttribute(attributesMetadata.UnorderedEquality))
