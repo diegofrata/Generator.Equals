@@ -32,7 +32,7 @@ class Program
     }
 }
 ```
-Not using records? Generator.Equals also support classes.
+Need more than records? Generator.Equals also support classes, structs and record structs.
 
 ```c#
 using Generator.Equals;
@@ -43,6 +43,18 @@ partial class MyClass
     [OrderedEquality] 
     public string[] Fruits { get; set; }
 }
+
+[Equatable]
+partial struct MyStruct
+{
+    [OrderedEquality] 
+    public string[] Fruits { get; set; }
+}
+
+[Equatable]
+partial record struct MyRecordStruct(
+    [property: OrderedEquality] string[] Fruits
+);
 ```
 
 ## Supported Comparers

@@ -72,6 +72,7 @@ namespace Generator.Equals
                         SyntaxKind.ClassDeclaration => "class",
                         SyntaxKind.RecordDeclaration => "record",
                         (SyntaxKind)9068 => "record struct", // RecordStructDeclaration
+                        SyntaxKind.StructDeclaration => "struct",
                         var x => throw new ArgumentOutOfRangeException($"Syntax kind {x} not supported")
                     };
 
