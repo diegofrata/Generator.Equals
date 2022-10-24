@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Generator.Equals
@@ -66,17 +67,13 @@ namespace Generator.Equals
                         .OfType<TypeDeclarationSyntax>()
                         .First();
 
-                    string keyword;
-                    if (typeDeclarationSyntax.RawKind == 9068) //RecordStructDeclaration - this appears to be the only way to get it
+                    var keyword = typeDeclarationSyntax.Kind() switch
                     {
-                        keyword = "record struct";
-                    }
-                    else
-                    {
-                        keyword = typeDeclarationSyntax
-                            .Keyword
-                            .ValueText;
-                    }
+                        SyntaxKind.ClassDeclaration => "class",
+                        SyntaxKind.RecordDeclaration => "record",
+                        (SyntaxKind)9068 => "record struct", // RecordStructDeclaration
+                        var x => throw new ArgumentOutOfRangeException($"Syntax kind {x} not supported")
+                    };
 
                     var typeName = s.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
                     sb.AppendLine(level, $"partial {keyword} {typeName}");

@@ -5,22 +5,6 @@ namespace Generator.Equals
 {
     internal class RecordStructEqualityGenerator : EqualityGeneratorBase
     {
-        static void BuildNullableEquals(
-            ITypeSymbol symbol,
-            StringBuilder sb,
-            int level)
-        {
-            var symbolName = symbol.ToFQF();
-
-            sb.AppendLine(level, GeneratedCodeAttributeDeclaration);
-            sb.AppendLine(level,  $"public bool Equals({symbolName}? other)");
-            sb.AppendOpenBracket(ref level);
-
-            sb.AppendLine(level, "return other.HasValue && Equals(other.Value);");
-
-            sb.AppendCloseBracket(ref level);
-        }
-        
         static void BuildEquals(
             ITypeSymbol symbol,
             AttributesMetadata attributesMetadata,
@@ -40,12 +24,7 @@ namespace Generator.Equals
 
             foreach (var property in symbol.GetProperties())
             {
-                var propertyName = property.ToFQF();
-
-                if (propertyName == "EqualityContract")
-                    continue;
-
-                BuildPropertyEquality(attributesMetadata, sb, level, property, explicitMode,  false);
+                BuildPropertyEquality(attributesMetadata, sb, level, property, explicitMode);
             }
 
             sb.AppendLine(level, ";");
@@ -68,15 +47,9 @@ namespace Generator.Equals
             sb.AppendLine(level, @"var hashCode = new global::System.HashCode();");
             sb.AppendLine(level);
             
-
             foreach (var property in symbol.GetProperties())
             {
-                var propertyName = property.ToFQF();
-
-                if (propertyName == "EqualityContract")
-                    continue;
-
-                BuildPropertyHashCode(property, attributesMetadata, sb, level, explicitMode, false);
+                BuildPropertyHashCode(property, attributesMetadata, sb, level, explicitMode);
             }
 
             sb.AppendLine(level);
@@ -92,10 +65,6 @@ namespace Generator.Equals
             var code = ContainingTypesBuilder.Build(symbol, includeSelf: true, content: (sb, level) =>
             {
                 BuildEquals(symbol, attributesMetadata, sb, level, explicitMode);
-
-                sb.AppendLine(level);
-                
-                BuildNullableEquals(symbol, sb, level);
 
                 sb.AppendLine(level);
 

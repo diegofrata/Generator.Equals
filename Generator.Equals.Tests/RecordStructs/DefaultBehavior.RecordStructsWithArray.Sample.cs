@@ -4,7 +4,7 @@ namespace Generator.Equals.Tests.RecordStructs
     {
         public partial class RecordStructsWithArray
         {
-            public record Sample(string Name, int Age, string[] Addresses);
+            public record struct Sample(string Name, int Age, string[] Addresses);
         }
     }
 }

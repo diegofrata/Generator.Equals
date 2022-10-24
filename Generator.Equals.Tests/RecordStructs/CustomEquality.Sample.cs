@@ -5,7 +5,12 @@ namespace Generator.Equals.Tests.RecordStructs
     public partial class CustomEquality
     {
         [Equatable]
-        public partial record struct Sample([property: CustomEquality(typeof(Comparer1))] string Name1, [property: CustomEquality(typeof(Comparer2), nameof(Comparer2.Instance))] string Name2, [property: CustomEquality(typeof(LengthEqualityComparer))] string Name3);
+        public partial record struct Sample
+        (
+            [property: CustomEquality(typeof(Comparer1))] string Name1,
+            [property: CustomEquality(typeof(Comparer2), nameof(Comparer2.Instance))] string Name2,
+            [property: CustomEquality(typeof(LengthEqualityComparer))] string Name3
+        );
 
         class Comparer1
         {
@@ -23,6 +28,5 @@ namespace Generator.Equals.Tests.RecordStructs
 
             public int GetHashCode(string obj) => obj.Length.GetHashCode();
         }
-
     }
 }

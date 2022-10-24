@@ -37,7 +37,7 @@ namespace Generator.Equals
                 if (propertyName == "EqualityContract")
                     continue;
 
-                BuildPropertyEquality(attributesMetadata, sb, level, property, explicitMode, true);
+                BuildPropertyEquality(attributesMetadata, sb, level, property, explicitMode);
             }
 
             sb.AppendLine(level, ";");
@@ -74,7 +74,7 @@ namespace Generator.Equals
                 if (propertyName == "EqualityContract")
                     continue;
 
-                BuildPropertyHashCode(property, attributesMetadata, sb, level, explicitMode, true);
+                BuildPropertyHashCode(property, attributesMetadata, sb, level, explicitMode);
             }
 
             sb.AppendLine(level);
