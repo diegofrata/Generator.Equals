@@ -66,10 +66,10 @@ namespace Generator.Equals
                     .Value.Value is true;
                 var source = node switch
                 {
+                    StructDeclarationSyntax _ => StructEqualityGenerator.Generate(symbol!, attributesMetadata, explicitMode),
                     RecordDeclarationSyntax _ when node.RawKind == 9068 => RecordStructEqualityGenerator.Generate(symbol!, attributesMetadata, explicitMode),
                     RecordDeclarationSyntax _ => RecordEqualityGenerator.Generate(symbol!, attributesMetadata, explicitMode, ignoreInheritedMembers),
-                    ClassDeclarationSyntax _ => ClassEqualityGenerator.Generate(symbol!, attributesMetadata,
-                        explicitMode, ignoreInheritedMembers),
+                    ClassDeclarationSyntax _ => ClassEqualityGenerator.Generate(symbol!, attributesMetadata, explicitMode, ignoreInheritedMembers),
                     _ => throw new Exception("should not have gotten here.")
                 };
 
@@ -89,7 +89,7 @@ namespace Generator.Equals
 
             public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
             {
-                if (!(syntaxNode is ClassDeclarationSyntax c) && !(syntaxNode is RecordDeclarationSyntax))
+                if (!(syntaxNode is ClassDeclarationSyntax c) && !(syntaxNode is RecordDeclarationSyntax) && !(syntaxNode is StructDeclarationSyntax))
                     return;
 
                 _candidateSyntaxes.Add(syntaxNode);
