@@ -3,40 +3,27 @@ using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals
 {
-    internal class RecordEqualityGenerator : EqualityGeneratorBase
+    internal class RecordStructEqualityGenerator : EqualityGeneratorBase
     {
         static void BuildEquals(
             ITypeSymbol symbol,
             AttributesMetadata attributesMetadata,
             StringBuilder sb,
             int level,
-            bool explicitMode,
-            bool ignoreInheritedMembers)
+            bool explicitMode)
         {
             var symbolName = symbol.ToFQF();
-            var baseTypeName = symbol.BaseType?.ToFQF();
 
             sb.AppendLine(level, InheritDocComment);
             sb.AppendLine(level, GeneratedCodeAttributeDeclaration);
-            sb.AppendLine(level, symbol.IsSealed
-                ? $"public bool Equals({symbolName}? other)"
-                : $"public virtual bool Equals({symbolName}? other)");
+            sb.AppendLine(level,  $"public bool Equals({symbolName} other)");
             sb.AppendOpenBracket(ref level);
 
-            sb.AppendLine(level, "return");
+            sb.AppendLine(level, "return true");
             level++;
-
-            sb.AppendLine(level, baseTypeName == "object" || ignoreInheritedMembers
-                ? "!ReferenceEquals(other, null) && EqualityContract == other.EqualityContract"
-                : $"base.Equals(({baseTypeName}?)other)");
 
             foreach (var property in symbol.GetProperties())
             {
-                var propertyName = property.ToFQF();
-
-                if (propertyName == "EqualityContract")
-                    continue;
-
                 BuildPropertyEquality(attributesMetadata, sb, level, property, explicitMode);
             }
 
@@ -51,29 +38,17 @@ namespace Generator.Equals
             AttributesMetadata attributesMetadata,
             StringBuilder sb,
             int level,
-            bool explicitMode,
-            bool ignoreInheritedMembers)
+            bool explicitMode)
         {
-            var baseTypeName = symbol.BaseType?.ToFQF();
-
             sb.AppendLine(level, InheritDocComment);
             sb.AppendLine(level, GeneratedCodeAttributeDeclaration);
             sb.AppendLine(level, @"public override int GetHashCode()");
             sb.AppendOpenBracket(ref level);
             sb.AppendLine(level, @"var hashCode = new global::System.HashCode();");
             sb.AppendLine(level);
-
-            sb.AppendLine(level, baseTypeName == "object" || ignoreInheritedMembers
-                ? "hashCode.Add(this.EqualityContract);"
-                : "hashCode.Add(base.GetHashCode());");
-
+            
             foreach (var property in symbol.GetProperties())
             {
-                var propertyName = property.ToFQF();
-
-                if (propertyName == "EqualityContract")
-                    continue;
-
                 BuildPropertyHashCode(property, attributesMetadata, sb, level, explicitMode);
             }
 
@@ -85,16 +60,15 @@ namespace Generator.Equals
         public static string Generate(
             ITypeSymbol symbol,
             AttributesMetadata attributesMetadata,
-            bool explicitMode,
-            bool ignoreInheritedMembers)
+            bool explicitMode)
         {
             var code = ContainingTypesBuilder.Build(symbol, includeSelf: true, content: (sb, level) =>
             {
-                BuildEquals(symbol, attributesMetadata, sb, level, explicitMode, ignoreInheritedMembers);
+                BuildEquals(symbol, attributesMetadata, sb, level, explicitMode);
 
                 sb.AppendLine(level);
 
-                BuildGetHashCode(symbol, attributesMetadata, sb, level, explicitMode, ignoreInheritedMembers);
+                BuildGetHashCode(symbol, attributesMetadata, sb, level, explicitMode);
             });
 
             return code;

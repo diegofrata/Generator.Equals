@@ -66,8 +66,8 @@ namespace Generator.Equals
                     .Value.Value is true;
                 var source = node switch
                 {
-                    RecordDeclarationSyntax _ => RecordEqualityGenerator.Generate(symbol!, attributesMetadata,
-                        explicitMode, ignoreInheritedMembers),
+                    RecordDeclarationSyntax _ when node.RawKind == 9068 => RecordStructEqualityGenerator.Generate(symbol!, attributesMetadata, explicitMode),
+                    RecordDeclarationSyntax _ => RecordEqualityGenerator.Generate(symbol!, attributesMetadata, explicitMode, ignoreInheritedMembers),
                     ClassDeclarationSyntax _ => ClassEqualityGenerator.Generate(symbol!, attributesMetadata,
                         explicitMode, ignoreInheritedMembers),
                     _ => throw new Exception("should not have gotten here.")

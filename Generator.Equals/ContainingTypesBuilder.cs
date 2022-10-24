@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Generator.Equals
@@ -24,7 +25,7 @@ namespace Generator.Equals
         {
             if (includeSelf && symbol is INamespaceOrTypeSymbol self)
                 yield return self;
-            
+
             while (true)
             {
                 symbol = symbol.ContainingSymbol;
@@ -61,13 +62,19 @@ namespace Generator.Equals
                 }
                 else
                 {
-                    var keyword = s.DeclaringSyntaxReferences
+                    var typeDeclarationSyntax = s.DeclaringSyntaxReferences
                         .Select(x => x.GetSyntax())
                         .OfType<TypeDeclarationSyntax>()
-                        .First()
-                        .Keyword
-                        .ValueText;
-                 
+                        .First();
+
+                    var keyword = typeDeclarationSyntax.Kind() switch
+                    {
+                        SyntaxKind.ClassDeclaration => "class",
+                        SyntaxKind.RecordDeclaration => "record",
+                        (SyntaxKind)9068 => "record struct", // RecordStructDeclaration
+                        var x => throw new ArgumentOutOfRangeException($"Syntax kind {x} not supported")
+                    };
+
                     var typeName = s.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
                     sb.AppendLine(level, $"partial {keyword} {typeName}");
                     sb.AppendOpenBracket(ref level);
