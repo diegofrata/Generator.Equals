@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 
@@ -32,158 +33,222 @@ namespace Generator.Equals
 
         protected const string InheritDocComment = "/// <inheritdoc/>";
 
-        public static void BuildPropertyEquality(AttributesMetadata attributesMetadata, StringBuilder sb, int level,
-            IPropertySymbol property, bool explicitMode)
+        static void BuildEquality(AttributesMetadata attributesMetadata, StringBuilder sb, int level,
+            ISymbol memberSymbol, ITypeSymbol typeSymbol, bool explicitMode)
         {
-            if (property.HasAttribute(attributesMetadata.IgnoreEquality))
+            if (memberSymbol.HasAttribute(attributesMetadata.IgnoreEquality))
                 return;
 
-            var propertyName = property.ToFQF();
+            var propertyName = memberSymbol.ToFQF();
 
-            var typeName = property.Type.ToNullableFQF();
+            var typeName = typeSymbol.ToNullableFQF();
 
-            if (property.HasAttribute(attributesMetadata.UnorderedEquality))
+            if (memberSymbol.HasAttribute(attributesMetadata.UnorderedEquality))
             {
-                var types = property.GetIDictionaryTypeArguments();
+                var types = typeSymbol.GetIDictionaryTypeArguments();
 
                 if (types != null)
                 {
                     sb.AppendLine(level,
-                        $"&& global::Generator.Equals.DictionaryEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals({propertyName}!, other.{propertyName}!)");
+                        $"&& global::Generator.Equals.DictionaryEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals(this.{propertyName}!, other.{propertyName}!)");
                 }
                 else
                 {
-                    types = property.GetIEnumerableTypeArguments()!;
+                    types = typeSymbol.GetIEnumerableTypeArguments()!;
                     sb.AppendLine(level,
-                        $"&& global::Generator.Equals.UnorderedEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals({propertyName}!, other.{propertyName}!)");
+                        $"&& global::Generator.Equals.UnorderedEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals(this.{propertyName}!, other.{propertyName}!)");
                 }
             }
-            else if (property.HasAttribute(attributesMetadata.OrderedEquality))
+            else if (memberSymbol.HasAttribute(attributesMetadata.OrderedEquality))
             {
-                var types = property.GetIEnumerableTypeArguments()!;
+                var types = typeSymbol.GetIEnumerableTypeArguments()!;
 
                 sb.AppendLine(level,
-                    $"&& global::Generator.Equals.OrderedEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals({propertyName}!, other.{propertyName}!)");
+                    $"&& global::Generator.Equals.OrderedEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals(this.{propertyName}!, other.{propertyName}!)");
             }
-            else if (property.HasAttribute(attributesMetadata.ReferenceEquality))
+            else if (memberSymbol.HasAttribute(attributesMetadata.ReferenceEquality))
             {
                 sb.AppendLine(level,
-                    $"&& global::Generator.Equals.ReferenceEqualityComparer<{typeName}>.Default.Equals({propertyName}!, other.{propertyName}!)");
+                    $"&& global::Generator.Equals.ReferenceEqualityComparer<{typeName}>.Default.Equals(this.{propertyName}!, other.{propertyName}!)");
             }
-            else if (property.HasAttribute(attributesMetadata.SetEquality))
+            else if (memberSymbol.HasAttribute(attributesMetadata.SetEquality))
             {
-                var types = property.GetIEnumerableTypeArguments()!;
+                var types = typeSymbol.GetIEnumerableTypeArguments()!;
 
                 sb.AppendLine(level,
-                    $"&& global::Generator.Equals.SetEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals({propertyName}!, other.{propertyName}!)");
+                    $"&& global::Generator.Equals.SetEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals(this.{propertyName}!, other.{propertyName}!)");
             }
-            else if (property.HasAttribute(attributesMetadata.CustomEquality))
+            else if (memberSymbol.HasAttribute(attributesMetadata.CustomEquality))
             {
-                var attribute = property.GetAttribute(attributesMetadata.CustomEquality);
+                var attribute = memberSymbol.GetAttribute(attributesMetadata.CustomEquality);
                 var comparerType = (INamedTypeSymbol) attribute?.ConstructorArguments[0].Value!;
                 var comparerMemberName = (string) attribute?.ConstructorArguments[1].Value!;
 
-                if (comparerType.GetMembers().Any(x => x.Name == comparerMemberName && x.IsStatic) || comparerType.GetProperties().Any(x => x.Name == comparerMemberName && x.IsStatic))
+                if (comparerType.GetMembers().Any(x => x.Name == comparerMemberName && x.IsStatic) || comparerType.GetPropertiesAndFields().Any(x => x.Name == comparerMemberName && x.IsStatic))
                 {
                     sb.AppendLine(level,
-                        $"&& {comparerType.ToFQF()}.{comparerMemberName}.Equals({propertyName}!, other.{propertyName}!)");
+                        $"&& {comparerType.ToFQF()}.{comparerMemberName}.Equals(this.{propertyName}!, other.{propertyName}!)");
                 }
                 else
                 {
                     sb.AppendLine(level,
-                        $"&& new {comparerType.ToFQF()}().Equals({propertyName}!, other.{propertyName}!)");
+                        $"&& new {comparerType.ToFQF()}().Equals(this.{propertyName}!, other.{propertyName}!)");
                 }
             }
             else if (
-                !explicitMode ||
-                property.HasAttribute(attributesMetadata.DefaultEquality))
+                memberSymbol.HasAttribute(attributesMetadata.DefaultEquality) ||
+                (!explicitMode && memberSymbol is IPropertySymbol)
+                )
             {
                 sb.AppendLine(level,
-                    $"&& global::System.Collections.Generic.EqualityComparer<{typeName}>.Default.Equals({propertyName}!, other.{propertyName}!)");
+                    $"&& global::System.Collections.Generic.EqualityComparer<{typeName}>.Default.Equals(this.{propertyName}!, other.{propertyName}!)");
             }
         }
-
-        public static void BuildPropertyHashCode(
-            IPropertySymbol property,
+        
+        public static void BuildMembersEquality(ITypeSymbol symbol, AttributesMetadata attributesMetadata, StringBuilder sb,
+            int level, bool explicitMode, Predicate<ISymbol>? filter = null)
+        {
+            foreach (var member in symbol.GetPropertiesAndFields())
+            {
+                if (filter != null && !filter(member))
+                    continue;
+                
+                switch (member)
+                {
+                    case IPropertySymbol propertySymbol:
+                        BuildEquality(attributesMetadata, sb, level, propertySymbol, propertySymbol.Type, explicitMode);
+                        break;
+                    case IFieldSymbol fieldSymbol:
+                        BuildEquality(attributesMetadata, sb, level, fieldSymbol, fieldSymbol.Type, explicitMode);
+                        break;
+                    default:
+                        throw new NotSupportedException($"Member of type {member.GetType()} not supported");
+                }
+            }
+        }
+        static void BuildHashCode(
+            ISymbol memberSymbol,
+            ITypeSymbol typeSymbol,
             AttributesMetadata attributesMetadata,
             StringBuilder sb,
             int level,
             bool explicitMode)
         {
-            if (property.HasAttribute(attributesMetadata.IgnoreEquality))
+            if (memberSymbol.HasAttribute(attributesMetadata.IgnoreEquality))
                 return;
 
-            if (explicitMode &&
-                !property.HasAttribute(attributesMetadata.DefaultEquality) &&
-                !property.HasAttribute(attributesMetadata.UnorderedEquality) &&
-                !property.HasAttribute(attributesMetadata.OrderedEquality) &&
-                !property.HasAttribute(attributesMetadata.ReferenceEquality) &&
-                !property.HasAttribute(attributesMetadata.SetEquality) &&
-                !property.HasAttribute(attributesMetadata.CustomEquality))
-                return;
+            var propertyName = memberSymbol.ToFQF();
 
-            var propertyName = property.ToFQF();
+            var typeName = typeSymbol.ToNullableFQF();
 
-            var typeName = property.Type.ToNullableFQF();
-
-            sb.AppendLine(level, $"hashCode.Add(");
-            level++;
-            sb.AppendLine(level, $"this.{propertyName}!,");
-            sb.AppendMargin(level);
-
-            if (property.HasAttribute(attributesMetadata.UnorderedEquality))
+            void BuildHashCodeAdd(Action action)
             {
-                var types = property.GetIDictionaryTypeArguments();
+                sb.AppendLine(level, $"hashCode.Add(");
+                level++;
 
-                if (types != null)
+                sb.AppendLine(level, $"this.{propertyName}!,");
+                sb.AppendMargin(level);
+
+                action();
+
+                sb.AppendLine(");");
+            }
+
+            if (memberSymbol.HasAttribute(attributesMetadata.UnorderedEquality))
+            {
+                BuildHashCodeAdd(() =>
                 {
+                    var types = typeSymbol.GetIDictionaryTypeArguments();
+
+                    if (types != null)
+                    {
+                        sb.Append(
+                            $"global::Generator.Equals.DictionaryEqualityComparer<{string.Join(", ", types.Value)}>.Default");
+                    }
+                    else
+                    {
+                        types = typeSymbol.GetIEnumerableTypeArguments()!;
+                        sb.Append(
+                            $"global::Generator.Equals.UnorderedEqualityComparer<{string.Join(", ", types.Value)}>.Default");
+                    }
+                });
+            }
+            else if (memberSymbol.HasAttribute(attributesMetadata.OrderedEquality))
+            {
+                BuildHashCodeAdd(() =>
+                {
+                    var types = typeSymbol.GetIEnumerableTypeArguments()!;
                     sb.Append(
-                        $"global::Generator.Equals.DictionaryEqualityComparer<{string.Join(", ", types.Value)}>.Default");
-                }
-                else
+                        $"global::Generator.Equals.OrderedEqualityComparer<{string.Join(", ", types.Value)}>.Default");
+                });
+            }
+            else if (memberSymbol.HasAttribute(attributesMetadata.ReferenceEquality))
+            {
+                BuildHashCodeAdd(() =>
                 {
-                    types = property.GetIEnumerableTypeArguments()!;
+                    sb.Append($"global::Generator.Equals.ReferenceEqualityComparer<{typeName}>.Default");
+                });
+            }
+            else if (memberSymbol.HasAttribute(attributesMetadata.SetEquality))
+            {
+                BuildHashCodeAdd(() =>
+                {
+                    var types = typeSymbol.GetIEnumerableTypeArguments()!;
                     sb.Append(
-                        $"global::Generator.Equals.UnorderedEqualityComparer<{string.Join(", ", types.Value)}>.Default");
-                }
+                        $"global::Generator.Equals.SetEqualityComparer<{string.Join(", ", types.Value)}>.Default");
+                });
             }
-            else if (property.HasAttribute(attributesMetadata.OrderedEquality))
+            else if (memberSymbol.HasAttribute(attributesMetadata.CustomEquality))
             {
-                var types = property.GetIEnumerableTypeArguments()!;
-                sb.Append(
-                    $"global::Generator.Equals.OrderedEqualityComparer<{string.Join(", ", types.Value)}>.Default");
-            }
-            else if (property.HasAttribute(attributesMetadata.ReferenceEquality))
-            {
-                sb.Append($"global::Generator.Equals.ReferenceEqualityComparer<{typeName}>.Default");
-            }
-            else if (property.HasAttribute(attributesMetadata.SetEquality))
-            {
-                var types = property.GetIEnumerableTypeArguments()!;
-                sb.Append(
-                    $"global::Generator.Equals.SetEqualityComparer<{string.Join(", ", types.Value)}>.Default");
-            }
-            else if (property.HasAttribute(attributesMetadata.CustomEquality))
-            {
-                var attribute = property.GetAttribute(attributesMetadata.CustomEquality);
-                var comparerType = (INamedTypeSymbol) attribute?.ConstructorArguments[0].Value!;
-                var comparerMemberName = (string) attribute?.ConstructorArguments[1].Value!;
-
-                if (comparerType.GetMembers().Any(x => x.Name == comparerMemberName && x.IsStatic) || comparerType.GetProperties().Any(x => x.Name == comparerMemberName && x.IsStatic))
+                BuildHashCodeAdd(() =>
                 {
-                    sb.Append($"{comparerType.ToFQF()}.{comparerMemberName}");
-                }
-                else
-                {
-                    sb.Append($"new {comparerType.ToFQF()}()");
-                }
-            }
-            else
-            {
-                sb.Append($"global::System.Collections.Generic.EqualityComparer<{typeName}>.Default");
-            }
+                    var attribute = memberSymbol.GetAttribute(attributesMetadata.CustomEquality);
+                    var comparerType = (INamedTypeSymbol)attribute?.ConstructorArguments[0].Value!;
+                    var comparerMemberName = (string)attribute?.ConstructorArguments[1].Value!;
 
-            sb.AppendLine(");");
+                    if (comparerType.GetMembers().Any(x => x.Name == comparerMemberName && x.IsStatic) || comparerType
+                            .GetPropertiesAndFields().Any(x => x.Name == comparerMemberName && x.IsStatic))
+                    {
+                        sb.Append($"{comparerType.ToFQF()}.{comparerMemberName}");
+                    }
+                    else
+                    {
+                        sb.Append($"new {comparerType.ToFQF()}()");
+                    }
+                });
+            }
+            else if (
+                memberSymbol.HasAttribute(attributesMetadata.DefaultEquality) ||
+                (!explicitMode && memberSymbol is IPropertySymbol)
+            )
+            {
+                BuildHashCodeAdd(() =>
+                {
+                    sb.Append($"global::System.Collections.Generic.EqualityComparer<{typeName}>.Default");
+                });
+            }
+        }
+        
+        public static void BuildMembersHashCode(ITypeSymbol symbol, AttributesMetadata attributesMetadata, StringBuilder sb,
+            int level, bool explicitMode, Predicate<ISymbol>? filter = null)
+        {
+            foreach (var member in symbol.GetPropertiesAndFields())
+            {
+                if (filter != null && !filter(member))
+                    continue;
+                
+                switch (member)
+                {
+                    case IPropertySymbol propertySymbol:
+                        BuildHashCode(propertySymbol, propertySymbol.Type, attributesMetadata, sb, level, explicitMode);
+                        break;
+                    case IFieldSymbol fieldSymbol:
+                        BuildHashCode(fieldSymbol, fieldSymbol.Type, attributesMetadata, sb, level, explicitMode);
+                        break;
+                    default:
+                        throw new NotSupportedException($"Member of type {member.GetType()} not supported");
+                }
+            }
         }
     }
 }

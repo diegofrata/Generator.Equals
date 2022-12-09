@@ -42,7 +42,7 @@ namespace Generator.Equals.Tests.Structs
             public bool Equals(global::Generator.Equals.Tests.Structs.ObsoleteStruct.Sample other)
             {
                 return true
-                    && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(Something!, other.Something!)
+                    && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(this.Something!, other.Something!)
                     ;
             }
             

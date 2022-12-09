@@ -43,8 +43,8 @@ namespace Generator.Equals.Tests.Classes
             {
                 return
                     !ReferenceEquals(other, null) && this.GetType() == other.GetType()
-                    && global::System.Collections.Generic.EqualityComparer<TName>.Default.Equals(Name!, other.Name!)
-                    && global::System.Collections.Generic.EqualityComparer<TAge>.Default.Equals(Age!, other.Age!)
+                    && global::System.Collections.Generic.EqualityComparer<TName>.Default.Equals(this.Name!, other.Name!)
+                    && global::System.Collections.Generic.EqualityComparer<TAge>.Default.Equals(this.Age!, other.Age!)
                     ;
             }
             

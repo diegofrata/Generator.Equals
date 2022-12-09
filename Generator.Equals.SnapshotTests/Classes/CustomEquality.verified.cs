@@ -43,9 +43,9 @@ namespace Generator.Equals.Tests.Classes
             {
                 return
                     !ReferenceEquals(other, null) && this.GetType() == other.GetType()
-                    && global::Generator.Equals.Tests.Classes.CustomEquality.Comparer1.Default.Equals(Name1!, other.Name1!)
-                    && global::Generator.Equals.Tests.Classes.CustomEquality.Comparer2.Instance.Equals(Name2!, other.Name2!)
-                    && new global::Generator.Equals.Tests.Classes.CustomEquality.LengthEqualityComparer().Equals(Name3!, other.Name3!)
+                    && global::Generator.Equals.Tests.Classes.CustomEquality.Comparer1.Default.Equals(this.Name1!, other.Name1!)
+                    && global::Generator.Equals.Tests.Classes.CustomEquality.Comparer2.Instance.Equals(this.Name2!, other.Name2!)
+                    && new global::Generator.Equals.Tests.Classes.CustomEquality.LengthEqualityComparer().Equals(this.Name3!, other.Name3!)
                     ;
             }
             

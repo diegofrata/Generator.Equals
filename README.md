@@ -32,7 +32,7 @@ class Program
     }
 }
 ```
-Need more than records? Generator.Equals also support classes, structs and record structs.
+Need more than records? Generator.Equals supports properties (and fields) also across classes, structs and record structs.
 
 ```c#
 using Generator.Equals;
@@ -40,6 +40,9 @@ using Generator.Equals;
 [Equatable]
 partial class MyClass
 {
+    [DefaultEquality] 
+    private int _secretNumber = 42;
+
     [OrderedEquality] 
     public string[] Fruits { get; set; }
 }
@@ -66,6 +69,7 @@ Below is a list of all supported comparers. Would you like something else added?
 This is the comparer that's used when a property has no attributes indicating otherwise. The generated code will use 
 ```EqualityComparer<T>.Default``` for both equals and hashing operation.
 
+> _Fields are not used in comparison unless explicitly annotated. To enable the default comparison for a field, annotate it with the `DefaultEquality` attribute._
 
 ### IgnoreEquality
 
@@ -159,6 +163,7 @@ argument to CustomEqualityAttribute should fulfill AT LEAST one of the following
 ## Advanced Options
 
 ### Explicit Mode
+
 The generator allows you to explicitly specify which properties are used to generate the `IEquatable`.  
 
 To do this, set the `Explicit` property of `EquatableAttribute` to `true` and specify the required properties using `DefaultEqualityAttribute` or other attributes.

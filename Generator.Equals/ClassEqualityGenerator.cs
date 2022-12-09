@@ -49,16 +49,14 @@ namespace Generator.Equals
                 ? "!ReferenceEquals(other, null) && this.GetType() == other.GetType()"
                 : $"base.Equals(other as {baseTypeName})");
 
-            foreach (var property in symbol.GetProperties())
-            {
-                BuildPropertyEquality(attributesMetadata, sb, level, property, explicitMode);
-            }
+            BuildMembersEquality(symbol, attributesMetadata, sb, level, explicitMode);
 
             sb.AppendLine(level, ";");
             level--;
 
             sb.AppendCloseBracket(ref level);
         }
+
 
         static void BuildGetHashCode(
             ITypeSymbol symbol,
@@ -82,17 +80,14 @@ namespace Generator.Equals
                 ? "hashCode.Add(this.GetType());"
                 : "hashCode.Add(base.GetHashCode());");
 
-            foreach (var property in symbol.GetProperties())
-            {
-                BuildPropertyHashCode(property, attributesMetadata, sb, level, explicitMode);
-            }
+            BuildMembersHashCode(symbol, attributesMetadata, sb, level, explicitMode);
 
             sb.AppendLine(level);
             sb.AppendLine(level, "return hashCode.ToHashCode();");
 
             sb.AppendCloseBracket(ref level);
         }
-        
+
         public static string Generate(
             ITypeSymbol symbol,
             AttributesMetadata attributesMetadata,

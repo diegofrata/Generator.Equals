@@ -29,16 +29,8 @@ namespace Generator.Equals
             sb.AppendLine(level, baseTypeName == "object" || ignoreInheritedMembers
                 ? "!ReferenceEquals(other, null) && EqualityContract == other.EqualityContract"
                 : $"base.Equals(({baseTypeName}?)other)");
-
-            foreach (var property in symbol.GetProperties())
-            {
-                var propertyName = property.ToFQF();
-
-                if (propertyName == "EqualityContract")
-                    continue;
-
-                BuildPropertyEquality(attributesMetadata, sb, level, property, explicitMode);
-            }
+            
+            BuildMembersEquality(symbol, attributesMetadata, sb, level, explicitMode, m =>  m.ToFQF() != "EqualityContract");
 
             sb.AppendLine(level, ";");
             level--;
@@ -66,16 +58,8 @@ namespace Generator.Equals
             sb.AppendLine(level, baseTypeName == "object" || ignoreInheritedMembers
                 ? "hashCode.Add(this.EqualityContract);"
                 : "hashCode.Add(base.GetHashCode());");
-
-            foreach (var property in symbol.GetProperties())
-            {
-                var propertyName = property.ToFQF();
-
-                if (propertyName == "EqualityContract")
-                    continue;
-
-                BuildPropertyHashCode(property, attributesMetadata, sb, level, explicitMode);
-            }
+            
+            BuildMembersHashCode(symbol, attributesMetadata, sb, level, explicitMode, m =>  m.ToFQF() != "EqualityContract");
 
             sb.AppendLine(level);
             sb.AppendLine(level, "return hashCode.ToHashCode();");

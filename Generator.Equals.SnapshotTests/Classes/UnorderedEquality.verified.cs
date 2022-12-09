@@ -43,7 +43,7 @@ namespace Generator.Equals.Tests.Classes
             {
                 return
                     !ReferenceEquals(other, null) && this.GetType() == other.GetType()
-                    && global::Generator.Equals.UnorderedEqualityComparer<int>.Default.Equals(Properties!, other.Properties!)
+                    && global::Generator.Equals.UnorderedEqualityComparer<int>.Default.Equals(this.Properties!, other.Properties!)
                     ;
             }
             

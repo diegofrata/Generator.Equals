@@ -19,43 +19,43 @@ namespace Generator.Equals
     }
 
     [Conditional("GENERATOR_EQUALS")]
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class DefaultEqualityAttribute : Attribute
     {
     }
 
     [Conditional("GENERATOR_EQUALS")]
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class OrderedEqualityAttribute : Attribute
     {
     }
 
     [Conditional("GENERATOR_EQUALS")]
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class IgnoreEqualityAttribute : Attribute
     {
     }
 
     [Conditional("GENERATOR_EQUALS")]
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class UnorderedEqualityAttribute : Attribute
     {
     }
 
     [Conditional("GENERATOR_EQUALS")]
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class ReferenceEqualityAttribute : Attribute
     {
     }
 
     [Conditional("GENERATOR_EQUALS")]
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class SetEqualityAttribute : Attribute
     {
     }
 
     [Conditional("GENERATOR_EQUALS")]
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class CustomEqualityAttribute: Attribute
     {
         public Type EqualityType { get; }

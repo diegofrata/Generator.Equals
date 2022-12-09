@@ -42,7 +42,7 @@ namespace Generator.Equals.Tests.Structs
             public bool Equals(global::Generator.Equals.Tests.Structs.SetEquality.Sample other)
             {
                 return true
-                    && global::Generator.Equals.SetEqualityComparer<int>.Default.Equals(Properties!, other.Properties!)
+                    && global::Generator.Equals.SetEqualityComparer<int>.Default.Equals(this.Properties!, other.Properties!)
                     ;
             }
             

@@ -42,8 +42,8 @@ namespace Generator.Equals.Tests.Structs
             public bool Equals(global::Generator.Equals.Tests.Structs.GenericParameterEquality.Sample<TName, TAge> other)
             {
                 return true
-                    && global::System.Collections.Generic.EqualityComparer<TName>.Default.Equals(Name!, other.Name!)
-                    && global::System.Collections.Generic.EqualityComparer<TAge>.Default.Equals(Age!, other.Age!)
+                    && global::System.Collections.Generic.EqualityComparer<TName>.Default.Equals(this.Name!, other.Name!)
+                    && global::System.Collections.Generic.EqualityComparer<TAge>.Default.Equals(this.Age!, other.Age!)
                     ;
             }
             
