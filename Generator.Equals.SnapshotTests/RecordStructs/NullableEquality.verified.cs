@@ -14,7 +14,7 @@ namespace Generator.Equals.Tests.RecordStructs
             public bool Equals(global::Generator.Equals.Tests.RecordStructs.NullableEquality.Sample other)
             {
                 return true
-                    && global::Generator.Equals.OrderedEqualityComparer<string>.Default.Equals(Addresses!, other.Addresses!)
+                    && global::Generator.Equals.OrderedEqualityComparer<string>.Default.Equals(this.Addresses!, other.Addresses!)
                     ;
             }
             

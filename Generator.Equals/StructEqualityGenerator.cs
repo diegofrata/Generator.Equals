@@ -43,10 +43,7 @@ namespace Generator.Equals
             sb.AppendLine(level, "return true");
             level++;
 
-            foreach (var property in symbol.GetProperties())
-            {
-                BuildPropertyEquality(attributesMetadata, sb, level, property, explicitMode);
-            }
+            BuildMembersEquality(symbol, attributesMetadata, sb, level, explicitMode);
 
             sb.AppendLine(level, ";");
             level--;
@@ -69,10 +66,7 @@ namespace Generator.Equals
             sb.AppendLine(level, @"var hashCode = new global::System.HashCode();");
             sb.AppendLine(level);
 
-            foreach (var property in symbol.GetProperties())
-            {
-                BuildPropertyHashCode(property, attributesMetadata, sb, level, explicitMode);
-            }
+            BuildMembersHashCode(symbol, attributesMetadata, sb, level, explicitMode);
 
             sb.AppendLine(level);
             sb.AppendLine(level, "return hashCode.ToHashCode();");

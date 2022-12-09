@@ -42,9 +42,9 @@ namespace Generator.Equals.Tests.Structs
             public bool Equals(global::Generator.Equals.Tests.Structs.CustomEquality.Sample other)
             {
                 return true
-                    && global::Generator.Equals.Tests.Structs.CustomEquality.Comparer1.Default.Equals(Name1!, other.Name1!)
-                    && global::Generator.Equals.Tests.Structs.CustomEquality.Comparer2.Instance.Equals(Name2!, other.Name2!)
-                    && new global::Generator.Equals.Tests.Structs.CustomEquality.LengthEqualityComparer().Equals(Name3!, other.Name3!)
+                    && global::Generator.Equals.Tests.Structs.CustomEquality.Comparer1.Default.Equals(this.Name1!, other.Name1!)
+                    && global::Generator.Equals.Tests.Structs.CustomEquality.Comparer2.Instance.Equals(this.Name2!, other.Name2!)
+                    && new global::Generator.Equals.Tests.Structs.CustomEquality.LengthEqualityComparer().Equals(this.Name3!, other.Name3!)
                     ;
             }
             

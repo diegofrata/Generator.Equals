@@ -43,8 +43,8 @@ namespace Generator.Equals.Tests.Classes
             {
                 return
                     !ReferenceEquals(other, null) && this.GetType() == other.GetType()
-                    && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(NoComment!, other.NoComment!)
-                    && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(Comment!, other.Comment!)
+                    && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(this.NoComment!, other.NoComment!)
+                    && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(this.Comment!, other.Comment!)
                     ;
             }
             

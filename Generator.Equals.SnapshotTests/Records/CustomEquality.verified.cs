@@ -15,9 +15,9 @@ namespace Generator.Equals.Tests.Records
             {
                 return
                     !ReferenceEquals(other, null) && EqualityContract == other.EqualityContract
-                    && global::Generator.Equals.Tests.Records.CustomEquality.Comparer1.Default.Equals(Name1!, other.Name1!)
-                    && global::Generator.Equals.Tests.Records.CustomEquality.Comparer2.Instance.Equals(Name2!, other.Name2!)
-                    && new global::Generator.Equals.Tests.Records.CustomEquality.LengthEqualityComparer().Equals(Name3!, other.Name3!)
+                    && global::Generator.Equals.Tests.Records.CustomEquality.Comparer1.Default.Equals(this.Name1!, other.Name1!)
+                    && global::Generator.Equals.Tests.Records.CustomEquality.Comparer2.Instance.Equals(this.Name2!, other.Name2!)
+                    && new global::Generator.Equals.Tests.Records.CustomEquality.LengthEqualityComparer().Equals(this.Name3!, other.Name3!)
                     ;
             }
             

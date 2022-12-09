@@ -8,17 +8,24 @@ namespace Generator.Equals
 {
     public static class SymbolHelpers
     {
-        public static IEnumerable<IPropertySymbol> GetProperties(this ITypeSymbol symbol)
+        public static IEnumerable<ISymbol> GetPropertiesAndFields(this ITypeSymbol symbol)
         {
-            var properties = symbol
+            var members = symbol
                 .GetMembers()
-                .OfType<IPropertySymbol>()
-                .Where(x => !x.IsStatic && !x.IsIndexer);
+                .Where(x =>
+                {
+                    return !x.IsStatic && x switch
+                    {
+                        IPropertySymbol { IsIndexer: false } => true,
+                        IFieldSymbol { CanBeReferencedByName: true } => true,
+                        _ => false
+                    };
+                });
             
-            foreach (var property in properties)
-                yield return property;
+            foreach (var member in members)
+                yield return member;
         }
-
+        
         // ReSharper disable once InconsistentNaming
         public static string ToNullableFQF(this ISymbol symbol) =>
             symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMiscellaneousOptions(
@@ -40,20 +47,20 @@ namespace Generator.Equals
         public static bool HasAttribute(this ISymbol symbol, INamedTypeSymbol attribute) =>
             GetAttribute(symbol, attribute) != null;
 
-        public static INamedTypeSymbol? GetInterface(this IPropertySymbol property, string interfaceFqn)
+        public static INamedTypeSymbol? GetInterface(this ITypeSymbol symbol, string interfaceFqn)
         {
-            return property.Type.AllInterfaces
+            return symbol.AllInterfaces
                 .FirstOrDefault(x => x.OriginalDefinition.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == interfaceFqn);
         }
 
-        public static ImmutableArray<ITypeSymbol>? GetIEnumerableTypeArguments(this IPropertySymbol property)
+        public static ImmutableArray<ITypeSymbol>? GetIEnumerableTypeArguments(this ITypeSymbol symbol)
         {
-            return property.GetInterface("global::System.Collections.Generic.IEnumerable<T>")?.TypeArguments;
+            return symbol.GetInterface("global::System.Collections.Generic.IEnumerable<T>")?.TypeArguments;
         }
         
-        public static ImmutableArray<ITypeSymbol>? GetIDictionaryTypeArguments(this IPropertySymbol property)
+        public static ImmutableArray<ITypeSymbol>? GetIDictionaryTypeArguments(this ITypeSymbol symbol)
         {
-            return property.GetInterface("global::System.Collections.Generic.IDictionary<TKey, TValue>")?.TypeArguments;
+            return symbol.GetInterface("global::System.Collections.Generic.IDictionary<TKey, TValue>")?.TypeArguments;
         }
     }
 }

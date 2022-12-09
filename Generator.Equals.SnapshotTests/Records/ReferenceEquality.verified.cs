@@ -15,7 +15,7 @@ namespace Generator.Equals.Tests.Records
             {
                 return
                     !ReferenceEquals(other, null) && EqualityContract == other.EqualityContract
-                    && global::Generator.Equals.ReferenceEqualityComparer<global::System.String>.Default.Equals(Name!, other.Name!)
+                    && global::Generator.Equals.ReferenceEqualityComparer<global::System.String>.Default.Equals(this.Name!, other.Name!)
                     ;
             }
             

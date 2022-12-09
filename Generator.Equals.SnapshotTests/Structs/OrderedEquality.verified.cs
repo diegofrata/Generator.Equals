@@ -42,7 +42,7 @@ namespace Generator.Equals.Tests.Structs
             public bool Equals(global::Generator.Equals.Tests.Structs.OrderedEquality.Sample other)
             {
                 return true
-                    && global::Generator.Equals.OrderedEqualityComparer<string>.Default.Equals(Addresses!, other.Addresses!)
+                    && global::Generator.Equals.OrderedEqualityComparer<string>.Default.Equals(this.Addresses!, other.Addresses!)
                     ;
             }
             

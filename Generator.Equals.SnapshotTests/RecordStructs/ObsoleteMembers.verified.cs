@@ -14,8 +14,8 @@ namespace Generator.Equals.Tests.RecordStructs
             public bool Equals(global::Generator.Equals.Tests.RecordStructs.ObsoleteMembers.Sample other)
             {
                 return true
-                    && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(NoComment!, other.NoComment!)
-                    && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(Comment!, other.Comment!)
+                    && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(this.NoComment!, other.NoComment!)
+                    && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(this.Comment!, other.Comment!)
                     ;
             }
             

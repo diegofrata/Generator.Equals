@@ -14,7 +14,7 @@ namespace Generator.Equals.Tests.RecordStructs
             public bool Equals(global::Generator.Equals.Tests.RecordStructs.ReferenceEquality.Sample other)
             {
                 return true
-                    && global::Generator.Equals.ReferenceEqualityComparer<global::System.String>.Default.Equals(Name!, other.Name!)
+                    && global::Generator.Equals.ReferenceEqualityComparer<global::System.String>.Default.Equals(this.Name!, other.Name!)
                     ;
             }
             

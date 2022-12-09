@@ -43,9 +43,9 @@ namespace Generator.Equals.Tests.Classes
             {
                 return
                     !ReferenceEquals(other, null) && this.GetType() == other.GetType()
-                    && global::Generator.Equals.OrderedEqualityComparer<string>.Default.Equals(Addresses!, other.Addresses!)
-                    && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(FirstName!, other.FirstName!)
-                    && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(LastName!, other.LastName!)
+                    && global::Generator.Equals.OrderedEqualityComparer<string>.Default.Equals(this.Addresses!, other.Addresses!)
+                    && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(this.FirstName!, other.FirstName!)
+                    && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(this.LastName!, other.LastName!)
                     ;
             }
             

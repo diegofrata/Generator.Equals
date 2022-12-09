@@ -14,7 +14,7 @@ namespace Generator.Equals.Tests.RecordStructs
             public bool Equals(global::Generator.Equals.Tests.RecordStructs.SetEquality.Sample other)
             {
                 return true
-                    && global::Generator.Equals.SetEqualityComparer<int>.Default.Equals(Properties!, other.Properties!)
+                    && global::Generator.Equals.SetEqualityComparer<int>.Default.Equals(this.Properties!, other.Properties!)
                     ;
             }
             
