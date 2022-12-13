@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿using System.CodeDom.Compiler;
 using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals
@@ -8,47 +8,44 @@ namespace Generator.Equals
         static void BuildEquals(
             ITypeSymbol symbol,
             AttributesMetadata attributesMetadata,
-            StringBuilder sb,
-            int level,
+            IndentedTextWriter writer,
             bool explicitMode)
         {
             var symbolName = symbol.ToFQF();
 
-            sb.AppendLine(level, InheritDocComment);
-            sb.AppendLine(level, GeneratedCodeAttributeDeclaration);
-            sb.AppendLine(level,  $"public bool Equals({symbolName} other)");
-            sb.AppendOpenBracket(ref level);
+            writer.WriteLine(InheritDocComment);
+            writer.WriteLine(GeneratedCodeAttributeDeclaration);
+            writer.WriteLine( $"public bool Equals({symbolName} other)");
+            writer.AppendOpenBracket();
 
-            sb.AppendLine(level, "return true");
-            level++;
+            writer.WriteLine("return true");
 
-            BuildMembersEquality(symbol, attributesMetadata, sb, level, explicitMode);
+            writer.Indent++;
+            BuildMembersEquality(symbol, attributesMetadata, writer, explicitMode);
+            writer.WriteLine(";");
+            writer.Indent--;
 
-            sb.AppendLine(level, ";");
-            level--;
-
-            sb.AppendCloseBracket(ref level);
+            writer.AppendCloseBracket();
         }
 
         static void BuildGetHashCode(
             ITypeSymbol symbol,
             AttributesMetadata attributesMetadata,
-            StringBuilder sb,
-            int level,
+            IndentedTextWriter writer,
             bool explicitMode)
         {
-            sb.AppendLine(level, InheritDocComment);
-            sb.AppendLine(level, GeneratedCodeAttributeDeclaration);
-            sb.AppendLine(level, @"public override int GetHashCode()");
-            sb.AppendOpenBracket(ref level);
-            sb.AppendLine(level, @"var hashCode = new global::System.HashCode();");
-            sb.AppendLine(level);
+            writer.WriteLine(InheritDocComment);
+            writer.WriteLine(GeneratedCodeAttributeDeclaration);
+            writer.WriteLine(@"public override int GetHashCode()");
+            writer.AppendOpenBracket();
+            writer.WriteLine(@"var hashCode = new global::System.HashCode();");
+            writer.WriteLine();
             
-            BuildMembersHashCode(symbol, attributesMetadata, sb, level, explicitMode);
+            BuildMembersHashCode(symbol, attributesMetadata, writer, explicitMode);
 
-            sb.AppendLine(level);
-            sb.AppendLine(level, "return hashCode.ToHashCode();");
-            sb.AppendCloseBracket(ref level);
+            writer.WriteLine();
+            writer.WriteLine("return hashCode.ToHashCode();");
+            writer.AppendCloseBracket();
         }
 
         public static string Generate(
@@ -56,13 +53,13 @@ namespace Generator.Equals
             AttributesMetadata attributesMetadata,
             bool explicitMode)
         {
-            var code = ContainingTypesBuilder.Build(symbol, includeSelf: true, content: (sb, level) =>
+            var code = ContainingTypesBuilder.Build(symbol, includeSelf: true, content: writer =>
             {
-                BuildEquals(symbol, attributesMetadata, sb, level, explicitMode);
+                BuildEquals(symbol, attributesMetadata, writer, explicitMode);
 
-                sb.AppendLine(level);
+                writer.WriteLine();
 
-                BuildGetHashCode(symbol, attributesMetadata, sb, level, explicitMode);
+                BuildGetHashCode(symbol, attributesMetadata, writer, explicitMode);
             });
 
             return code;

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -37,13 +39,11 @@ namespace Generator.Equals
             }
         }
 
-        public static string Build(ISymbol symbol, Action<StringBuilder, int> content, bool includeSelf = false)
+        public static string Build(ISymbol symbol, Action<IndentedTextWriter> content, bool includeSelf = false)
         {
-            // The test cases use 3000 characters on average, and these are the minimum classes.
-            // It is also recommended to select a power of two as the initial value.
-            var sb = new StringBuilder(capacity: 4096);
+            var buffer = new StringWriter(new StringBuilder(capacity: 4096));
+            var writer = new IndentedTextWriter(buffer);
             var symbols = ContainingNamespaceAndTypes(symbol, includeSelf).ToList();
-            var level = 0;
 
             for (var i = symbols.Count - 1; i >= 0; i--)
             {
@@ -51,14 +51,18 @@ namespace Generator.Equals
 
                 if (s.IsNamespace)
                 {
-                    sb.AppendLine();
-                    sb.AppendLine(EqualityGeneratorBase.EnableNullableContext);
-                    sb.AppendLine(EqualityGeneratorBase.SuppressObsoleteWarningsPragma);
-                    sb.AppendLine();
+                    writer.WriteLine();
+                    writer.WriteLine(EqualityGeneratorBase.EnableNullableContext);
+                    writer.WriteLine(EqualityGeneratorBase.SuppressObsoleteWarningsPragma);
+                    writer.WriteLine();
 
                     var namespaceName = s.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted));
-                    sb.AppendLine($"namespace {namespaceName}");
-                    sb.AppendOpenBracket(ref level);
+
+                    if (!string.IsNullOrEmpty(namespaceName))
+                    {
+                        writer.WriteLine($"namespace {namespaceName}");
+                        writer.AppendOpenBracket();
+                    }
                 }
                 else
                 {
@@ -77,16 +81,16 @@ namespace Generator.Equals
                     };
 
                     var typeName = s.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
-                    sb.AppendLine(level, $"partial {keyword} {typeName}");
-                    sb.AppendOpenBracket(ref level);
+                    writer.WriteLine($"partial {keyword} {typeName}");
+                    writer.AppendOpenBracket();
                 }
             }
 
-            content(sb, level);
+            content(writer);
 
-            symbols.Aggregate(sb, (builder, _) => sb.AppendCloseBracket(ref level));
+            writer.UnwindOpenedBrackets();
 
-            return sb.ToString();
+            return buffer.ToString();
         }
     }
 }
