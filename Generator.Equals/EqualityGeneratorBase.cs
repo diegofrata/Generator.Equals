@@ -1,6 +1,6 @@
 ﻿using System;
+using System.CodeDom.Compiler;
 using System.Linq;
-using System.Text;
 using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals
@@ -33,7 +33,7 @@ namespace Generator.Equals
 
         protected const string InheritDocComment = "/// <inheritdoc/>";
 
-        static void BuildEquality(AttributesMetadata attributesMetadata, StringBuilder sb, int level,
+        static void BuildEquality(AttributesMetadata attributesMetadata, IndentedTextWriter writer,
             ISymbol memberSymbol, ITypeSymbol typeSymbol, bool explicitMode)
         {
             if (memberSymbol.HasAttribute(attributesMetadata.IgnoreEquality))
@@ -49,13 +49,13 @@ namespace Generator.Equals
 
                 if (types != null)
                 {
-                    sb.AppendLine(level,
+                    writer.WriteLine(
                         $"&& global::Generator.Equals.DictionaryEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals(this.{propertyName}!, other.{propertyName}!)");
                 }
                 else
                 {
                     types = typeSymbol.GetIEnumerableTypeArguments()!;
-                    sb.AppendLine(level,
+                    writer.WriteLine(
                         $"&& global::Generator.Equals.UnorderedEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals(this.{propertyName}!, other.{propertyName}!)");
                 }
             }
@@ -63,19 +63,19 @@ namespace Generator.Equals
             {
                 var types = typeSymbol.GetIEnumerableTypeArguments()!;
 
-                sb.AppendLine(level,
+                writer.WriteLine(
                     $"&& global::Generator.Equals.OrderedEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals(this.{propertyName}!, other.{propertyName}!)");
             }
             else if (memberSymbol.HasAttribute(attributesMetadata.ReferenceEquality))
             {
-                sb.AppendLine(level,
+                writer.WriteLine(
                     $"&& global::Generator.Equals.ReferenceEqualityComparer<{typeName}>.Default.Equals(this.{propertyName}!, other.{propertyName}!)");
             }
             else if (memberSymbol.HasAttribute(attributesMetadata.SetEquality))
             {
                 var types = typeSymbol.GetIEnumerableTypeArguments()!;
 
-                sb.AppendLine(level,
+                writer.WriteLine(
                     $"&& global::Generator.Equals.SetEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals(this.{propertyName}!, other.{propertyName}!)");
             }
             else if (memberSymbol.HasAttribute(attributesMetadata.CustomEquality))
@@ -86,12 +86,12 @@ namespace Generator.Equals
 
                 if (comparerType.GetMembers().Any(x => x.Name == comparerMemberName && x.IsStatic) || comparerType.GetPropertiesAndFields().Any(x => x.Name == comparerMemberName && x.IsStatic))
                 {
-                    sb.AppendLine(level,
+                    writer.WriteLine(
                         $"&& {comparerType.ToFQF()}.{comparerMemberName}.Equals(this.{propertyName}!, other.{propertyName}!)");
                 }
                 else
                 {
-                    sb.AppendLine(level,
+                    writer.WriteLine(
                         $"&& new {comparerType.ToFQF()}().Equals(this.{propertyName}!, other.{propertyName}!)");
                 }
             }
@@ -100,13 +100,13 @@ namespace Generator.Equals
                 (!explicitMode && memberSymbol is IPropertySymbol)
                 )
             {
-                sb.AppendLine(level,
+                writer.WriteLine(
                     $"&& global::System.Collections.Generic.EqualityComparer<{typeName}>.Default.Equals(this.{propertyName}!, other.{propertyName}!)");
             }
         }
         
-        public static void BuildMembersEquality(ITypeSymbol symbol, AttributesMetadata attributesMetadata, StringBuilder sb,
-            int level, bool explicitMode, Predicate<ISymbol>? filter = null)
+        public static void BuildMembersEquality(ITypeSymbol symbol, AttributesMetadata attributesMetadata, IndentedTextWriter writer,
+            bool explicitMode, Predicate<ISymbol>? filter = null)
         {
             foreach (var member in symbol.GetPropertiesAndFields())
             {
@@ -116,10 +116,10 @@ namespace Generator.Equals
                 switch (member)
                 {
                     case IPropertySymbol propertySymbol:
-                        BuildEquality(attributesMetadata, sb, level, propertySymbol, propertySymbol.Type, explicitMode);
+                        BuildEquality(attributesMetadata, writer, propertySymbol, propertySymbol.Type, explicitMode);
                         break;
                     case IFieldSymbol fieldSymbol:
-                        BuildEquality(attributesMetadata, sb, level, fieldSymbol, fieldSymbol.Type, explicitMode);
+                        BuildEquality(attributesMetadata, writer, fieldSymbol, fieldSymbol.Type, explicitMode);
                         break;
                     default:
                         throw new NotSupportedException($"Member of type {member.GetType()} not supported");
@@ -130,8 +130,7 @@ namespace Generator.Equals
             ISymbol memberSymbol,
             ITypeSymbol typeSymbol,
             AttributesMetadata attributesMetadata,
-            StringBuilder sb,
-            int level,
+            IndentedTextWriter writer,
             bool explicitMode)
         {
             if (memberSymbol.HasAttribute(attributesMetadata.IgnoreEquality))
@@ -143,15 +142,15 @@ namespace Generator.Equals
 
             void BuildHashCodeAdd(Action action)
             {
-                sb.AppendLine(level, $"hashCode.Add(");
-                level++;
+                writer.WriteLine($"hashCode.Add(");
 
-                sb.AppendLine(level, $"this.{propertyName}!,");
-                sb.AppendMargin(level);
+                writer.Indent++;
+                writer.WriteLine($"this.{propertyName}!,");
 
                 action();
+                writer.Indent--;
 
-                sb.AppendLine(");");
+                writer.WriteLine(");");
             }
 
             if (memberSymbol.HasAttribute(attributesMetadata.UnorderedEquality))
@@ -162,13 +161,13 @@ namespace Generator.Equals
 
                     if (types != null)
                     {
-                        sb.Append(
+                        writer.Write(
                             $"global::Generator.Equals.DictionaryEqualityComparer<{string.Join(", ", types.Value)}>.Default");
                     }
                     else
                     {
                         types = typeSymbol.GetIEnumerableTypeArguments()!;
-                        sb.Append(
+                        writer.Write(
                             $"global::Generator.Equals.UnorderedEqualityComparer<{string.Join(", ", types.Value)}>.Default");
                     }
                 });
@@ -178,7 +177,7 @@ namespace Generator.Equals
                 BuildHashCodeAdd(() =>
                 {
                     var types = typeSymbol.GetIEnumerableTypeArguments()!;
-                    sb.Append(
+                    writer.Write(
                         $"global::Generator.Equals.OrderedEqualityComparer<{string.Join(", ", types.Value)}>.Default");
                 });
             }
@@ -186,7 +185,7 @@ namespace Generator.Equals
             {
                 BuildHashCodeAdd(() =>
                 {
-                    sb.Append($"global::Generator.Equals.ReferenceEqualityComparer<{typeName}>.Default");
+                    writer.Write($"global::Generator.Equals.ReferenceEqualityComparer<{typeName}>.Default");
                 });
             }
             else if (memberSymbol.HasAttribute(attributesMetadata.SetEquality))
@@ -194,7 +193,7 @@ namespace Generator.Equals
                 BuildHashCodeAdd(() =>
                 {
                     var types = typeSymbol.GetIEnumerableTypeArguments()!;
-                    sb.Append(
+                    writer.Write(
                         $"global::Generator.Equals.SetEqualityComparer<{string.Join(", ", types.Value)}>.Default");
                 });
             }
@@ -209,11 +208,11 @@ namespace Generator.Equals
                     if (comparerType.GetMembers().Any(x => x.Name == comparerMemberName && x.IsStatic) || comparerType
                             .GetPropertiesAndFields().Any(x => x.Name == comparerMemberName && x.IsStatic))
                     {
-                        sb.Append($"{comparerType.ToFQF()}.{comparerMemberName}");
+                        writer.Write($"{comparerType.ToFQF()}.{comparerMemberName}");
                     }
                     else
                     {
-                        sb.Append($"new {comparerType.ToFQF()}()");
+                        writer.Write($"new {comparerType.ToFQF()}()");
                     }
                 });
             }
@@ -224,13 +223,13 @@ namespace Generator.Equals
             {
                 BuildHashCodeAdd(() =>
                 {
-                    sb.Append($"global::System.Collections.Generic.EqualityComparer<{typeName}>.Default");
+                    writer.Write($"global::System.Collections.Generic.EqualityComparer<{typeName}>.Default");
                 });
             }
         }
         
-        public static void BuildMembersHashCode(ITypeSymbol symbol, AttributesMetadata attributesMetadata, StringBuilder sb,
-            int level, bool explicitMode, Predicate<ISymbol>? filter = null)
+        public static void BuildMembersHashCode(ITypeSymbol symbol, AttributesMetadata attributesMetadata, IndentedTextWriter writer,
+            bool explicitMode, Predicate<ISymbol>? filter = null)
         {
             foreach (var member in symbol.GetPropertiesAndFields())
             {
@@ -240,10 +239,10 @@ namespace Generator.Equals
                 switch (member)
                 {
                     case IPropertySymbol propertySymbol:
-                        BuildHashCode(propertySymbol, propertySymbol.Type, attributesMetadata, sb, level, explicitMode);
+                        BuildHashCode(propertySymbol, propertySymbol.Type, attributesMetadata, writer, explicitMode);
                         break;
                     case IFieldSymbol fieldSymbol:
-                        BuildHashCode(fieldSymbol, fieldSymbol.Type, attributesMetadata, sb, level, explicitMode);
+                        BuildHashCode(fieldSymbol, fieldSymbol.Type, attributesMetadata, writer, explicitMode);
                         break;
                     default:
                         throw new NotSupportedException($"Member of type {member.GetType()} not supported");

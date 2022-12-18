@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿using System.CodeDom.Compiler;
 using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals
@@ -8,70 +8,68 @@ namespace Generator.Equals
         static void BuildEquals(
             ITypeSymbol symbol,
             AttributesMetadata attributesMetadata,
-            StringBuilder sb,
-            int level,
+            IndentedTextWriter writer,
             bool explicitMode)
         {
             var symbolName = symbol.ToFQF();
             
-            sb.AppendLine(level, EqualsOperatorCodeComment);
-            sb.AppendLine(level, GeneratedCodeAttributeDeclaration);
-            sb.AppendLine(level, "public static bool operator ==(");
-            sb.AppendLine(level + 1, $"{symbolName} left,");
-            sb.AppendLine(level + 1, $"{symbolName} right) =>");
-            sb.AppendLine(level + 1, $"global::System.Collections.Generic.EqualityComparer<{symbolName}>.Default");
-            sb.AppendLine(level + 2, $".Equals(left, right);");
-            sb.AppendLine(level);
+            writer.WriteLines(EqualsOperatorCodeComment);
+            writer.WriteLine(GeneratedCodeAttributeDeclaration);
+            writer.WriteLine("public static bool operator ==(");
+            writer.WriteLine(1, $"{symbolName} left,");
+            writer.WriteLine(1, $"{symbolName} right) =>");
+            writer.WriteLine(1, $"global::System.Collections.Generic.EqualityComparer<{symbolName}>.Default");
+            writer.WriteLine(2, $".Equals(left, right);");
+            writer.WriteLine();
 
-            sb.AppendLine(level, NotEqualsOperatorCodeComment);
-            sb.AppendLine(level, GeneratedCodeAttributeDeclaration);
-            sb.AppendLine(level, $"public static bool operator !=({symbolName} left, {symbolName} right) =>");
-            sb.AppendLine(level + 1, "!(left == right);");
-            sb.AppendLine(level);
+            writer.WriteLines(NotEqualsOperatorCodeComment);
+            writer.WriteLine(GeneratedCodeAttributeDeclaration);
+            writer.WriteLine($"public static bool operator !=({symbolName} left, {symbolName} right) =>");
+            writer.WriteLine(1, "!(left == right);");
+            writer.WriteLine();
 
-            sb.AppendLine(level, InheritDocComment);
-            sb.AppendLine(level, GeneratedCodeAttributeDeclaration);
-            sb.AppendLine(level, "public override bool Equals(object? obj) =>");
-            sb.AppendLine(level + 1, $"obj is {symbolName} o && Equals(o);");
-            sb.AppendLine(level);
+            writer.WriteLine(InheritDocComment);
+            writer.WriteLine(GeneratedCodeAttributeDeclaration);
+            writer.WriteLine("public override bool Equals(object? obj) =>");
+            writer.WriteLine(1, $"obj is {symbolName} o && Equals(o);");
+            writer.WriteLine();
 
-            sb.AppendLine(level, InheritDocComment);
-            sb.AppendLine(level, GeneratedCodeAttributeDeclaration);
-            sb.AppendLine(level, $"public bool Equals({symbolName} other)");
-            sb.AppendOpenBracket(ref level);
+            writer.WriteLine(InheritDocComment);
+            writer.WriteLine(GeneratedCodeAttributeDeclaration);
+            writer.WriteLine($"public bool Equals({symbolName} other)");
+            writer.AppendOpenBracket();
 
-            sb.AppendLine(level, "return true");
-            level++;
+            writer.WriteLine("return true");
 
-            BuildMembersEquality(symbol, attributesMetadata, sb, level, explicitMode);
+            writer.Indent++;
+            BuildMembersEquality(symbol, attributesMetadata, writer, explicitMode);
 
-            sb.AppendLine(level, ";");
-            level--;
+            writer.WriteLine(";");
+            writer.Indent--;
 
-            sb.AppendCloseBracket(ref level);
+            writer.AppendCloseBracket();
         }
 
         static void BuildGetHashCode(
             ITypeSymbol symbol,
             AttributesMetadata attributesMetadata,
-            StringBuilder sb,
-            int level,
+            IndentedTextWriter writer,
             bool explicitMode)
         {
-            sb.AppendLine(level, InheritDocComment);
-            sb.AppendLine(level, GeneratedCodeAttributeDeclaration);
-            sb.AppendLine(level, @"public override int GetHashCode()");
-            sb.AppendOpenBracket(ref level);
+            writer.WriteLine(InheritDocComment);
+            writer.WriteLine(GeneratedCodeAttributeDeclaration);
+            writer.WriteLine(@"public override int GetHashCode()");
+            writer.AppendOpenBracket();
 
-            sb.AppendLine(level, @"var hashCode = new global::System.HashCode();");
-            sb.AppendLine(level);
+            writer.WriteLine(@"var hashCode = new global::System.HashCode();");
+            writer.WriteLine();
 
-            BuildMembersHashCode(symbol, attributesMetadata, sb, level, explicitMode);
+            BuildMembersHashCode(symbol, attributesMetadata, writer, explicitMode);
 
-            sb.AppendLine(level);
-            sb.AppendLine(level, "return hashCode.ToHashCode();");
+            writer.WriteLine();
+            writer.WriteLine("return hashCode.ToHashCode();");
 
-            sb.AppendCloseBracket(ref level);
+            writer.AppendCloseBracket();
         }
         
         public static string Generate(
@@ -79,19 +77,19 @@ namespace Generator.Equals
             AttributesMetadata attributesMetadata,
             bool explicitMode)
         {
-            var code = ContainingTypesBuilder.Build(symbol, includeSelf: false, content: (sb, level) =>
+            var code = ContainingTypesBuilder.Build(symbol, includeSelf: false, content: writer =>
             {
                 var typeName = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
-                sb.AppendLine(level, $"partial struct {typeName} : global::System.IEquatable<{typeName}>");
-                sb.AppendOpenBracket(ref level);
+                writer.WriteLine($"partial struct {typeName} : global::System.IEquatable<{typeName}>");
+                writer.AppendOpenBracket();
 
-                BuildEquals(symbol, attributesMetadata, sb, level, explicitMode);
+                BuildEquals(symbol, attributesMetadata, writer, explicitMode);
 
-                sb.AppendLine(level);
+                writer.WriteLine();
                 
-                BuildGetHashCode(symbol, attributesMetadata, sb, level, explicitMode);
+                BuildGetHashCode(symbol, attributesMetadata, writer, explicitMode);
 
-                sb.AppendCloseBracket(ref level);
+                writer.AppendCloseBracket();
             });
 
             return code;

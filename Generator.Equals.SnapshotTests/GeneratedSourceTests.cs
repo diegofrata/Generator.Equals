@@ -29,7 +29,7 @@ namespace Generator.Equals.SnapshotTests
 
         public static IEnumerable<object[]> SampleFiles => FindSampleFiles();
 
-        async Task VerifyGeneratedSource(string directory, string fileName, string source,
+        public static async Task VerifyGeneratedSource(string directory, string fileName, string source, OutputKind outputKind = OutputKind.DynamicallyLinkedLibrary,
             CancellationToken ct = default)
         {
             var referenceAssemblies = ReferenceAssemblies.Net.Net60;
@@ -42,7 +42,7 @@ namespace Generator.Equals.SnapshotTests
                 },
                 references: references
                     .Add(MetadataReference.CreateFromFile(typeof(CustomEqualityAttribute).Assembly.Location)),
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
+                options: new CSharpCompilationOptions(outputKind, nullableContextOptions: NullableContextOptions.Enable));
 
             var driver = CSharpGeneratorDriver
                 .Create(new EqualsGenerator())

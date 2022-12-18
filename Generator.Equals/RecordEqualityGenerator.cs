@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿using System.CodeDom.Compiler;
 using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals
@@ -8,62 +8,61 @@ namespace Generator.Equals
         static void BuildEquals(
             ITypeSymbol symbol,
             AttributesMetadata attributesMetadata,
-            StringBuilder sb,
-            int level,
+            IndentedTextWriter writer,
             bool explicitMode,
             bool ignoreInheritedMembers)
         {
             var symbolName = symbol.ToFQF();
             var baseTypeName = symbol.BaseType?.ToFQF();
 
-            sb.AppendLine(level, InheritDocComment);
-            sb.AppendLine(level, GeneratedCodeAttributeDeclaration);
-            sb.AppendLine(level, symbol.IsSealed
+            writer.WriteLine(InheritDocComment);
+            writer.WriteLine(GeneratedCodeAttributeDeclaration);
+            writer.WriteLine(symbol.IsSealed
                 ? $"public bool Equals({symbolName}? other)"
                 : $"public virtual bool Equals({symbolName}? other)");
-            sb.AppendOpenBracket(ref level);
+            writer.AppendOpenBracket();
 
-            sb.AppendLine(level, "return");
-            level++;
+            writer.WriteLine("return");
 
-            sb.AppendLine(level, baseTypeName == "object" || ignoreInheritedMembers
+            writer.Indent++;
+
+            writer.WriteLine(baseTypeName == "object" || ignoreInheritedMembers
                 ? "!ReferenceEquals(other, null) && EqualityContract == other.EqualityContract"
                 : $"base.Equals(({baseTypeName}?)other)");
-            
-            BuildMembersEquality(symbol, attributesMetadata, sb, level, explicitMode, m =>  m.ToFQF() != "EqualityContract");
 
-            sb.AppendLine(level, ";");
-            level--;
+            BuildMembersEquality(symbol, attributesMetadata, writer, explicitMode, m => m.ToFQF() != "EqualityContract");
 
-            sb.AppendCloseBracket(ref level);
+            writer.WriteLine(";");
+            writer.Indent--;
+
+            writer.AppendCloseBracket();
         }
 
         static void BuildGetHashCode(
             ITypeSymbol symbol,
             AttributesMetadata attributesMetadata,
-            StringBuilder sb,
-            int level,
+            IndentedTextWriter writer,
             bool explicitMode,
             bool ignoreInheritedMembers)
         {
             var baseTypeName = symbol.BaseType?.ToFQF();
 
-            sb.AppendLine(level, InheritDocComment);
-            sb.AppendLine(level, GeneratedCodeAttributeDeclaration);
-            sb.AppendLine(level, @"public override int GetHashCode()");
-            sb.AppendOpenBracket(ref level);
-            sb.AppendLine(level, @"var hashCode = new global::System.HashCode();");
-            sb.AppendLine(level);
+            writer.WriteLine(InheritDocComment);
+            writer.WriteLine(GeneratedCodeAttributeDeclaration);
+            writer.WriteLine(@"public override int GetHashCode()");
+            writer.AppendOpenBracket();
+            writer.WriteLine(@"var hashCode = new global::System.HashCode();");
+            writer.WriteLine();
 
-            sb.AppendLine(level, baseTypeName == "object" || ignoreInheritedMembers
+            writer.WriteLine(baseTypeName == "object" || ignoreInheritedMembers
                 ? "hashCode.Add(this.EqualityContract);"
                 : "hashCode.Add(base.GetHashCode());");
-            
-            BuildMembersHashCode(symbol, attributesMetadata, sb, level, explicitMode, m =>  m.ToFQF() != "EqualityContract");
 
-            sb.AppendLine(level);
-            sb.AppendLine(level, "return hashCode.ToHashCode();");
-            sb.AppendCloseBracket(ref level);
+            BuildMembersHashCode(symbol, attributesMetadata, writer, explicitMode, m => m.ToFQF() != "EqualityContract");
+
+            writer.WriteLine();
+            writer.WriteLine("return hashCode.ToHashCode();");
+            writer.AppendCloseBracket();
         }
 
         public static string Generate(
@@ -72,13 +71,13 @@ namespace Generator.Equals
             bool explicitMode,
             bool ignoreInheritedMembers)
         {
-            var code = ContainingTypesBuilder.Build(symbol, includeSelf: true, content: (sb, level) =>
+            var code = ContainingTypesBuilder.Build(symbol, includeSelf: true, content: writer =>
             {
-                BuildEquals(symbol, attributesMetadata, sb, level, explicitMode, ignoreInheritedMembers);
+                BuildEquals(symbol, attributesMetadata, writer, explicitMode, ignoreInheritedMembers);
 
-                sb.AppendLine(level);
+                writer.WriteLine();
 
-                BuildGetHashCode(symbol, attributesMetadata, sb, level, explicitMode, ignoreInheritedMembers);
+                BuildGetHashCode(symbol, attributesMetadata, writer, explicitMode, ignoreInheritedMembers);
             });
 
             return code;
