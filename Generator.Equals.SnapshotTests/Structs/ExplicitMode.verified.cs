@@ -19,7 +19,7 @@ namespace Generator.Equals.Tests.Structs
             public static bool operator ==(
                 global::Generator.Equals.Tests.Structs.ExplicitMode.Sample left,
                 global::Generator.Equals.Tests.Structs.ExplicitMode.Sample right) =>
-                global::System.Collections.Generic.EqualityComparer<global::Generator.Equals.Tests.Structs.ExplicitMode.Sample>.Default
+                global::Generator.Equals.DefaultEqualityComparer<global::Generator.Equals.Tests.Structs.ExplicitMode.Sample>.Default
                     .Equals(left, right);
             
             /// <summary>
@@ -42,7 +42,7 @@ namespace Generator.Equals.Tests.Structs
             public bool Equals(global::Generator.Equals.Tests.Structs.ExplicitMode.Sample other)
             {
                 return true
-                    && global::System.Collections.Generic.EqualityComparer<global::System.Int32>.Default.Equals(this.Age!, other.Age!)
+                    && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.Age!, other.Age!)
                     ;
             }
             
@@ -54,7 +54,7 @@ namespace Generator.Equals.Tests.Structs
                 
                 hashCode.Add(
                     this.Age!,
-                    global::System.Collections.Generic.EqualityComparer<global::System.Int32>.Default);
+                    global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default);
                 
                 return hashCode.ToHashCode();
             }

@@ -8,7 +8,7 @@ namespace Generator.Equals
         
         public IEqualityComparer<T> EqualityComparer { get; }
 
-        public SetEqualityComparer() : this(EqualityComparer<T>.Default)
+        public SetEqualityComparer() : this(DefaultEqualityComparer<T>.Default)
         {
         }
 

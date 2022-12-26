@@ -18,7 +18,7 @@ namespace Generator.Equals
             writer.WriteLine("public static bool operator ==(");
             writer.WriteLine(1, $"{symbolName} left,");
             writer.WriteLine(1, $"{symbolName} right) =>");
-            writer.WriteLine(1, $"global::System.Collections.Generic.EqualityComparer<{symbolName}>.Default");
+            writer.WriteLine(1, $"global::Generator.Equals.DefaultEqualityComparer<{symbolName}>.Default");
             writer.WriteLine(2, $".Equals(left, right);");
             writer.WriteLine();
 

@@ -15,7 +15,7 @@ namespace Generator.Equals.Tests.Records
             {
                 return
                     !ReferenceEquals(other, null) && EqualityContract == other.EqualityContract
-                    && global::System.Collections.Generic.EqualityComparer<global::System.Int32>.Default.Equals(this.Age!, other.Age!)
+                    && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.Age!, other.Age!)
                     ;
             }
             
@@ -28,7 +28,7 @@ namespace Generator.Equals.Tests.Records
                 hashCode.Add(this.EqualityContract);
                 hashCode.Add(
                     this.Age!,
-                    global::System.Collections.Generic.EqualityComparer<global::System.Int32>.Default);
+                    global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default);
                 
                 return hashCode.ToHashCode();
             }

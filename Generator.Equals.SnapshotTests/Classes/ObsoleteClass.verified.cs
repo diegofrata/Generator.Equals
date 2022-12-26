@@ -19,7 +19,7 @@ namespace Generator.Equals.Tests.Classes
             public static bool operator ==(
                 global::Generator.Equals.Tests.Classes.ObsoleteClass.Sample? left,
                 global::Generator.Equals.Tests.Classes.ObsoleteClass.Sample? right) =>
-                global::System.Collections.Generic.EqualityComparer<global::Generator.Equals.Tests.Classes.ObsoleteClass.Sample?>.Default
+                global::Generator.Equals.DefaultEqualityComparer<global::Generator.Equals.Tests.Classes.ObsoleteClass.Sample?>.Default
                     .Equals(left, right);
             
             /// <summary>
@@ -43,7 +43,7 @@ namespace Generator.Equals.Tests.Classes
             {
                 return
                     !ReferenceEquals(other, null) && this.GetType() == other.GetType()
-                    && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(this.Something!, other.Something!)
+                    && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.Something!, other.Something!)
                     ;
             }
             
@@ -56,7 +56,7 @@ namespace Generator.Equals.Tests.Classes
                 hashCode.Add(this.GetType());
                 hashCode.Add(
                     this.Something!,
-                    global::System.Collections.Generic.EqualityComparer<global::System.String>.Default);
+                    global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default);
                 
                 return hashCode.ToHashCode();
             }

@@ -101,7 +101,7 @@ namespace Generator.Equals
                 )
             {
                 writer.WriteLine(
-                    $"&& global::System.Collections.Generic.EqualityComparer<{typeName}>.Default.Equals(this.{propertyName}!, other.{propertyName}!)");
+                    $"&& global::Generator.Equals.DefaultEqualityComparer<{typeName}>.Default.Equals(this.{propertyName}!, other.{propertyName}!)");
             }
         }
         
@@ -223,7 +223,7 @@ namespace Generator.Equals
             {
                 BuildHashCodeAdd(() =>
                 {
-                    writer.Write($"global::System.Collections.Generic.EqualityComparer<{typeName}>.Default");
+                    writer.Write($"global::Generator.Equals.DefaultEqualityComparer<{typeName}>.Default");
                 });
             }
         }

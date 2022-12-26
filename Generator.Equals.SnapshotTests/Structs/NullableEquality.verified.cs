@@ -19,7 +19,7 @@ namespace Generator.Equals.Tests.Structs
             public static bool operator ==(
                 global::Generator.Equals.Tests.Structs.NullableEquality.Sample left,
                 global::Generator.Equals.Tests.Structs.NullableEquality.Sample right) =>
-                global::System.Collections.Generic.EqualityComparer<global::Generator.Equals.Tests.Structs.NullableEquality.Sample>.Default
+                global::Generator.Equals.DefaultEqualityComparer<global::Generator.Equals.Tests.Structs.NullableEquality.Sample>.Default
                     .Equals(left, right);
             
             /// <summary>

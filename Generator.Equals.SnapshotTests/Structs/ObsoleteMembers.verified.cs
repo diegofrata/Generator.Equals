@@ -19,7 +19,7 @@ namespace Generator.Equals.Tests.Structs
             public static bool operator ==(
                 global::Generator.Equals.Tests.Structs.ObsoleteMembers.Sample left,
                 global::Generator.Equals.Tests.Structs.ObsoleteMembers.Sample right) =>
-                global::System.Collections.Generic.EqualityComparer<global::Generator.Equals.Tests.Structs.ObsoleteMembers.Sample>.Default
+                global::Generator.Equals.DefaultEqualityComparer<global::Generator.Equals.Tests.Structs.ObsoleteMembers.Sample>.Default
                     .Equals(left, right);
             
             /// <summary>
@@ -42,8 +42,8 @@ namespace Generator.Equals.Tests.Structs
             public bool Equals(global::Generator.Equals.Tests.Structs.ObsoleteMembers.Sample other)
             {
                 return true
-                    && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(this.NoComment!, other.NoComment!)
-                    && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(this.Comment!, other.Comment!)
+                    && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.NoComment!, other.NoComment!)
+                    && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.Comment!, other.Comment!)
                     ;
             }
             
@@ -55,10 +55,10 @@ namespace Generator.Equals.Tests.Structs
                 
                 hashCode.Add(
                     this.NoComment!,
-                    global::System.Collections.Generic.EqualityComparer<global::System.String>.Default);
+                    global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default);
                 hashCode.Add(
                     this.Comment!,
-                    global::System.Collections.Generic.EqualityComparer<global::System.String>.Default);
+                    global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default);
                 
                 return hashCode.ToHashCode();
             }
