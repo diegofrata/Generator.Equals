@@ -15,7 +15,7 @@ partial class ClassSample : global::System.IEquatable<ClassSample>
     public static bool operator ==(
         global::ClassSample? left,
         global::ClassSample? right) =>
-        global::System.Collections.Generic.EqualityComparer<global::ClassSample?>.Default
+        global::Generator.Equals.DefaultEqualityComparer<global::ClassSample?>.Default
             .Equals(left, right);
     
     /// <summary>
@@ -39,8 +39,8 @@ partial class ClassSample : global::System.IEquatable<ClassSample>
     {
         return
             !ReferenceEquals(other, null) && this.GetType() == other.GetType()
-            && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(this.Name!, other.Name!)
-            && global::System.Collections.Generic.EqualityComparer<global::System.Int32>.Default.Equals(this.Age!, other.Age!)
+            && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.Name!, other.Name!)
+            && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.Age!, other.Age!)
             ;
     }
     
@@ -53,10 +53,10 @@ partial class ClassSample : global::System.IEquatable<ClassSample>
         hashCode.Add(this.GetType());
         hashCode.Add(
             this.Name!,
-            global::System.Collections.Generic.EqualityComparer<global::System.String>.Default);
+            global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default);
         hashCode.Add(
             this.Age!,
-            global::System.Collections.Generic.EqualityComparer<global::System.Int32>.Default);
+            global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default);
         
         return hashCode.ToHashCode();
     }

@@ -19,7 +19,7 @@ namespace Generator.Equals.Tests.Structs
             public static bool operator ==(
                 global::Generator.Equals.Tests.Structs.MultiplePartialsEquality.Sample left,
                 global::Generator.Equals.Tests.Structs.MultiplePartialsEquality.Sample right) =>
-                global::System.Collections.Generic.EqualityComparer<global::Generator.Equals.Tests.Structs.MultiplePartialsEquality.Sample>.Default
+                global::Generator.Equals.DefaultEqualityComparer<global::Generator.Equals.Tests.Structs.MultiplePartialsEquality.Sample>.Default
                     .Equals(left, right);
             
             /// <summary>
@@ -43,8 +43,8 @@ namespace Generator.Equals.Tests.Structs
             {
                 return true
                     && global::Generator.Equals.OrderedEqualityComparer<string>.Default.Equals(this.Addresses!, other.Addresses!)
-                    && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(this.FirstName!, other.FirstName!)
-                    && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(this.LastName!, other.LastName!)
+                    && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.FirstName!, other.FirstName!)
+                    && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.LastName!, other.LastName!)
                     ;
             }
             
@@ -59,10 +59,10 @@ namespace Generator.Equals.Tests.Structs
                     global::Generator.Equals.OrderedEqualityComparer<string>.Default);
                 hashCode.Add(
                     this.FirstName!,
-                    global::System.Collections.Generic.EqualityComparer<global::System.String>.Default);
+                    global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default);
                 hashCode.Add(
                     this.LastName!,
-                    global::System.Collections.Generic.EqualityComparer<global::System.String>.Default);
+                    global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default);
                 
                 return hashCode.ToHashCode();
             }

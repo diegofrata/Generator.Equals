@@ -14,7 +14,7 @@ namespace Generator.Equals.Tests.RecordStructs
             public bool Equals(global::Generator.Equals.Tests.RecordStructs.IgnoreEquality.Sample other)
             {
                 return true
-                    && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(this.Name!, other.Name!)
+                    && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.Name!, other.Name!)
                     ;
             }
             
@@ -26,7 +26,7 @@ namespace Generator.Equals.Tests.RecordStructs
                 
                 hashCode.Add(
                     this.Name!,
-                    global::System.Collections.Generic.EqualityComparer<global::System.String>.Default);
+                    global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default);
                 
                 return hashCode.ToHashCode();
             }

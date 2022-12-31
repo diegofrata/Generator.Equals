@@ -19,7 +19,7 @@ namespace Generator.Equals.Tests.Structs
             public static bool operator ==(
                 global::Generator.Equals.Tests.Structs.DictionaryEquality.Sample left,
                 global::Generator.Equals.Tests.Structs.DictionaryEquality.Sample right) =>
-                global::System.Collections.Generic.EqualityComparer<global::Generator.Equals.Tests.Structs.DictionaryEquality.Sample>.Default
+                global::Generator.Equals.DefaultEqualityComparer<global::Generator.Equals.Tests.Structs.DictionaryEquality.Sample>.Default
                     .Equals(left, right);
             
             /// <summary>

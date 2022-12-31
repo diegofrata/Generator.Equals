@@ -15,7 +15,7 @@ partial struct StructSample : global::System.IEquatable<StructSample>
     public static bool operator ==(
         global::StructSample left,
         global::StructSample right) =>
-        global::System.Collections.Generic.EqualityComparer<global::StructSample>.Default
+        global::Generator.Equals.DefaultEqualityComparer<global::StructSample>.Default
             .Equals(left, right);
     
     /// <summary>
@@ -38,8 +38,8 @@ partial struct StructSample : global::System.IEquatable<StructSample>
     public bool Equals(global::StructSample other)
     {
         return true
-            && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(this.Name!, other.Name!)
-            && global::System.Collections.Generic.EqualityComparer<global::System.Int32>.Default.Equals(this.Age!, other.Age!)
+            && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.Name!, other.Name!)
+            && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.Age!, other.Age!)
             ;
     }
     
@@ -51,10 +51,10 @@ partial struct StructSample : global::System.IEquatable<StructSample>
         
         hashCode.Add(
             this.Name!,
-            global::System.Collections.Generic.EqualityComparer<global::System.String>.Default);
+            global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default);
         hashCode.Add(
             this.Age!,
-            global::System.Collections.Generic.EqualityComparer<global::System.Int32>.Default);
+            global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default);
         
         return hashCode.ToHashCode();
     }

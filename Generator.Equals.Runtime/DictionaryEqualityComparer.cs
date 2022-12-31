@@ -33,7 +33,7 @@ namespace Generator.Equals
         
         public IEqualityComparer<TValue> ValueEqualityComparer { get; }
 
-        public DictionaryEqualityComparer() : this(EqualityComparer<TValue>.Default)
+        public DictionaryEqualityComparer() : this(DefaultEqualityComparer<TValue>.Default)
         {
         }
         

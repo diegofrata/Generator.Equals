@@ -15,8 +15,8 @@ namespace Generator.Equals.Tests.Records
             {
                 return
                     !ReferenceEquals(other, null) && EqualityContract == other.EqualityContract
-                    && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(this.NoComment!, other.NoComment!)
-                    && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(this.Comment!, other.Comment!)
+                    && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.NoComment!, other.NoComment!)
+                    && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.Comment!, other.Comment!)
                     ;
             }
             
@@ -29,10 +29,10 @@ namespace Generator.Equals.Tests.Records
                 hashCode.Add(this.EqualityContract);
                 hashCode.Add(
                     this.NoComment!,
-                    global::System.Collections.Generic.EqualityComparer<global::System.String>.Default);
+                    global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default);
                 hashCode.Add(
                     this.Comment!,
-                    global::System.Collections.Generic.EqualityComparer<global::System.String>.Default);
+                    global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default);
                 
                 return hashCode.ToHashCode();
             }

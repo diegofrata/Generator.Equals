@@ -10,8 +10,8 @@ partial record struct RecordStructSample
     public bool Equals(global::RecordStructSample other)
     {
         return true
-            && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(this.Name!, other.Name!)
-            && global::System.Collections.Generic.EqualityComparer<global::System.Int32>.Default.Equals(this.Age!, other.Age!)
+            && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.Name!, other.Name!)
+            && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.Age!, other.Age!)
             ;
     }
     
@@ -23,10 +23,10 @@ partial record struct RecordStructSample
         
         hashCode.Add(
             this.Name!,
-            global::System.Collections.Generic.EqualityComparer<global::System.String>.Default);
+            global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default);
         hashCode.Add(
             this.Age!,
-            global::System.Collections.Generic.EqualityComparer<global::System.Int32>.Default);
+            global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default);
         
         return hashCode.ToHashCode();
     }

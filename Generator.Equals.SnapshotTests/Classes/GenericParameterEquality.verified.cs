@@ -19,7 +19,7 @@ namespace Generator.Equals.Tests.Classes
             public static bool operator ==(
                 global::Generator.Equals.Tests.Classes.GenericParameterEquality.Sample<TName, TAge>? left,
                 global::Generator.Equals.Tests.Classes.GenericParameterEquality.Sample<TName, TAge>? right) =>
-                global::System.Collections.Generic.EqualityComparer<global::Generator.Equals.Tests.Classes.GenericParameterEquality.Sample<TName, TAge>?>.Default
+                global::Generator.Equals.DefaultEqualityComparer<global::Generator.Equals.Tests.Classes.GenericParameterEquality.Sample<TName, TAge>?>.Default
                     .Equals(left, right);
             
             /// <summary>
@@ -43,8 +43,8 @@ namespace Generator.Equals.Tests.Classes
             {
                 return
                     !ReferenceEquals(other, null) && this.GetType() == other.GetType()
-                    && global::System.Collections.Generic.EqualityComparer<TName>.Default.Equals(this.Name!, other.Name!)
-                    && global::System.Collections.Generic.EqualityComparer<TAge>.Default.Equals(this.Age!, other.Age!)
+                    && global::Generator.Equals.DefaultEqualityComparer<TName>.Default.Equals(this.Name!, other.Name!)
+                    && global::Generator.Equals.DefaultEqualityComparer<TAge>.Default.Equals(this.Age!, other.Age!)
                     ;
             }
             
@@ -57,10 +57,10 @@ namespace Generator.Equals.Tests.Classes
                 hashCode.Add(this.GetType());
                 hashCode.Add(
                     this.Name!,
-                    global::System.Collections.Generic.EqualityComparer<TName>.Default);
+                    global::Generator.Equals.DefaultEqualityComparer<TName>.Default);
                 hashCode.Add(
                     this.Age!,
-                    global::System.Collections.Generic.EqualityComparer<TAge>.Default);
+                    global::Generator.Equals.DefaultEqualityComparer<TAge>.Default);
                 
                 return hashCode.ToHashCode();
             }

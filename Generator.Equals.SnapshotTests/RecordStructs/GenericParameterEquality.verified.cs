@@ -14,8 +14,8 @@ namespace Generator.Equals.Tests.RecordStructs
             public bool Equals(global::Generator.Equals.Tests.RecordStructs.GenericParameterEquality.Sample<TName, TAge> other)
             {
                 return true
-                    && global::System.Collections.Generic.EqualityComparer<TName>.Default.Equals(this.Name!, other.Name!)
-                    && global::System.Collections.Generic.EqualityComparer<TAge>.Default.Equals(this.Age!, other.Age!)
+                    && global::Generator.Equals.DefaultEqualityComparer<TName>.Default.Equals(this.Name!, other.Name!)
+                    && global::Generator.Equals.DefaultEqualityComparer<TAge>.Default.Equals(this.Age!, other.Age!)
                     ;
             }
             
@@ -27,10 +27,10 @@ namespace Generator.Equals.Tests.RecordStructs
                 
                 hashCode.Add(
                     this.Name!,
-                    global::System.Collections.Generic.EqualityComparer<TName>.Default);
+                    global::Generator.Equals.DefaultEqualityComparer<TName>.Default);
                 hashCode.Add(
                     this.Age!,
-                    global::System.Collections.Generic.EqualityComparer<TAge>.Default);
+                    global::Generator.Equals.DefaultEqualityComparer<TAge>.Default);
                 
                 return hashCode.ToHashCode();
             }

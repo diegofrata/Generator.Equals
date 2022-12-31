@@ -29,7 +29,7 @@ namespace Generator.Equals.SnapshotTests
 
         public static IEnumerable<object[]> SampleFiles => FindSampleFiles();
 
-        public static async Task VerifyGeneratedSource(string directory, string fileName, string source, OutputKind outputKind = OutputKind.DynamicallyLinkedLibrary,
+        internal static async Task VerifyGeneratedSource(string directory, string fileName, string source, OutputKind outputKind = OutputKind.DynamicallyLinkedLibrary,
             CancellationToken ct = default)
         {
             var referenceAssemblies = ReferenceAssemblies.Net.Net60;

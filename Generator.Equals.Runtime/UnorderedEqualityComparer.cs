@@ -9,7 +9,7 @@ namespace Generator.Equals
 
         public IEqualityComparer<T> EqualityComparer { get; }
 
-        public UnorderedEqualityComparer() : this(EqualityComparer<T>.Default)
+        public UnorderedEqualityComparer() : this(DefaultEqualityComparer<T>.Default)
         {
         }
         
