@@ -10,7 +10,7 @@ namespace Generator.Equals.Tests.Structs
                 _addresses = addresses;
             }
             
-            [OrderedEquality] private readonly string[] _addresses;
+            [OrderedEquality] readonly string[] _addresses;
         };
     }
 }

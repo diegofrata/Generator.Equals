@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals
 {
-    internal class RecordStructEqualityGenerator : EqualityGeneratorBase
+    class RecordStructEqualityGenerator : EqualityGeneratorBase
     {
         static void BuildEquals(
             ITypeSymbol symbol,

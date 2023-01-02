@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals
 {
-    internal class EqualityGeneratorBase
+    class EqualityGeneratorBase
     {
         protected const string GeneratedCodeAttributeDeclaration = "[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"Generator.Equals\", \"1.0.0.0\")]";
 

@@ -27,7 +27,7 @@ namespace Generator.Equals
             if (x == null || y == null)
                 return false;
 
-            return x.SequenceEqual(y);
+            return x.SequenceEqual(y, EqualityComparer);
         }
 
         public int GetHashCode(IEnumerable<T>? obj)

@@ -6,7 +6,7 @@ namespace Generator.Equals.SnapshotTests
     [UsesVerify]
     public class TopLevelSourceTests
     {
-        private static string ThisPath([CallerFilePath] string path = null!) => path;
+        static string ThisPath([CallerFilePath] string path = null!) => path;
 
         [Fact]
         public async Task Check()

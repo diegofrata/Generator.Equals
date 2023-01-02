@@ -5,7 +5,7 @@ namespace Generator.Equals.Tests.Structs
         [Equatable(Explicit = true)]
         public partial struct Sample
         {
-            private bool _flag;
+            bool _flag;
             
             public Sample(string name, int age, bool flag)
             {
