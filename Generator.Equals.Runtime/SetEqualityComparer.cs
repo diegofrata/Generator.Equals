@@ -24,8 +24,17 @@ namespace Generator.Equals
 
             if (x == null || y == null)
                 return false;
+                        
+            // If either of the underlying collections is a set, then we want to respect whatever 
+            // is the equality comparer tha was specified.
+            if (x is ISet<T> xSet)
+                return xSet.SetEquals(y);
+            
+            if (y is ISet<T> ySet)
+                return ySet.SetEquals(x);
 
-            var xSet = new HashSet<T>(x, EqualityComparer);
+            // Otherwise we go with our own.
+            xSet = new HashSet<T>(x, EqualityComparer);
             return xSet.SetEquals(y);
         }
 

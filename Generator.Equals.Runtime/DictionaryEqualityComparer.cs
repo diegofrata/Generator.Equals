@@ -33,14 +33,11 @@ namespace Generator.Equals
             }
         }
 
-
+        
         public static DictionaryEqualityComparer<TKey, TValue> Default { get; } =
             new DictionaryEqualityComparer<TKey, TValue>();
 
-        
-        
         readonly KeyPairEqualityComparer _keyPairEqualityComparer;
-
         public IEqualityComparer<TKey> KeyEqualityComparer { get; }
         public IEqualityComparer<TValue> ValueEqualityComparer { get; }
 
@@ -51,7 +48,6 @@ namespace Generator.Equals
         public DictionaryEqualityComparer(IEqualityComparer<TKey> keyEqualityComparer, IEqualityComparer<TValue> valueEqualityComparer)
         {
             _keyPairEqualityComparer = new KeyPairEqualityComparer(keyEqualityComparer, valueEqualityComparer);
-
             KeyEqualityComparer = keyEqualityComparer;
             ValueEqualityComparer = valueEqualityComparer;
         }
@@ -68,11 +64,11 @@ namespace Generator.Equals
             if (x.Count != y.Count)
                 return false;
 
-            var yDictionary = new Dictionary<TKey, TValue>(y, KeyEqualityComparer);
-
+            // Here we intentionally do not use the KeyComparer. Dictionaries already 
+            // may have different key comparers associated and there is no way for us to know.
             foreach (var pair in x)
             {
-                if (!yDictionary.TryGetValue(pair.Key, out var yValue))
+                if (!y.TryGetValue(pair.Key, out var yValue))
                     return false;
 
                 if (!ValueEqualityComparer.Equals(pair.Value, yValue))

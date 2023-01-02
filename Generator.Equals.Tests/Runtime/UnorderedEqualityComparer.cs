@@ -21,13 +21,13 @@ public class UnorderedEqualityComparer
     }
     
     [Fact]
-    public void Equals_Uses_specified_comparers()
+    public void Equals_Should_use_ValueComparer()
     {
         _sut.Equals(_a, _b).Should().BeTrue();
     }
     
     [Fact]
-    public void GetHashCode_Uses_specified_comparers()
+    public void GetHashCode_Should_use_ValueComparer()
     {
         _sut.GetHashCode(_a).Should().Be(_sut.GetHashCode(_b));
     }

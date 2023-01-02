@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using FluentAssertions;
 using Xunit;
 
@@ -6,28 +7,48 @@ namespace Generator.Equals.Tests.Runtime;
 public class SetEqualityComparer
 {
     readonly SetEqualityComparer<int> _sut;
-    readonly int[] _a;
-    readonly int[] _b;
 
     public SetEqualityComparer()
     {
         _sut = new SetEqualityComparer<int>(
             new NegativeEqualityComparer()
         );
+    }
 
-        _a = new[] { 1, 2, 3, 4, 5 };
-        _b = new[] { 1, -2, 3, -4, 5 };
-    }
-    
     [Fact]
-    public void Equals_Uses_specified_comparers()
+    public void NonSets_Equals_Should_use_ValueComparer()
     {
-        _sut.Equals(_a, _b).Should().BeTrue();
+        var a = new[] { 1, 2, 3, 4, 5 };
+        var b = new[] { 1, -2, 3, -4, 5 };
+
+        _sut.Equals(a, b).Should().BeTrue();
     }
-    
+
     [Fact]
-    public void GetHashCode_Uses_specified_comparers()
+    public void Sets_Equals_Should_not_use_ValueComparer()
     {
-        _sut.GetHashCode(_a).Should().Be(_sut.GetHashCode(_b));
+        var a = new HashSet<int> { 1, 2, 3, 4, 5 };
+        var b = new[] { 1, -2, 3, -4, 5 };
+
+        _sut.Equals(a, b).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Sets_Equals_Should_use_A_collection_comparer()
+    {
+        var a = new HashSet<int>(new NegativeEqualityComparer()) { 1, 2, 3, 4, 5 };
+        var b = new[] { 1, -2, 3, -4, 5 };
+
+        _sut.Equals(a, b).Should().BeTrue();
+    }
+
+
+    [Fact]
+    public void Sets_Equals_Should_use_B_collection_comparer()
+    {
+        var a = new[] { 1, 2, 3, 4, 5 };
+        var b = new HashSet<int>(new NegativeEqualityComparer()) { 1, -2, 3, -4, 5 };
+
+        _sut.Equals(a, b).Should().BeTrue();
     }
 }
