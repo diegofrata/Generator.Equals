@@ -4,7 +4,7 @@ namespace Generator.Equals
 {
     public class DefaultEqualityComparer<T> : IEqualityComparer<T>
     {
-        public static DefaultEqualityComparer<T> Default { get; }= new DefaultEqualityComparer<T>();
+        public static DefaultEqualityComparer<T> Default { get; } = new DefaultEqualityComparer<T>();
 
         private static readonly IEqualityComparer<T> _underlying;
 
@@ -19,7 +19,7 @@ namespace Generator.Equals
         public bool Equals(T x, T y) => _underlying.Equals(x, y);
 
         public int GetHashCode(T obj) => _underlying.GetHashCode(obj);
-        
+
         private class ObjectEqualityComparer : IEqualityComparer<T>
         {
             public bool Equals(T x, T y) => object.Equals(x, y);

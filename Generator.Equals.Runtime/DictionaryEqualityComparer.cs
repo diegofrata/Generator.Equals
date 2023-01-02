@@ -7,41 +7,55 @@ namespace Generator.Equals
     {
         class KeyPairEqualityComparer : IEqualityComparer<KeyValuePair<TKey, TValue>>
         {
+            readonly IEqualityComparer<TKey> _keyEqualityComparer;
             readonly IEqualityComparer<TValue> _valueEqualityComparer;
 
-            public KeyPairEqualityComparer(IEqualityComparer<TValue> valueEqualityComparer)
+            public KeyPairEqualityComparer(
+                IEqualityComparer<TKey> keyEqualityComparer,
+                IEqualityComparer<TValue> valueEqualityComparer)
             {
+                _keyEqualityComparer = keyEqualityComparer;
                 _valueEqualityComparer = valueEqualityComparer;
             }
-            
+
             public bool Equals(KeyValuePair<TKey, TValue> x, KeyValuePair<TKey, TValue> y)
             {
-                return Equals(x.Key, y.Key) && _valueEqualityComparer.Equals(x.Value, y.Value);
+                return _keyEqualityComparer.Equals(x.Key, y.Key) &&
+                       _valueEqualityComparer.Equals(x.Value, y.Value);
             }
 
             public int GetHashCode(KeyValuePair<TKey, TValue> obj)
             {
-                return HashCode.Combine(obj.Key, _valueEqualityComparer.GetHashCode(obj.Value));
+                return HashCode.Combine(
+                    _keyEqualityComparer.GetHashCode(obj.Key),
+                    _valueEqualityComparer.GetHashCode(obj.Value)
+                );
             }
         }
-        
+
 
         public static DictionaryEqualityComparer<TKey, TValue> Default { get; } =
             new DictionaryEqualityComparer<TKey, TValue>();
 
-        readonly KeyPairEqualityComparer _keyPairEqualityComparer;
         
+        
+        readonly KeyPairEqualityComparer _keyPairEqualityComparer;
+
+        public IEqualityComparer<TKey> KeyEqualityComparer { get; }
         public IEqualityComparer<TValue> ValueEqualityComparer { get; }
 
-        public DictionaryEqualityComparer() : this(DefaultEqualityComparer<TValue>.Default)
+        public DictionaryEqualityComparer() : this(DefaultEqualityComparer<TKey>.Default, DefaultEqualityComparer<TValue>.Default)
         {
         }
-        
-        public DictionaryEqualityComparer(IEqualityComparer<TValue> valueEqualityComparer)
+
+        public DictionaryEqualityComparer(IEqualityComparer<TKey> keyEqualityComparer, IEqualityComparer<TValue> valueEqualityComparer)
         {
-            _keyPairEqualityComparer = new KeyPairEqualityComparer(valueEqualityComparer);
+            _keyPairEqualityComparer = new KeyPairEqualityComparer(keyEqualityComparer, valueEqualityComparer);
+
+            KeyEqualityComparer = keyEqualityComparer;
             ValueEqualityComparer = valueEqualityComparer;
         }
+
 
         public bool Equals(IDictionary<TKey, TValue>? x, IDictionary<TKey, TValue>? y)
         {
@@ -54,9 +68,11 @@ namespace Generator.Equals
             if (x.Count != y.Count)
                 return false;
 
+            var yDictionary = new Dictionary<TKey, TValue>(y, KeyEqualityComparer);
+
             foreach (var pair in x)
             {
-                if (!y.TryGetValue(pair.Key, out var yValue))
+                if (!yDictionary.TryGetValue(pair.Key, out var yValue))
                     return false;
 
                 if (!ValueEqualityComparer.Equals(pair.Value, yValue))
