@@ -30,19 +30,20 @@ partial class ClassSample : global::System.IEquatable<ClassSample>
     
     /// <inheritdoc/>
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-    public override bool Equals(object? obj) =>
-        Equals(obj as global::ClassSample);
-    
-    /// <inheritdoc/>
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-    public bool Equals(global::ClassSample? other)
+    public override bool Equals(object? obj)
     {
+        var other = obj as global::ClassSample;
         return
             !ReferenceEquals(other, null) && this.GetType() == other.GetType()
             && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.Name!, other.Name!)
             && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.Age!, other.Age!)
             ;
     }
+    /// <inheritdoc/>
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
+    public bool Equals(global::ClassSample? other) =>
+        Equals((object?) other);
+    
     
     /// <inheritdoc/>
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
