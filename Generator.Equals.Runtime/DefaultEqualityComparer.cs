@@ -6,7 +6,7 @@ namespace Generator.Equals
     {
         public static DefaultEqualityComparer<T> Default { get; } = new DefaultEqualityComparer<T>();
 
-        private static readonly IEqualityComparer<T> _underlying;
+        static readonly IEqualityComparer<T> _underlying;
 
         static DefaultEqualityComparer()
         {
@@ -20,7 +20,7 @@ namespace Generator.Equals
 
         public int GetHashCode(T obj) => _underlying.GetHashCode(obj);
 
-        private class ObjectEqualityComparer : IEqualityComparer<T>
+        class ObjectEqualityComparer : IEqualityComparer<T>
         {
             public bool Equals(T x, T y) => object.Equals(x, y);
 

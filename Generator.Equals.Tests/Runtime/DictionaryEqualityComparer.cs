@@ -7,8 +7,8 @@ namespace Generator.Equals.Tests.Runtime;
 public class DictionaryEqualityComparer
 {
     readonly DictionaryEqualityComparer<string, int> _sut;
-    private readonly Dictionary<string, int> _a;
-    private readonly Dictionary<string, int> _b;
+    readonly Dictionary<string, int> _a;
+    readonly Dictionary<string, int> _b;
 
     public DictionaryEqualityComparer()
     {

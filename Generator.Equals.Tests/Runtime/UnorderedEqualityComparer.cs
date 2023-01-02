@@ -6,9 +6,9 @@ namespace Generator.Equals.Tests.Runtime;
 
 public class UnorderedEqualityComparer
 {
-    private readonly UnorderedEqualityComparer<int> _sut;
-    private readonly int[] _a;
-    private readonly int[] _b;
+    readonly UnorderedEqualityComparer<int> _sut;
+    readonly int[] _a;
+    readonly int[] _b;
 
     public UnorderedEqualityComparer()
     {

@@ -6,9 +6,9 @@ namespace Generator.Equals.Tests.Runtime;
 
 public class OrderedEqualityComparer
 {
-    private readonly OrderedEqualityComparer<int> _sut;
-    private readonly int[] _a;
-    private readonly int[] _b;
+    readonly OrderedEqualityComparer<int> _sut;
+    readonly int[] _a;
+    readonly int[] _b;
 
     public OrderedEqualityComparer()
     {

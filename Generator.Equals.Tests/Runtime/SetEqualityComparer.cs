@@ -5,9 +5,9 @@ namespace Generator.Equals.Tests.Runtime;
 
 public class SetEqualityComparer
 {
-    private readonly SetEqualityComparer<int> _sut;
-    private readonly int[] _a;
-    private readonly int[] _b;
+    readonly SetEqualityComparer<int> _sut;
+    readonly int[] _a;
+    readonly int[] _b;
 
     public SetEqualityComparer()
     {

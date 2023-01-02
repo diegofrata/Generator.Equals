@@ -5,7 +5,7 @@ namespace Generator.Equals.Tests.Classes
         [Equatable(Explicit = true)]
         public partial class Sample
         {
-            private bool _flag;
+            bool _flag;
             
             public Sample(string name, int age, bool flag)
             {
