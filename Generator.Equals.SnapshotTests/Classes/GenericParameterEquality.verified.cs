@@ -34,19 +34,20 @@ namespace Generator.Equals.Tests.Classes
             
             /// <inheritdoc/>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public override bool Equals(object? obj) =>
-                Equals(obj as global::Generator.Equals.Tests.Classes.GenericParameterEquality.Sample<TName, TAge>);
-            
-            /// <inheritdoc/>
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public bool Equals(global::Generator.Equals.Tests.Classes.GenericParameterEquality.Sample<TName, TAge>? other)
+            public override bool Equals(object? obj)
             {
+                var other = obj as global::Generator.Equals.Tests.Classes.GenericParameterEquality.Sample<TName, TAge>;
                 return
                     !ReferenceEquals(other, null) && this.GetType() == other.GetType()
                     && global::Generator.Equals.DefaultEqualityComparer<TName>.Default.Equals(this.Name!, other.Name!)
                     && global::Generator.Equals.DefaultEqualityComparer<TAge>.Default.Equals(this.Age!, other.Age!)
                     ;
             }
+            /// <inheritdoc/>
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
+            public bool Equals(global::Generator.Equals.Tests.Classes.GenericParameterEquality.Sample<TName, TAge>? other) =>
+                Equals((object?) other);
+            
             
             /// <inheritdoc/>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]

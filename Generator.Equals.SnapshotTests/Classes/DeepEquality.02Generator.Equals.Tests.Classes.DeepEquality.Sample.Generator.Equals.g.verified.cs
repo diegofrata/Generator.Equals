@@ -34,18 +34,19 @@ namespace Generator.Equals.Tests.Classes
             
             /// <inheritdoc/>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public override bool Equals(object? obj) =>
-                Equals(obj as global::Generator.Equals.Tests.Classes.DeepEquality.Sample);
-            
-            /// <inheritdoc/>
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public bool Equals(global::Generator.Equals.Tests.Classes.DeepEquality.Sample? other)
+            public override bool Equals(object? obj)
             {
+                var other = obj as global::Generator.Equals.Tests.Classes.DeepEquality.Sample;
                 return
                     !ReferenceEquals(other, null) && this.GetType() == other.GetType()
                     && global::Generator.Equals.DefaultEqualityComparer<global::Generator.Equals.Tests.Classes.DeepEquality.Person>.Default.Equals(this.Person!, other.Person!)
                     ;
             }
+            /// <inheritdoc/>
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
+            public bool Equals(global::Generator.Equals.Tests.Classes.DeepEquality.Sample? other) =>
+                Equals((object?) other);
+            
             
             /// <inheritdoc/>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]

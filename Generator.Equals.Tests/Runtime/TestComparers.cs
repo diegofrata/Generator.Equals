@@ -8,7 +8,7 @@ class ReverseEqualityComparer : IEqualityComparer<string>
 {
     public bool Equals(string? x, string? y)
     {
-        return string.Equals(x, y) || string.Equals(x,  new string(y.Reverse().ToArray()));
+        return string.Equals(x, y) || string.Equals(x,  new string(y!.Reverse().ToArray()));
     }
 
     public int GetHashCode(string obj)

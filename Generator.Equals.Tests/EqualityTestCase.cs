@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System;
+using FluentAssertions;
 using Xunit;
 
 namespace Generator.Equals.Tests
@@ -44,6 +45,18 @@ namespace Generator.Equals.Tests
             var value1 = Factory1();
             var value2 = Factory2();
             var result = value1.GetHashCode() == value2.GetHashCode();
+            result.Should().Be(Expected);
+        }
+    }
+
+    public abstract class EqualityTestCase<T> : EqualityTestCase where T : IEquatable<T>
+    {
+        [Fact]
+        public void TestEqualsEquatable()
+        {
+            var value1 = (T)Factory1();
+            var value2 = (T)Factory2();
+            var result = value1.Equals(value2);
             result.Should().Be(Expected);
         }
     }

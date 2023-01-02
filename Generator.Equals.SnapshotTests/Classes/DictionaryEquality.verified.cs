@@ -34,18 +34,19 @@ namespace Generator.Equals.Tests.Classes
             
             /// <inheritdoc/>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public override bool Equals(object? obj) =>
-                Equals(obj as global::Generator.Equals.Tests.Classes.DictionaryEquality.Sample);
-            
-            /// <inheritdoc/>
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public bool Equals(global::Generator.Equals.Tests.Classes.DictionaryEquality.Sample? other)
+            public override bool Equals(object? obj)
             {
+                var other = obj as global::Generator.Equals.Tests.Classes.DictionaryEquality.Sample;
                 return
                     !ReferenceEquals(other, null) && this.GetType() == other.GetType()
                     && global::Generator.Equals.DictionaryEqualityComparer<string, int>.Default.Equals(this.Properties!, other.Properties!)
                     ;
             }
+            /// <inheritdoc/>
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
+            public bool Equals(global::Generator.Equals.Tests.Classes.DictionaryEquality.Sample? other) =>
+                Equals((object?) other);
+            
             
             /// <inheritdoc/>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
