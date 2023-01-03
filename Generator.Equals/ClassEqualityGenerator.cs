@@ -32,16 +32,21 @@ namespace Generator.Equals
 
             writer.WriteLine(InheritDocComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
-            writer.WriteLine("public override bool Equals(object? obj)");
+            writer.WriteLine("public override bool Equals(object? obj) =>");
+            writer.WriteLine(1, $"Equals(obj as {symbolName});");
+            writer.WriteLine();
+
+            writer.WriteLine(InheritDocComment);
+            writer.WriteLine(GeneratedCodeAttributeDeclaration);
+            writer.WriteLine($"public bool Equals({symbolName}? other)");
             writer.AppendOpenBracket();
 
-            writer.WriteLine($"var other = obj as {symbolName};");
             writer.WriteLine("return");
 
             writer.Indent++;
             writer.WriteLine(baseTypeName == "object" || ignoreInheritedMembers
                 ? "!ReferenceEquals(other, null) && this.GetType() == other.GetType()"
-                : $"!ReferenceEquals(other, null) && base.Equals(obj)");
+                : $"base.Equals(other as {baseTypeName})");
 
             BuildMembersEquality(symbol, attributesMetadata, writer, explicitMode);
 
@@ -49,13 +54,6 @@ namespace Generator.Equals
             writer.Indent--;
 
             writer.AppendCloseBracket();
-            
-            writer.WriteLine(InheritDocComment);
-            writer.WriteLine(GeneratedCodeAttributeDeclaration);
-            writer.WriteLine($"public bool Equals({symbolName}? other) =>");
-
-            writer.WriteLine(1, $"Equals((object?) other);");
-            writer.WriteLine();
         }
 
         static void BuildGetHashCode(

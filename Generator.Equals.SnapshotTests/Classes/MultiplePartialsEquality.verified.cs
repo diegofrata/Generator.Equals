@@ -34,9 +34,13 @@ namespace Generator.Equals.Tests.Classes
             
             /// <inheritdoc/>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public override bool Equals(object? obj)
+            public override bool Equals(object? obj) =>
+                Equals(obj as global::Generator.Equals.Tests.Classes.MultiplePartialsEquality.Sample);
+            
+            /// <inheritdoc/>
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
+            public bool Equals(global::Generator.Equals.Tests.Classes.MultiplePartialsEquality.Sample? other)
             {
-                var other = obj as global::Generator.Equals.Tests.Classes.MultiplePartialsEquality.Sample;
                 return
                     !ReferenceEquals(other, null) && this.GetType() == other.GetType()
                     && global::Generator.Equals.OrderedEqualityComparer<string>.Default.Equals(this.Addresses!, other.Addresses!)
@@ -44,11 +48,6 @@ namespace Generator.Equals.Tests.Classes
                     && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.LastName!, other.LastName!)
                     ;
             }
-            /// <inheritdoc/>
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public bool Equals(global::Generator.Equals.Tests.Classes.MultiplePartialsEquality.Sample? other) =>
-                Equals((object?) other);
-            
             
             /// <inheritdoc/>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]

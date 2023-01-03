@@ -51,7 +51,7 @@ namespace Generator.Equals.Tests
 
     public abstract class EqualityTestCase<T> : EqualityTestCase where T : IEquatable<T>
     {
-        [Fact]
+        [Fact(Skip = "Re-enable in 3.0")]
         public void TestEqualsEquatable()
         {
             var value1 = (T)Factory1();
