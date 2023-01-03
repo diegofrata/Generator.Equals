@@ -1,13 +1,13 @@
-﻿//HintName: Generator.Equals.Tests.Classes.DeepEquality.Manager.Generator.Equals.g.cs
+﻿//HintName: Generator.Equals.Tests.Classes.OverridingEquals.Person.Generator.Equals.g.cs
 
 #nullable enable
 #pragma warning disable CS0612,CS0618
 
 namespace Generator.Equals.Tests.Classes
 {
-    partial class DeepEquality
+    partial class OverridingEquals
     {
-        partial class Manager : global::System.IEquatable<Manager>
+        partial class Person : global::System.IEquatable<Person>
         {
             /// <summary>
             /// Indicates whether the object on the left is equal to the object on the right.
@@ -17,9 +17,9 @@ namespace Generator.Equals.Tests.Classes
             /// <returns>true if the objects are equal; otherwise, false.</returns>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
             public static bool operator ==(
-                global::Generator.Equals.Tests.Classes.DeepEquality.Manager? left,
-                global::Generator.Equals.Tests.Classes.DeepEquality.Manager? right) =>
-                global::Generator.Equals.DefaultEqualityComparer<global::Generator.Equals.Tests.Classes.DeepEquality.Manager?>.Default
+                global::Generator.Equals.Tests.Classes.OverridingEquals.Person? left,
+                global::Generator.Equals.Tests.Classes.OverridingEquals.Person? right) =>
+                global::Generator.Equals.DefaultEqualityComparer<global::Generator.Equals.Tests.Classes.OverridingEquals.Person?>.Default
                     .Equals(left, right);
             
             /// <summary>
@@ -29,21 +29,21 @@ namespace Generator.Equals.Tests.Classes
             /// <param name="right">The right object</param>
             /// <returns>true if the objects are not equal; otherwise, false.</returns>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public static bool operator !=(global::Generator.Equals.Tests.Classes.DeepEquality.Manager? left, global::Generator.Equals.Tests.Classes.DeepEquality.Manager? right) =>
+            public static bool operator !=(global::Generator.Equals.Tests.Classes.OverridingEquals.Person? left, global::Generator.Equals.Tests.Classes.OverridingEquals.Person? right) =>
                 !(left == right);
             
             /// <inheritdoc/>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
             public override bool Equals(object? obj) =>
-                Equals(obj as global::Generator.Equals.Tests.Classes.DeepEquality.Manager);
+                Equals(obj as global::Generator.Equals.Tests.Classes.OverridingEquals.Person);
             
             /// <inheritdoc/>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public bool Equals(global::Generator.Equals.Tests.Classes.DeepEquality.Manager? other)
+            public bool Equals(global::Generator.Equals.Tests.Classes.OverridingEquals.Person? other)
             {
                 return
-                    base.Equals(other as global::Generator.Equals.Tests.Classes.DeepEquality.Person)
-                    && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.Department!, other.Department!)
+                    !ReferenceEquals(other, null) && this.GetType() == other.GetType()
+                    && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.Age!, other.Age!)
                     ;
             }
             
@@ -53,10 +53,10 @@ namespace Generator.Equals.Tests.Classes
             {
                 var hashCode = new global::System.HashCode();
                 
-                hashCode.Add(base.GetHashCode());
+                hashCode.Add(this.GetType());
                 hashCode.Add(
-                    this.Department!,
-                    global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default);
+                    this.Age!,
+                    global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default);
                 
                 return hashCode.ToHashCode();
             }
