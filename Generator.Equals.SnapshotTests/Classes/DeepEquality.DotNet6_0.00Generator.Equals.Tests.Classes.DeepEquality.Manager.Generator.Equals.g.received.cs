@@ -39,10 +39,16 @@ namespace Generator.Equals.Tests.Classes
             
             /// <inheritdoc/>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public bool Equals(global::Generator.Equals.Tests.Classes.DeepEquality.Manager? other)
+            bool global::System.IEquatable<global::Generator.Equals.Tests.Classes.DeepEquality.Manager>.Equals(global::Generator.Equals.Tests.Classes.DeepEquality.Manager? obj) => Equals((object?) obj);
+            
+            /// <inheritdoc/>
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
+            protected bool Equals(global::Generator.Equals.Tests.Classes.DeepEquality.Manager? other)
             {
-                return
-                    base.Equals(other as global::Generator.Equals.Tests.Classes.DeepEquality.Person)
+                if (ReferenceEquals(null, other)) return false;
+                if (ReferenceEquals(this, other)) return true;
+                
+                return base.Equals(other as global::Generator.Equals.Tests.Classes.DeepEquality.Person)
                     && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.Department!, other.Department!)
                     ;
             }
