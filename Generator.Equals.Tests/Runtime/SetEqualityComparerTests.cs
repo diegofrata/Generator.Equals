@@ -4,11 +4,11 @@ using Xunit;
 
 namespace Generator.Equals.Tests.Runtime;
 
-public class SetEqualityComparer
+public class SetEqualityComparerTests
 {
     readonly SetEqualityComparer<int> _sut;
 
-    public SetEqualityComparer()
+    public SetEqualityComparerTests()
     {
         _sut = new SetEqualityComparer<int>(
             new NegativeEqualityComparer()

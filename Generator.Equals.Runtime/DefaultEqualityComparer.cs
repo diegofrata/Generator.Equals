@@ -24,7 +24,7 @@ namespace Generator.Equals
         {
             public bool Equals(T x, T y) => object.Equals(x, y);
 
-            public int GetHashCode(T obj) => obj!.GetHashCode();
+            public int GetHashCode(T obj) => obj?.GetHashCode() ?? 0;
         }
     }
 }

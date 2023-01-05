@@ -4,11 +4,11 @@ using Xunit;
 
 namespace Generator.Equals.Tests.Runtime;
 
-public class DictionaryEqualityComparer
+public class DictionaryEqualityComparerTests
 {
     readonly DictionaryEqualityComparer<string, int> _sut;
 
-    public DictionaryEqualityComparer()
+    public DictionaryEqualityComparerTests()
     {
         _sut = new DictionaryEqualityComparer<string, int>(
             new ReverseEqualityComparer(),

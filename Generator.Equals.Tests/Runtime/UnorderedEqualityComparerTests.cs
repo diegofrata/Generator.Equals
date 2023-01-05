@@ -4,20 +4,20 @@ using Xunit;
 
 namespace Generator.Equals.Tests.Runtime;
 
-public class OrderedEqualityComparer
+public class UnorderedEqualityComparerTests
 {
-    readonly OrderedEqualityComparer<int> _sut;
+    readonly UnorderedEqualityComparer<int> _sut;
     readonly int[] _a;
     readonly int[] _b;
 
-    public OrderedEqualityComparer()
+    public UnorderedEqualityComparerTests()
     {
-        _sut = new OrderedEqualityComparer<int>(
+        _sut = new UnorderedEqualityComparer<int>(
             new NegativeEqualityComparer()
         );
 
         _a = new[] { 1, 2, 3, 4, 5 };
-        _b = new[] { 1, -2, 3, -4, 5 };
+        _b = new[] { 5, -4, 3, -2, 1 };
     }
     
     [Fact]
