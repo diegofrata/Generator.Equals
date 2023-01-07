@@ -7,6 +7,7 @@ namespace Generator.Equals.Tests.Classes
 {
     partial class DeepEquality
     {
+        #pragma warning disable CS0628
         partial class Sample : global::System.IEquatable<Sample>
         {
             /// <summary>

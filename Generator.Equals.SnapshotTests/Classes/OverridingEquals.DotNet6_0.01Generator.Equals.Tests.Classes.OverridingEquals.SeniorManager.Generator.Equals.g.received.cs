@@ -7,6 +7,7 @@ namespace Generator.Equals.Tests.Classes
 {
     partial class OverridingEquals
     {
+        #pragma warning disable CS0628
         partial class SeniorManager : global::System.IEquatable<SeniorManager>
         {
             /// <summary>

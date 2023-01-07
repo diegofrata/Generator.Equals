@@ -44,7 +44,7 @@ namespace Generator.Equals
 
             writer.WriteLine(InheritDocComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
-            writer.WriteLine($"protected bool Equals({symbolName}? other)");
+            writer.WriteLine($"{(symbol.IsSealed ? "private" : "protected")} bool Equals({symbolName}? other)");
             writer.AppendOpenBracket();
 
             writer.WriteLine("if (ReferenceEquals(null, other)) return false;");
