@@ -1,21 +1,21 @@
-﻿//HintName: Generator.Equals.Tests.Records.OverridingEquals.SeniorManager.Generator.Equals.g.cs
+﻿//HintName: Generator.Equals.Tests.Records.ObsoleteRecord.Sample.Generator.Equals.g.cs
 
 #nullable enable
 #pragma warning disable CS0612,CS0618
 
 namespace Generator.Equals.Tests.Records
 {
-    partial class OverridingEquals
+    partial class ObsoleteRecord
     {
-        partial record SeniorManager
+        partial record Sample
         {
             /// <inheritdoc/>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public virtual bool Equals(global::Generator.Equals.Tests.Records.OverridingEquals.SeniorManager? other)
+            public virtual bool Equals(global::Generator.Equals.Tests.Records.ObsoleteRecord.Sample? other)
             {
                 return
-                    base.Equals((global::Generator.Equals.Tests.Records.OverridingEquals.Manager?)other)
-                    && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.Shares!, other.Shares!)
+                    !ReferenceEquals(other, null) && EqualityContract == other.EqualityContract
+                    && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.Name!, other.Name!)
                     ;
             }
             
@@ -25,10 +25,10 @@ namespace Generator.Equals.Tests.Records
             {
                 var hashCode = new global::System.HashCode();
                 
-                hashCode.Add(base.GetHashCode());
+                hashCode.Add(this.EqualityContract);
                 hashCode.Add(
-                    this.Shares!,
-                    global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default);
+                    this.Name!,
+                    global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default);
                 
                 return hashCode.ToHashCode();
             }

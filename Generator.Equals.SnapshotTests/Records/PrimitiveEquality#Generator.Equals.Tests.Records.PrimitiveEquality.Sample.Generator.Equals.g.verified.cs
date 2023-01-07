@@ -1,21 +1,22 @@
-﻿//HintName: Generator.Equals.Tests.Records.DeepEquality.Sample.Generator.Equals.g.cs
+﻿//HintName: Generator.Equals.Tests.Records.PrimitiveEquality.Sample.Generator.Equals.g.cs
 
 #nullable enable
 #pragma warning disable CS0612,CS0618
 
 namespace Generator.Equals.Tests.Records
 {
-    partial class DeepEquality
+    partial class PrimitiveEquality
     {
         partial record Sample
         {
             /// <inheritdoc/>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public virtual bool Equals(global::Generator.Equals.Tests.Records.DeepEquality.Sample? other)
+            public virtual bool Equals(global::Generator.Equals.Tests.Records.PrimitiveEquality.Sample? other)
             {
                 return
                     !ReferenceEquals(other, null) && EqualityContract == other.EqualityContract
-                    && global::Generator.Equals.DefaultEqualityComparer<global::Generator.Equals.Tests.Records.DeepEquality.Person>.Default.Equals(this.Person!, other.Person!)
+                    && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.Name!, other.Name!)
+                    && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.Age!, other.Age!)
                     ;
             }
             
@@ -27,8 +28,11 @@ namespace Generator.Equals.Tests.Records
                 
                 hashCode.Add(this.EqualityContract);
                 hashCode.Add(
-                    this.Person!,
-                    global::Generator.Equals.DefaultEqualityComparer<global::Generator.Equals.Tests.Records.DeepEquality.Person>.Default);
+                    this.Name!,
+                    global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default);
+                hashCode.Add(
+                    this.Age!,
+                    global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default);
                 
                 return hashCode.ToHashCode();
             }

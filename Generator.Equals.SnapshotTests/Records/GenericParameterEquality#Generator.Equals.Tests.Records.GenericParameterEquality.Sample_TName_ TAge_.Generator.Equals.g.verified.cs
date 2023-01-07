@@ -1,21 +1,22 @@
-﻿//HintName: Generator.Equals.Tests.Records.OverridingEquals.Person.Generator.Equals.g.cs
+﻿//HintName: Generator.Equals.Tests.Records.GenericParameterEquality.Sample_TName_ TAge_.Generator.Equals.g.cs
 
 #nullable enable
 #pragma warning disable CS0612,CS0618
 
 namespace Generator.Equals.Tests.Records
 {
-    partial class OverridingEquals
+    partial class GenericParameterEquality
     {
-        partial record Person
+        partial record Sample<TName, TAge>
         {
             /// <inheritdoc/>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public virtual bool Equals(global::Generator.Equals.Tests.Records.OverridingEquals.Person? other)
+            public virtual bool Equals(global::Generator.Equals.Tests.Records.GenericParameterEquality.Sample<TName, TAge>? other)
             {
                 return
                     !ReferenceEquals(other, null) && EqualityContract == other.EqualityContract
-                    && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.Age!, other.Age!)
+                    && global::Generator.Equals.DefaultEqualityComparer<TName>.Default.Equals(this.Name!, other.Name!)
+                    && global::Generator.Equals.DefaultEqualityComparer<TAge>.Default.Equals(this.Age!, other.Age!)
                     ;
             }
             
@@ -27,8 +28,11 @@ namespace Generator.Equals.Tests.Records
                 
                 hashCode.Add(this.EqualityContract);
                 hashCode.Add(
+                    this.Name!,
+                    global::Generator.Equals.DefaultEqualityComparer<TName>.Default);
+                hashCode.Add(
                     this.Age!,
-                    global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default);
+                    global::Generator.Equals.DefaultEqualityComparer<TAge>.Default);
                 
                 return hashCode.ToHashCode();
             }

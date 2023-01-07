@@ -1,21 +1,21 @@
-﻿//HintName: Generator.Equals.Tests.Records.DeepEquality.Person.Generator.Equals.g.cs
+﻿//HintName: Generator.Equals.Tests.Records.SealedRecord.Sample.Generator.Equals.g.cs
 
 #nullable enable
 #pragma warning disable CS0612,CS0618
 
 namespace Generator.Equals.Tests.Records
 {
-    partial class DeepEquality
+    partial class SealedRecord
     {
-        partial record Person
+        partial record Sample
         {
             /// <inheritdoc/>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public virtual bool Equals(global::Generator.Equals.Tests.Records.DeepEquality.Person? other)
+            public bool Equals(global::Generator.Equals.Tests.Records.SealedRecord.Sample? other)
             {
                 return
                     !ReferenceEquals(other, null) && EqualityContract == other.EqualityContract
-                    && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.Age!, other.Age!)
+                    && global::Generator.Equals.OrderedEqualityComparer<string>.Default.Equals(this.Addresses!, other.Addresses!)
                     ;
             }
             
@@ -27,8 +27,8 @@ namespace Generator.Equals.Tests.Records
                 
                 hashCode.Add(this.EqualityContract);
                 hashCode.Add(
-                    this.Age!,
-                    global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default);
+                    this.Addresses!,
+                    global::Generator.Equals.OrderedEqualityComparer<string>.Default);
                 
                 return hashCode.ToHashCode();
             }

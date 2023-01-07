@@ -1,21 +1,21 @@
-﻿//HintName: Generator.Equals.Tests.Records.BaseEquality.Person.Generator.Equals.g.cs
+﻿//HintName: Generator.Equals.Tests.Records.NonSupportedMembers.Sample.Generator.Equals.g.cs
 
 #nullable enable
 #pragma warning disable CS0612,CS0618
 
 namespace Generator.Equals.Tests.Records
 {
-    partial class BaseEquality
+    partial class NonSupportedMembers
     {
-        partial record Person
+        partial record Sample
         {
             /// <inheritdoc/>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public virtual bool Equals(global::Generator.Equals.Tests.Records.BaseEquality.Person? other)
+            public virtual bool Equals(global::Generator.Equals.Tests.Records.NonSupportedMembers.Sample? other)
             {
                 return
                     !ReferenceEquals(other, null) && EqualityContract == other.EqualityContract
-                    && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.Age!, other.Age!)
+                    && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.Name!, other.Name!)
                     ;
             }
             
@@ -27,8 +27,8 @@ namespace Generator.Equals.Tests.Records
                 
                 hashCode.Add(this.EqualityContract);
                 hashCode.Add(
-                    this.Age!,
-                    global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default);
+                    this.Name!,
+                    global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default);
                 
                 return hashCode.ToHashCode();
             }

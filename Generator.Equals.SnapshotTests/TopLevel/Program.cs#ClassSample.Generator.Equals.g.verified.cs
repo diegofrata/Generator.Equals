@@ -1,9 +1,9 @@
-﻿//HintName: Person.Generator.Equals.g.cs
+﻿//HintName: ClassSample.Generator.Equals.g.cs
 
 #nullable enable
 #pragma warning disable CS0612,CS0618
 
-partial class Person : global::System.IEquatable<Person>
+partial class ClassSample : global::System.IEquatable<ClassSample>
 {
     /// <summary>
     /// Indicates whether the object on the left is equal to the object on the right.
@@ -13,9 +13,9 @@ partial class Person : global::System.IEquatable<Person>
     /// <returns>true if the objects are equal; otherwise, false.</returns>
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
     public static bool operator ==(
-        global::Person? left,
-        global::Person? right) =>
-        global::System.Collections.Generic.EqualityComparer<global::Person?>.Default
+        global::ClassSample? left,
+        global::ClassSample? right) =>
+        global::Generator.Equals.DefaultEqualityComparer<global::ClassSample?>.Default
             .Equals(left, right);
     
     /// <summary>
@@ -25,22 +25,28 @@ partial class Person : global::System.IEquatable<Person>
     /// <param name="right">The right object</param>
     /// <returns>true if the objects are not equal; otherwise, false.</returns>
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-    public static bool operator !=(global::Person? left, global::Person? right) =>
+    public static bool operator !=(global::ClassSample? left, global::ClassSample? right) =>
         !(left == right);
     
     /// <inheritdoc/>
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
     public override bool Equals(object? obj) =>
-        Equals(obj as global::Person);
+        Equals(obj as global::ClassSample);
     
     /// <inheritdoc/>
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-    public bool Equals(global::Person? other)
+    bool global::System.IEquatable<global::ClassSample>.Equals(global::ClassSample? obj) => Equals((object?) obj);
+    
+    /// <inheritdoc/>
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
+    protected bool Equals(global::ClassSample? other)
     {
-        return
-            !ReferenceEquals(other, null) && this.GetType() == other.GetType()
-            && global::System.Collections.Generic.EqualityComparer<global::System.String>.Default.Equals(this.Name!, other.Name!)
-            && global::System.Collections.Generic.EqualityComparer<global::System.Int32>.Default.Equals(this.Age!, other.Age!)
+        if (ReferenceEquals(null, other)) return false;
+        if (ReferenceEquals(this, other)) return true;
+        
+        return other.GetType() == this.GetType()
+            && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.Name!, other.Name!)
+            && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.Age!, other.Age!)
             ;
     }
     
@@ -53,10 +59,10 @@ partial class Person : global::System.IEquatable<Person>
         hashCode.Add(this.GetType());
         hashCode.Add(
             this.Name!,
-            global::System.Collections.Generic.EqualityComparer<global::System.String>.Default);
+            global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default);
         hashCode.Add(
             this.Age!,
-            global::System.Collections.Generic.EqualityComparer<global::System.Int32>.Default);
+            global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default);
         
         return hashCode.ToHashCode();
     }

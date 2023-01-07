@@ -1,14 +1,13 @@
-﻿//HintName: Generator.Equals.Tests.Classes.DeepEquality.Person.Generator.Equals.g.cs
+﻿//HintName: Generator.Equals.Tests.Structs.FieldEquality.Sample.Generator.Equals.g.cs
 
 #nullable enable
 #pragma warning disable CS0612,CS0618
 
-namespace Generator.Equals.Tests.Classes
+namespace Generator.Equals.Tests.Structs
 {
-    partial class DeepEquality
+    partial class FieldEquality
     {
-        #pragma warning disable CS0628
-        partial class Person : global::System.IEquatable<Person>
+        partial struct Sample : global::System.IEquatable<Sample>
         {
             /// <summary>
             /// Indicates whether the object on the left is equal to the object on the right.
@@ -18,9 +17,9 @@ namespace Generator.Equals.Tests.Classes
             /// <returns>true if the objects are equal; otherwise, false.</returns>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
             public static bool operator ==(
-                global::Generator.Equals.Tests.Classes.DeepEquality.Person? left,
-                global::Generator.Equals.Tests.Classes.DeepEquality.Person? right) =>
-                global::Generator.Equals.DefaultEqualityComparer<global::Generator.Equals.Tests.Classes.DeepEquality.Person?>.Default
+                global::Generator.Equals.Tests.Structs.FieldEquality.Sample left,
+                global::Generator.Equals.Tests.Structs.FieldEquality.Sample right) =>
+                global::Generator.Equals.DefaultEqualityComparer<global::Generator.Equals.Tests.Structs.FieldEquality.Sample>.Default
                     .Equals(left, right);
             
             /// <summary>
@@ -30,27 +29,20 @@ namespace Generator.Equals.Tests.Classes
             /// <param name="right">The right object</param>
             /// <returns>true if the objects are not equal; otherwise, false.</returns>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public static bool operator !=(global::Generator.Equals.Tests.Classes.DeepEquality.Person? left, global::Generator.Equals.Tests.Classes.DeepEquality.Person? right) =>
+            public static bool operator !=(global::Generator.Equals.Tests.Structs.FieldEquality.Sample left, global::Generator.Equals.Tests.Structs.FieldEquality.Sample right) =>
                 !(left == right);
             
             /// <inheritdoc/>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
             public override bool Equals(object? obj) =>
-                Equals(obj as global::Generator.Equals.Tests.Classes.DeepEquality.Person);
+                obj is global::Generator.Equals.Tests.Structs.FieldEquality.Sample o && Equals(o);
             
             /// <inheritdoc/>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            bool global::System.IEquatable<global::Generator.Equals.Tests.Classes.DeepEquality.Person>.Equals(global::Generator.Equals.Tests.Classes.DeepEquality.Person? obj) => Equals((object?) obj);
-            
-            /// <inheritdoc/>
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            protected bool Equals(global::Generator.Equals.Tests.Classes.DeepEquality.Person? other)
+            public bool Equals(global::Generator.Equals.Tests.Structs.FieldEquality.Sample other)
             {
-                if (ReferenceEquals(null, other)) return false;
-                if (ReferenceEquals(this, other)) return true;
-                
-                return other.GetType() == this.GetType()
-                    && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.Age!, other.Age!)
+                return true
+                    && global::Generator.Equals.OrderedEqualityComparer<string>.Default.Equals(this._addresses!, other._addresses!)
                     ;
             }
             
@@ -60,10 +52,9 @@ namespace Generator.Equals.Tests.Classes
             {
                 var hashCode = new global::System.HashCode();
                 
-                hashCode.Add(this.GetType());
                 hashCode.Add(
-                    this.Age!,
-                    global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default);
+                    this._addresses!,
+                    global::Generator.Equals.OrderedEqualityComparer<string>.Default);
                 
                 return hashCode.ToHashCode();
             }
