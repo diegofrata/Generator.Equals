@@ -2,15 +2,11 @@ name: Release
 
 env:
   NUGET_API_KEY: ${{secrets.NUGET_API_KEY}}
-
-
+  
 on:
   push:
     tags:
-      - '*'
-    branches:
-      - '*'
-  pull_request:      
+      - '*'     
 
 jobs:
   build:
@@ -27,9 +23,9 @@ jobs:
     - name: Install dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build --configuration Release --no-restore -f net6.0
     - name: Test
-      run: dotnet test --no-restore --verbosity normal
+      run: dotnet test --no-restore --verbosity normal -f net6.0
     - name: Set Version
       if: startsWith(github.ref, 'refs/tags')
       run: |

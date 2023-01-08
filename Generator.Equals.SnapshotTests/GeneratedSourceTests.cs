@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Testing;
 namespace Generator.Equals.SnapshotTests
 {
     [UsesVerify]
-    public class GeneratedSourceTests
+    public class GeneratedSourceTests : SnapshotTestBase
     {
         static IEnumerable<object[]> FindSampleFiles([CallerFilePath] string? path = null)
         {
@@ -17,15 +17,18 @@ namespace Generator.Equals.SnapshotTests
             var testProjectPath = Path.GetFullPath(Path.Combine(path, "../../Generator.Equals.Tests"));
             var files = Directory.EnumerateFiles(testProjectPath, "*.Sample.cs", SearchOption.AllDirectories);
 
-            return files.Select(f =>
+            return Enum.GetValues<TargetFramework>().SelectMany(framework =>
             {
-                var relativePath = Path.GetRelativePath(testProjectPath, f);
-                return new object[]
+                return files.Select(f =>
                 {
-                    Path.GetDirectoryName(relativePath)!,
-                    Path.GetFileName(relativePath).Replace(".Sample.cs", ""),
-                    f
-                };
+                    return new object[]
+                    {
+                        Path.Combine(Path.GetDirectoryName(path)!, Directory.GetParent(f)!.Name),
+                        Path.GetFileName(f).Replace(".Sample.cs", ""),
+                        f,
+                        framework
+                    };
+                });
             });
         }
 
@@ -33,39 +36,10 @@ namespace Generator.Equals.SnapshotTests
 
         [Theory]
         [MemberData(nameof(SampleFiles))]
-        public async Task Check(string directory, string fileName, string filePath)
+        public async Task Check(string directory, string fileName, string filePath, TargetFramework targetFramework)
         {
-            var sample = await File.ReadAllTextAsync(filePath);
-            await VerifyGeneratedSource(directory, fileName, sample);
-        }
-
-        internal static async Task VerifyGeneratedSource(string directory, string fileName, string source,
-            OutputKind outputKind = OutputKind.DynamicallyLinkedLibrary,
-            CancellationToken ct = default)
-        {
-            var parseOptions = new CSharpParseOptions(LanguageVersion.CSharp9);
-            var referenceAssemblies = ReferenceAssemblies.Net.Net60;
-            var references = await referenceAssemblies.ResolveAsync(null, ct);
-            var compilation = (Compilation)CSharpCompilation.Create(
-                assemblyName: "MyAssembly",
-                syntaxTrees: new[]
-                {
-                    CSharpSyntaxTree.ParseText(
-                        source, 
-                        options: parseOptions, 
-                        cancellationToken: ct),
-                },
-                references: references,
-                options: new CSharpCompilationOptions(outputKind, nullableContextOptions: NullableContextOptions.Enable));
-
-            var driver = CSharpGeneratorDriver
-                .Create(new[]{ new EqualsGenerator().AsSourceGenerator() }, parseOptions: parseOptions)
-                .RunGeneratorsAndUpdateCompilation(compilation, out _, out var diagnostics, ct);
-
-            await Task.WhenAll(
-                Verify(diagnostics).UseDirectory(directory).UseFileName($"{fileName}.Diagnostics"),
-                Verify(driver).UseDirectory(directory).UseFileName(fileName)
-            );
+            var sample = File.ReadAllText(filePath);
+            await VerifyGeneratedSource(directory, fileName, sample, targetFramework: targetFramework);
         }
     }
 }

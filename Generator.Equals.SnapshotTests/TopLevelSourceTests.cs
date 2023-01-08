@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 namespace Generator.Equals.SnapshotTests
 {
     [UsesVerify]
-    public class TopLevelSourceTests
+    public class TopLevelSourceTests : SnapshotTestBase
     {
         static string ThisPath([CallerFilePath] string path = null!) => path;
 
@@ -17,9 +17,9 @@ namespace Generator.Equals.SnapshotTests
                     "../../Generator.Equals.Tests.TopLevel/Program.cs")
             );
 
-            var topLevelSource = await File.ReadAllTextAsync(topLevelProgramPath);
+            var topLevelSource = File.ReadAllText(topLevelProgramPath);
 
-            await GeneratedSourceTests.VerifyGeneratedSource(
+            await VerifyGeneratedSource(
                 Path.Combine(Path.GetDirectoryName(ThisPath())!, "TopLevel")!,
                 Path.GetFileName(topLevelProgramPath),
                 topLevelSource,
