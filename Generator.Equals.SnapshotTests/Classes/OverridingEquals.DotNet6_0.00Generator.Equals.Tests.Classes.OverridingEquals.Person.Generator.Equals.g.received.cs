@@ -7,6 +7,7 @@ namespace Generator.Equals.Tests.Classes
 {
     partial class OverridingEquals
     {
+        #pragma warning disable CS0628
         partial class Person : global::System.IEquatable<Person>
         {
             /// <summary>
@@ -39,10 +40,16 @@ namespace Generator.Equals.Tests.Classes
             
             /// <inheritdoc/>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public bool Equals(global::Generator.Equals.Tests.Classes.OverridingEquals.Person? other)
+            bool global::System.IEquatable<global::Generator.Equals.Tests.Classes.OverridingEquals.Person>.Equals(global::Generator.Equals.Tests.Classes.OverridingEquals.Person? obj) => Equals((object?) obj);
+            
+            /// <inheritdoc/>
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
+            protected bool Equals(global::Generator.Equals.Tests.Classes.OverridingEquals.Person? other)
             {
-                return
-                    !ReferenceEquals(other, null) && this.GetType() == other.GetType()
+                if (ReferenceEquals(null, other)) return false;
+                if (ReferenceEquals(this, other)) return true;
+                
+                return other.GetType() == this.GetType()
                     && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.Age!, other.Age!)
                     ;
             }

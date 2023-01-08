@@ -7,6 +7,7 @@ namespace Generator.Equals.Tests.Classes
 {
     partial class OverridingEquals
     {
+        #pragma warning disable CS0628
         partial class SeniorManager : global::System.IEquatable<SeniorManager>
         {
             /// <summary>
@@ -39,10 +40,16 @@ namespace Generator.Equals.Tests.Classes
             
             /// <inheritdoc/>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public bool Equals(global::Generator.Equals.Tests.Classes.OverridingEquals.SeniorManager? other)
+            bool global::System.IEquatable<global::Generator.Equals.Tests.Classes.OverridingEquals.SeniorManager>.Equals(global::Generator.Equals.Tests.Classes.OverridingEquals.SeniorManager? obj) => Equals((object?) obj);
+            
+            /// <inheritdoc/>
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
+            protected bool Equals(global::Generator.Equals.Tests.Classes.OverridingEquals.SeniorManager? other)
             {
-                return
-                    base.Equals(other as global::Generator.Equals.Tests.Classes.OverridingEquals.Manager)
+                if (ReferenceEquals(null, other)) return false;
+                if (ReferenceEquals(this, other)) return true;
+                
+                return base.Equals(other as global::Generator.Equals.Tests.Classes.OverridingEquals.Manager)
                     && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.Shares!, other.Shares!)
                     ;
             }

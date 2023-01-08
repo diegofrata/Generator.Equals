@@ -16,7 +16,7 @@ namespace Generator.Equals
     {
         public void Initialize(GeneratorInitializationContext context)
         {
-#if DEBUG
+#if GENERATOR_DEBUG_LAUNCH
             Debugger.Launch();
 #endif
             context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());

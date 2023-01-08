@@ -39,10 +39,16 @@ namespace Generator.Equals.Tests.Classes
             
             /// <inheritdoc/>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public bool Equals(global::Generator.Equals.Tests.Classes.CustomEquality.Sample? other)
+            bool global::System.IEquatable<global::Generator.Equals.Tests.Classes.CustomEquality.Sample>.Equals(global::Generator.Equals.Tests.Classes.CustomEquality.Sample? obj) => Equals((object?) obj);
+            
+            /// <inheritdoc/>
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
+            protected bool Equals(global::Generator.Equals.Tests.Classes.CustomEquality.Sample? other)
             {
-                return
-                    !ReferenceEquals(other, null) && this.GetType() == other.GetType()
+                if (ReferenceEquals(null, other)) return false;
+                if (ReferenceEquals(this, other)) return true;
+                
+                return other.GetType() == this.GetType()
                     && global::Generator.Equals.Tests.Classes.CustomEquality.Comparer1.Default.Equals(this.Name1!, other.Name1!)
                     && global::Generator.Equals.Tests.Classes.CustomEquality.Comparer2.Instance.Equals(this.Name2!, other.Name2!)
                     && new global::Generator.Equals.Tests.Classes.CustomEquality.LengthEqualityComparer().Equals(this.Name3!, other.Name3!)

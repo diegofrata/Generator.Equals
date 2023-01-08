@@ -39,10 +39,16 @@ namespace Generator.Equals.Tests.Classes
             
             /// <inheritdoc/>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public bool Equals(global::Generator.Equals.Tests.Classes.NullableEquality.Sample? other)
+            bool global::System.IEquatable<global::Generator.Equals.Tests.Classes.NullableEquality.Sample>.Equals(global::Generator.Equals.Tests.Classes.NullableEquality.Sample? obj) => Equals((object?) obj);
+            
+            /// <inheritdoc/>
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
+            protected bool Equals(global::Generator.Equals.Tests.Classes.NullableEquality.Sample? other)
             {
-                return
-                    !ReferenceEquals(other, null) && this.GetType() == other.GetType()
+                if (ReferenceEquals(null, other)) return false;
+                if (ReferenceEquals(this, other)) return true;
+                
+                return other.GetType() == this.GetType()
                     && global::Generator.Equals.OrderedEqualityComparer<string>.Default.Equals(this.Addresses!, other.Addresses!)
                     ;
             }

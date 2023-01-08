@@ -14,6 +14,7 @@ namespace Generator.Equals
         {
             var symbolName = symbol.ToFQF();
             var baseTypeName = symbol.BaseType?.ToFQF();
+            var isRootClass = baseTypeName == "object";
 
             writer.WriteLines(EqualsOperatorCodeComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
@@ -35,21 +36,32 @@ namespace Generator.Equals
             writer.WriteLine("public override bool Equals(object? obj) =>");
             writer.WriteLine(1, $"Equals(obj as {symbolName});");
             writer.WriteLine();
+            
+            writer.WriteLine(InheritDocComment);
+            writer.WriteLine(GeneratedCodeAttributeDeclaration);
+            writer.WriteLine($"bool global::System.IEquatable<{symbolName}>.Equals({symbolName}? obj) => Equals((object?) obj);");
+            writer.WriteLine();
 
             writer.WriteLine(InheritDocComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
-            writer.WriteLine($"public bool Equals({symbolName}? other)");
+            writer.WriteLine($"{(symbol.IsSealed ? "private" : "protected")} bool Equals({symbolName}? other)");
             writer.AppendOpenBracket();
 
-            writer.WriteLine("return");
-
+            writer.WriteLine("if (ReferenceEquals(null, other)) return false;");
+            writer.WriteLine("if (ReferenceEquals(this, other)) return true;");
+            writer.WriteLine();
+            
+            if (isRootClass || ignoreInheritedMembers)
+            {
+                writer.WriteLine("return other.GetType() == this.GetType()");
+            }
+            else
+            {
+                writer.WriteLine($"return base.Equals(other as {baseTypeName})");    
+            }
+            
             writer.Indent++;
-            writer.WriteLine(baseTypeName == "object" || ignoreInheritedMembers
-                ? "!ReferenceEquals(other, null) && this.GetType() == other.GetType()"
-                : $"base.Equals(other as {baseTypeName})");
-
             BuildMembersEquality(symbol, attributesMetadata, writer, explicitMode);
-
             writer.WriteLine(";");
             writer.Indent--;
 
