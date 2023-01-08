@@ -7,7 +7,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <!-- Do not include the generator as a lib dependency -->
         <IncludeBuildOutput>false</IncludeBuildOutput>
-        <LangVersion>8.0</LangVersion>
+        <LangVersion>9.0</LangVersion>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
 
@@ -18,10 +19,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Generator.Equals.Runtime\Generator.Equals.Runtime.csproj" />
-
         <!-- Package the generator in the analyzer directory of the nuget package -->
         <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Remove="Runtime\*.cs" />
+      <EmbeddedResource Include="Runtime\*.cs" />
+    </ItemGroup>
+
+    
 </Project>

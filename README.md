@@ -6,8 +6,14 @@ A source code generator for automatically implementing IEquatable&lt;T&gt; using
 ## Requirements
 
 In order to use this library, you must:
-* Use a target framework that supports .NET Standard >= 2.0 (eg. .NET Core 3.1 or .NET 5.0);
-* Set your project's C# ```LangVersion``` property to 8.0 or higher.
+* Use a target framework that supports .NET Standard >= 2.0
+* Set your project's C# ```LangVersion``` property to 9.0 or higher.
+
+## Installation
+
+Simply add the package `Generator.Equals` to your project. If using .NET Framework, you will also need to add the package `Microsoft.Bcl.HashCode` to your project.
+
+That's it!
 
 ## Usage
 

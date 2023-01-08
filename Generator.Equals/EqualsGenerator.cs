@@ -1,48 +1,114 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 [assembly: InternalsVisibleTo("Generator.Equals.SnapshotTests")]
 
 namespace Generator.Equals
 {
-    [Generator]
-    class EqualsGenerator : ISourceGenerator
+    [Generator(LanguageNames.CSharp)]
+    public class EqualsGenerator : IIncrementalGenerator
     {
-        public void Initialize(GeneratorInitializationContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-#if GENERATOR_DEBUG_LAUNCH
-            Debugger.Launch();
-#endif
-            context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
+            context.RegisterPostInitializationOutput(c =>
+            {
+                var assembly = GetType().Assembly;
+
+                foreach (var name in assembly.GetManifestResourceNames())
+                {
+                    if (!name.EndsWith(".cs") || !name.StartsWith("Generator.Equals.Runtime")) continue;
+
+                    using var stream = assembly.GetManifestResourceStream(name);
+                    using var reader = new StreamReader(stream);
+                    var contents = reader.ReadToEnd();
+
+                    c.AddSource(name, contents);
+                }
+            });
+
+            bool HasEquatableAttribute(SyntaxList<AttributeListSyntax> c)
+            {
+                return c.Any(list =>
+                    list.Attributes.Any(
+                        syntax =>
+                            syntax.Name.ToString().EndsWith("Equatable") ||
+                            syntax.Name.ToString().EndsWith("EquatableAttribute")
+                    )
+                );
+            }
+
+            var provider = context.SyntaxProvider
+                .CreateSyntaxProvider(
+                    (syntaxNode, ct) =>
+                    {
+                        return syntaxNode switch
+                        {
+                            ClassDeclarationSyntax a when HasEquatableAttribute(a.AttributeLists) => true,
+                            RecordDeclarationSyntax b when HasEquatableAttribute(b.AttributeLists) => true,
+                            StructDeclarationSyntax c when HasEquatableAttribute(c.AttributeLists) => true,
+                            _ => false
+                        };
+                    },
+                    (syntaxContext, ct) => syntaxContext);
+
+            var combined = context.CompilationProvider.Combine(provider.Collect());
+
+            context.RegisterSourceOutput(combined, (spc, pair) => Execute(spc, pair.Left, pair.Right));
         }
 
-        public void Execute(GeneratorExecutionContext context)
+        void Validate(SourceProductionContext productionContext, Compilation compilation)
         {
-            if (!(context.SyntaxReceiver is SyntaxReceiver s)) return;
+            if (compilation.GetTypeByMetadataName("System.HashCode") is null)
+            {
+                productionContext.ReportDiagnostic(
+                    Diagnostic.Create(
+                        new DiagnosticDescriptor(
+                            "GENEQ001",
+                            "Missing System.HashCode",
+                            "[Generator.Equals] System.HashCode does not seem to exist. To fix this error, add package Microsoft.Bcl.HashCode.",
+                            "Generator.Equals",
+                            DiagnosticSeverity.Error,
+                            true
+                        ),
+                        Location.None
+                    )
+                );
+            }
+        }
+
+        void Execute(SourceProductionContext productionContext, Compilation compilation,
+            ImmutableArray<GeneratorSyntaxContext> syntaxArr)
+        {
+            Validate(productionContext, compilation);
 
             var attributesMetadata = new AttributesMetadata(
-                context.Compilation.GetTypeByMetadataName("Generator.Equals.EquatableAttribute")!,
-                context.Compilation.GetTypeByMetadataName("Generator.Equals.DefaultEqualityAttribute")!,
-                context.Compilation.GetTypeByMetadataName("Generator.Equals.OrderedEqualityAttribute")!,
-                context.Compilation.GetTypeByMetadataName("Generator.Equals.IgnoreEqualityAttribute")!,
-                context.Compilation.GetTypeByMetadataName("Generator.Equals.UnorderedEqualityAttribute")!,
-                context.Compilation.GetTypeByMetadataName("Generator.Equals.ReferenceEqualityAttribute")!,
-                context.Compilation.GetTypeByMetadataName("Generator.Equals.SetEqualityAttribute")!,
-                context.Compilation.GetTypeByMetadataName("Generator.Equals.CustomEqualityAttribute")!
+                compilation.GetTypeByMetadataName("Generator.Equals.EquatableAttribute")!,
+                compilation.GetTypeByMetadataName("Generator.Equals.DefaultEqualityAttribute")!,
+                compilation.GetTypeByMetadataName("Generator.Equals.OrderedEqualityAttribute")!,
+                compilation.GetTypeByMetadataName("Generator.Equals.IgnoreEqualityAttribute")!,
+                compilation.GetTypeByMetadataName("Generator.Equals.UnorderedEqualityAttribute")!,
+                compilation.GetTypeByMetadataName("Generator.Equals.ReferenceEqualityAttribute")!,
+                compilation.GetTypeByMetadataName("Generator.Equals.SetEqualityAttribute")!,
+                compilation.GetTypeByMetadataName("Generator.Equals.CustomEqualityAttribute")!
             );
 
             var handledSymbols = new HashSet<string>();
 
-            foreach (var node in s.CandidateSyntaxes)
+            foreach (var item in syntaxArr)
             {
-                var model = context.Compilation.GetSemanticModel(node.SyntaxTree);
-                var symbol = model.GetDeclaredSymbol(node, context.CancellationToken) as ITypeSymbol;
+                var node = item.Node;
+                var model = item.SemanticModel;
+
+                var symbol = model.GetDeclaredSymbol(node, productionContext.CancellationToken) as ITypeSymbol;
 
                 var equatableAttributeData = symbol?.GetAttributes().FirstOrDefault(x =>
                     x.AttributeClass?.Equals(attributesMetadata.Equatable, SymbolEqualityComparer.Default) ==
@@ -59,41 +125,33 @@ namespace Generator.Equals
                 handledSymbols.Add(symbolDisplayString);
 
                 var explicitMode = equatableAttributeData.NamedArguments
-                    .FirstOrDefault(pair => pair.Key == nameof(EquatableAttribute.Explicit))
+                    .FirstOrDefault(pair => pair.Key == "Explicit")
                     .Value.Value is true;
+
                 var ignoreInheritedMembers = equatableAttributeData.NamedArguments
-                    .FirstOrDefault(pair => pair.Key == nameof(EquatableAttribute.IgnoreInheritedMembers))
+                    .FirstOrDefault(pair => pair.Key == "IgnoreInheritedMembers")
                     .Value.Value is true;
+
                 var source = node switch
                 {
-                    StructDeclarationSyntax _ => StructEqualityGenerator.Generate(symbol!, attributesMetadata, explicitMode),
-                    RecordDeclarationSyntax _ when node.RawKind == 9068 => RecordStructEqualityGenerator.Generate(symbol!, attributesMetadata, explicitMode),
-                    RecordDeclarationSyntax _ => RecordEqualityGenerator.Generate(symbol!, attributesMetadata, explicitMode, ignoreInheritedMembers),
-                    ClassDeclarationSyntax _ => ClassEqualityGenerator.Generate(symbol!, attributesMetadata, explicitMode, ignoreInheritedMembers),
+                    StructDeclarationSyntax _ => StructEqualityGenerator.Generate(symbol!, attributesMetadata,
+                        explicitMode),
+                    RecordDeclarationSyntax _ when node.IsKind(SyntaxKind.RecordStructDeclaration) =>
+                        RecordStructEqualityGenerator.Generate(symbol!, attributesMetadata, explicitMode),
+                    RecordDeclarationSyntax _ => RecordEqualityGenerator.Generate(symbol!, attributesMetadata,
+                        explicitMode, ignoreInheritedMembers),
+                    ClassDeclarationSyntax _ => ClassEqualityGenerator.Generate(symbol!, attributesMetadata,
+                        explicitMode, ignoreInheritedMembers),
                     _ => throw new Exception("should not have gotten here.")
                 };
 
                 var fileName = $"{EscapeFileName(symbolDisplayString)}.Generator.Equals.g.cs"!;
-                context.AddSource(fileName, source);
+
+                productionContext.AddSource(fileName, source);
             }
 
             static string EscapeFileName(string fileName) => new[] { '<', '>', ',' }
                 .Aggregate(new StringBuilder(fileName), (s, c) => s.Replace(c, '_')).ToString();
-        }
-
-        class SyntaxReceiver : ISyntaxReceiver
-        {
-            readonly List<SyntaxNode> _candidateSyntaxes = new List<SyntaxNode>();
-
-            public IReadOnlyList<SyntaxNode> CandidateSyntaxes => _candidateSyntaxes;
-
-            public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
-            {
-                if (!(syntaxNode is ClassDeclarationSyntax c) && !(syntaxNode is RecordDeclarationSyntax) && !(syntaxNode is StructDeclarationSyntax))
-                    return;
-
-                _candidateSyntaxes.Add(syntaxNode);
-            }
         }
     }
 }
