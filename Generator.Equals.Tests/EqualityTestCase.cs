@@ -49,12 +49,12 @@ namespace Generator.Equals.Tests
         }
     }
 
-    public abstract class EqualityTestCase<T> : EqualityTestCase where T : IEquatable<T>
+    public abstract class EqualityTestCase<T> : EqualityTestCase
     {
         public void TestEqualsEquatable()
         {
-            var value1 = (T)Factory1();
-            var value2 = (T)Factory2();
+            var value1 = (IEquatable<T>)Factory1();
+            var value2 = (IEquatable<T>)Factory2();
             var result = value1.Equals(value2);
             result.Should().Be(Expected);
         }

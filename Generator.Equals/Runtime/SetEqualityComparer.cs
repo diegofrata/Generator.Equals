@@ -1,11 +1,14 @@
-﻿using System.Collections.Generic;
+﻿#nullable enable
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
 
 namespace Generator.Equals
 {
-    public class SetEqualityComparer<T> : IEqualityComparer<IEnumerable<T>>
+    [GeneratedCode("Generator.Equals", "1.0.0.0")]
+    class SetEqualityComparer<T> : IEqualityComparer<IEnumerable<T>>
     {
         public static SetEqualityComparer<T> Default { get; } = new SetEqualityComparer<T>();
-        
+
         public IEqualityComparer<T> EqualityComparer { get; }
 
         public SetEqualityComparer() : this(DefaultEqualityComparer<T>.Default)
@@ -24,12 +27,12 @@ namespace Generator.Equals
 
             if (x == null || y == null)
                 return false;
-                        
+
             // If either of the underlying collections is a set, then we want to respect whatever 
             // is the equality comparer tha was specified.
             if (x is ISet<T> xSet)
                 return xSet.SetEquals(y);
-            
+
             if (y is ISet<T> ySet)
                 return ySet.SetEquals(x);
 

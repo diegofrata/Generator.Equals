@@ -1,9 +1,13 @@
-﻿using System.Collections.Generic;
+﻿#nullable enable
+#pragma warning disable CS8714
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Generator.Equals
 {
-    public class UnorderedEqualityComparer<T> : IEqualityComparer<IEnumerable<T>>
+    [GeneratedCode("Generator.Equals", "1.0.0.0")]
+    class UnorderedEqualityComparer<T> : IEqualityComparer<IEnumerable<T>>
     {
         public static IEqualityComparer<IEnumerable<T>> Default { get; } = new UnorderedEqualityComparer<T>();
 
@@ -12,7 +16,7 @@ namespace Generator.Equals
         public UnorderedEqualityComparer() : this(DefaultEqualityComparer<T>.Default)
         {
         }
-        
+
         public UnorderedEqualityComparer(IEqualityComparer<T> equalityComparer)
         {
             EqualityComparer = equalityComparer;

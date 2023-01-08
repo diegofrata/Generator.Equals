@@ -1,4 +1,6 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Collections.Immutable;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
@@ -29,39 +31,41 @@ namespace Generator.Equals.SnapshotTests
 
         public static IEnumerable<object[]> SampleFiles => FindSampleFiles();
 
-        internal static async Task VerifyGeneratedSource(string directory, string fileName, string source, OutputKind outputKind = OutputKind.DynamicallyLinkedLibrary,
-            CancellationToken ct = default)
-        {
-            var referenceAssemblies = ReferenceAssemblies.Net.Net60;
-            var references = await referenceAssemblies.ResolveAsync(null, ct);
-            var compilation = (Compilation)CSharpCompilation.Create(
-                assemblyName: "MyAssembly",
-                syntaxTrees: new[]
-                {
-                    CSharpSyntaxTree.ParseText(source, options: new CSharpParseOptions(), cancellationToken: ct),
-                },
-                references: references
-                    .Add(MetadataReference.CreateFromFile(typeof(CustomEqualityAttribute).Assembly.Location)),
-                options: new CSharpCompilationOptions(outputKind, nullableContextOptions: NullableContextOptions.Enable));
-
-            var driver = CSharpGeneratorDriver
-                .Create(new EqualsGenerator())
-                .RunGeneratorsAndUpdateCompilation(compilation, out compilation, out _, ct);
-
-            var diagnostics = compilation.GetDiagnostics(ct);
-
-            await Task.WhenAll(
-                Verify(diagnostics).UseDirectory(directory).UseFileName($"{fileName}.Diagnostics"),
-                Verify(driver).UseDirectory(directory).UseFileName(fileName)
-            );
-        }
-
         [Theory]
         [MemberData(nameof(SampleFiles))]
         public async Task Check(string directory, string fileName, string filePath)
         {
             var sample = await File.ReadAllTextAsync(filePath);
             await VerifyGeneratedSource(directory, fileName, sample);
+        }
+
+        internal static async Task VerifyGeneratedSource(string directory, string fileName, string source,
+            OutputKind outputKind = OutputKind.DynamicallyLinkedLibrary,
+            CancellationToken ct = default)
+        {
+            var parseOptions = new CSharpParseOptions(LanguageVersion.CSharp9);
+            var referenceAssemblies = ReferenceAssemblies.Net.Net60;
+            var references = await referenceAssemblies.ResolveAsync(null, ct);
+            var compilation = (Compilation)CSharpCompilation.Create(
+                assemblyName: "MyAssembly",
+                syntaxTrees: new[]
+                {
+                    CSharpSyntaxTree.ParseText(
+                        source, 
+                        options: parseOptions, 
+                        cancellationToken: ct),
+                },
+                references: references,
+                options: new CSharpCompilationOptions(outputKind, nullableContextOptions: NullableContextOptions.Enable));
+
+            var driver = CSharpGeneratorDriver
+                .Create(new[]{ new EqualsGenerator().AsSourceGenerator() }, parseOptions: parseOptions)
+                .RunGeneratorsAndUpdateCompilation(compilation, out _, out var diagnostics, ct);
+
+            await Task.WhenAll(
+                Verify(diagnostics).UseDirectory(directory).UseFileName($"{fileName}.Diagnostics"),
+                Verify(driver).UseDirectory(directory).UseFileName(fileName)
+            );
         }
     }
 }

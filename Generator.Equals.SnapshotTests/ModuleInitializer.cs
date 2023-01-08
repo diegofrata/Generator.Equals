@@ -10,6 +10,7 @@ namespace Generator.Equals.SnapshotTests
         {
             DiffTools.UseOrder(DiffTool.VisualStudioCode);
             VerifySourceGenerators.Enable();
+            VerifySourceGeneratorsPatch.Patch();
             ClipboardAccept.Enable();
         }
     }

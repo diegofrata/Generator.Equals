@@ -1,10 +1,14 @@
-﻿using System;
+﻿#nullable enable
+using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 
 namespace Generator.Equals
 {
-    public class DictionaryEqualityComparer<TKey, TValue> : IEqualityComparer<IDictionary<TKey, TValue>>
+    [GeneratedCode("Generator.Equals", "1.0.0.0")]
+    class DictionaryEqualityComparer<TKey, TValue> : IEqualityComparer<IDictionary<TKey, TValue>>
     {
+        [GeneratedCode("Generator.Equals", "1.0.0.0")]
         class KeyPairEqualityComparer : IEqualityComparer<KeyValuePair<TKey, TValue>>
         {
             readonly IEqualityComparer<TKey> _keyEqualityComparer;
@@ -20,20 +24,20 @@ namespace Generator.Equals
 
             public bool Equals(KeyValuePair<TKey, TValue> x, KeyValuePair<TKey, TValue> y)
             {
-                return _keyEqualityComparer.Equals(x.Key, y.Key) &&
-                       _valueEqualityComparer.Equals(x.Value, y.Value);
+                return _keyEqualityComparer.Equals(x.Key!, y.Key!) &&
+                       _valueEqualityComparer.Equals(x.Value!, y.Value!);
             }
 
             public int GetHashCode(KeyValuePair<TKey, TValue> obj)
             {
                 return HashCode.Combine(
-                    _keyEqualityComparer.GetHashCode(obj.Key),
-                    _valueEqualityComparer.GetHashCode(obj.Value)
+                    _keyEqualityComparer.GetHashCode(obj.Key!),
+                    _valueEqualityComparer.GetHashCode(obj.Value!)
                 );
             }
         }
 
-        
+
         public static DictionaryEqualityComparer<TKey, TValue> Default { get; } =
             new DictionaryEqualityComparer<TKey, TValue>();
 
@@ -41,11 +45,13 @@ namespace Generator.Equals
         public IEqualityComparer<TKey> KeyEqualityComparer { get; }
         public IEqualityComparer<TValue> ValueEqualityComparer { get; }
 
-        public DictionaryEqualityComparer() : this(DefaultEqualityComparer<TKey>.Default, DefaultEqualityComparer<TValue>.Default)
+        public DictionaryEqualityComparer() : this(DefaultEqualityComparer<TKey>.Default,
+            DefaultEqualityComparer<TValue>.Default)
         {
         }
 
-        public DictionaryEqualityComparer(IEqualityComparer<TKey> keyEqualityComparer, IEqualityComparer<TValue> valueEqualityComparer)
+        public DictionaryEqualityComparer(IEqualityComparer<TKey> keyEqualityComparer,
+            IEqualityComparer<TValue> valueEqualityComparer)
         {
             _keyPairEqualityComparer = new KeyPairEqualityComparer(keyEqualityComparer, valueEqualityComparer);
             KeyEqualityComparer = keyEqualityComparer;
@@ -71,7 +77,7 @@ namespace Generator.Equals
                 if (!y.TryGetValue(pair.Key, out var yValue))
                     return false;
 
-                if (!ValueEqualityComparer.Equals(pair.Value, yValue))
+                if (!ValueEqualityComparer.Equals(pair.Value!, yValue!))
                     return false;
             }
 
