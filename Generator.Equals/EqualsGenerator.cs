@@ -28,10 +28,12 @@ namespace Generator.Equals
                     if (!name.EndsWith(".cs") || !name.StartsWith("Generator.Equals.Runtime")) continue;
 
                     using var stream = assembly.GetManifestResourceStream(name);
-                    using var reader = new StreamReader(stream);
-                    var contents = reader.ReadToEnd();
-
-                    c.AddSource(name, contents);
+                    using var reader = new StreamReader(stream!);
+                    var contents = new StringBuilder();
+                    contents.AppendLine("#nullable enable");
+                    contents.AppendLine("#pragma warning disable CS0436");
+                    contents.Append(reader.ReadToEnd());
+                    c.AddSource(name, contents.ToString());
                 }
             });
 

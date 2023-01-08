@@ -1,6 +1,4 @@
-﻿#nullable enable
-#pragma warning disable CS8714
-using System.CodeDom.Compiler;
+﻿using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -34,8 +32,10 @@ namespace Generator.Equals
                 y is ICollection<T> yCollection &&
                 xCollection.Count != yCollection.Count) return false;
 
+#pragma warning disable CS8714
             var cnt = new Dictionary<T, int>(EqualityComparer);
-
+#pragma warning restore CS8714
+            
             foreach (var s in x)
                 cnt[s] = (cnt.TryGetValue(s, out var v) ? v : 0) + 1;
 
