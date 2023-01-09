@@ -14,6 +14,7 @@ namespace Generator.Equals
         // CS0612: Obsolete with no comment
         // CS0618: obsolete with comment
         internal const string SuppressObsoleteWarningsPragma = "#pragma warning disable CS0612,CS0618";
+        internal const string SuppressTypeConflictsWarningsPragma = "#pragma warning disable CS0436";
 
         protected static readonly string[] EqualsOperatorCodeComment = @"
 /// <summary>

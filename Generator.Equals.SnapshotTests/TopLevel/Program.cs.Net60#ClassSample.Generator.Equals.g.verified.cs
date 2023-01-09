@@ -2,6 +2,7 @@
 
 #nullable enable
 #pragma warning disable CS0612,CS0618
+#pragma warning disable CS0436
 
 partial class ClassSample : global::System.IEquatable<ClassSample>
 {

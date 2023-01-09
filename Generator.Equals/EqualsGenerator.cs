@@ -30,8 +30,8 @@ namespace Generator.Equals
                     using var stream = assembly.GetManifestResourceStream(name);
                     using var reader = new StreamReader(stream!);
                     var contents = new StringBuilder();
-                    contents.AppendLine("#nullable enable");
-                    contents.AppendLine("#pragma warning disable CS0436");
+                    contents.AppendLine(EqualityGeneratorBase.EnableNullableContext);
+                    contents.AppendLine(EqualityGeneratorBase.SuppressTypeConflictsWarningsPragma);
                     contents.Append(reader.ReadToEnd());
                     c.AddSource(name, contents.ToString());
                 }
