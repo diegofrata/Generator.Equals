@@ -7,7 +7,7 @@ using System.Linq;
 namespace Generator.Equals
 {
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
-    class OrderedEqualityComparer<T> : IEqualityComparer<IEnumerable<T>>
+    public class OrderedEqualityComparer<T> : IEqualityComparer<IEnumerable<T>>
     {
         public static OrderedEqualityComparer<T> Default { get; } = new OrderedEqualityComparer<T>();
 

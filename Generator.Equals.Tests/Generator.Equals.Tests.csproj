@@ -25,6 +25,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Generator.Equals.Runtime\Generator.Equals.Runtime.csproj" />
         <ProjectReference Include="..\Generator.Equals\Generator.Equals.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 

@@ -5,7 +5,7 @@ using System.Linq;
 namespace Generator.Equals
 {
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
-    class UnorderedEqualityComparer<T> : IEqualityComparer<IEnumerable<T>>
+    public class UnorderedEqualityComparer<T> : IEqualityComparer<IEnumerable<T>>
     {
         public static IEqualityComparer<IEnumerable<T>> Default { get; } = new UnorderedEqualityComparer<T>();
 

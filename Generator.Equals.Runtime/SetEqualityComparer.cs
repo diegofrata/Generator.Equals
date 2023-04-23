@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Generator.Equals
 {
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
-    class SetEqualityComparer<T> : IEqualityComparer<IEnumerable<T>>
+    public class SetEqualityComparer<T> : IEqualityComparer<IEnumerable<T>>
     {
         public static SetEqualityComparer<T> Default { get; } = new SetEqualityComparer<T>();
 

@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 namespace Generator.Equals
 {
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
-    class ReferenceEqualityComparer<T> : IEqualityComparer<T> where T : class
+    public class ReferenceEqualityComparer<T> : IEqualityComparer<T> where T : class
     {
         public static ReferenceEqualityComparer<T> Default { get; } = new ReferenceEqualityComparer<T>();
 

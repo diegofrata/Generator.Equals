@@ -24,9 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Remove="Runtime\*.cs" />
-      <EmbeddedResource Include="Runtime\*.cs" />
+      <ProjectReference Include="..\Generator.Equals.Runtime\Generator.Equals.Runtime.csproj" />
     </ItemGroup>
-
     
 </Project>

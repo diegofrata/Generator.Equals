@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace Generator.Equals
 {
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
-    class DictionaryEqualityComparer<TKey, TValue> : IEqualityComparer<IDictionary<TKey, TValue>>
+    public class DictionaryEqualityComparer<TKey, TValue> : IEqualityComparer<IDictionary<TKey, TValue>>
     {
         [GeneratedCode("Generator.Equals", "1.0.0.0")]
         class KeyPairEqualityComparer : IEqualityComparer<KeyValuePair<TKey, TValue>>
