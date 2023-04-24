@@ -11,9 +11,7 @@ In order to use this library, you must:
 
 ## Installation
 
-Simply add the package `Generator.Equals` to your project. If using .NET Framework, you will also need to add the package `Microsoft.Bcl.HashCode` to your project.
-
-Keep reading to learn how to add the attributes to your types.
+Simply add the package `Generator.Equals` to your project. Keep reading to learn how to add the attributes to your types.
 
 ## Migrating from version 2
 
