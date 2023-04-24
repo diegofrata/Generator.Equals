@@ -20,8 +20,7 @@ Keep reading to learn how to add the attributes to your types.
 Migrating to version 3 is very straightforward.
 
 1. Ensure projects are targeting C# 9.0 or latter using the MSBuild property `LangVersion`.
-2. Remove reference the package `Generator.Equals.Runtime`. Attributes and equality comparers are now generated directly into the target project and no longer requires referencing a runtime package.
-3. Be aware that `IEquatable<T>` for classes is now implemented explicitly in order to support deep equality. As a result, the method `Equals(T)` method is no longer marked as public. Most code should still work, requiring only to be recompiled as the ABI has changed.
+2. Be aware that `IEquatable<T>` for classes is now implemented explicitly in order to support deep equality. As a result, the method `Equals(T)` method is no longer marked as public. Most code should still work, requiring only to be recompiled as the ABI has changed.
 
 If you have an existing project using `Generator.Equals` and don't need any of the new features, you can still use version 2.x. The differences are minimal between both major versions.
 
