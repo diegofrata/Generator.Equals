@@ -54,6 +54,7 @@ namespace Generator.Equals
                     writer.WriteLine();
                     writer.WriteLine(EqualityGeneratorBase.EnableNullableContext);
                     writer.WriteLine(EqualityGeneratorBase.SuppressObsoleteWarningsPragma);
+                    writer.WriteLine(EqualityGeneratorBase.SuppressTypeConflictsWarningsPragma);
                     writer.WriteLine();
 
                     var namespaceName = s.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted));
