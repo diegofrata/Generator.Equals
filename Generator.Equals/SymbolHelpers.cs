@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
@@ -21,11 +22,11 @@ namespace Generator.Equals
                         _ => false
                     };
                 });
-            
+
             foreach (var member in members)
                 yield return member;
         }
-        
+
         // ReSharper disable once InconsistentNaming
         public static string ToNullableFQF(this ISymbol symbol) =>
             symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMiscellaneousOptions(
@@ -49,15 +50,20 @@ namespace Generator.Equals
 
         public static INamedTypeSymbol? GetInterface(this ITypeSymbol symbol, string interfaceFqn)
         {
-            return symbol.AllInterfaces
+            var result = symbol.AllInterfaces
                 .FirstOrDefault(x => x.OriginalDefinition.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == interfaceFqn);
+
+            if (result == null && symbol.OriginalDefinition.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == interfaceFqn)
+                result = (INamedTypeSymbol)symbol;
+
+            return result;
         }
 
         public static ImmutableArray<ITypeSymbol>? GetIEnumerableTypeArguments(this ITypeSymbol symbol)
         {
             return symbol.GetInterface("global::System.Collections.Generic.IEnumerable<T>")?.TypeArguments;
         }
-        
+
         public static ImmutableArray<ITypeSymbol>? GetIDictionaryTypeArguments(this ITypeSymbol symbol)
         {
             return symbol.GetInterface("global::System.Collections.Generic.IDictionary<TKey, TValue>")?.TypeArguments;
