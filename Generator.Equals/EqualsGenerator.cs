@@ -49,6 +49,7 @@ namespace Generator.Equals
                 compilation.GetTypeByMetadataName("Generator.Equals.UnorderedEqualityAttribute")!,
                 compilation.GetTypeByMetadataName("Generator.Equals.ReferenceEqualityAttribute")!,
                 compilation.GetTypeByMetadataName("Generator.Equals.SetEqualityAttribute")!,
+                compilation.GetTypeByMetadataName("Generator.Equals.StringEqualityAttribute")!,
                 compilation.GetTypeByMetadataName("Generator.Equals.CustomEqualityAttribute")!
             );
 

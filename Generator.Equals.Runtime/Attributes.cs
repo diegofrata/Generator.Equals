@@ -65,6 +65,19 @@ namespace Generator.Equals
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
     [Conditional("GENERATOR_EQUALS")]
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+    public class StringEqualityAttribute : Attribute
+    {
+        public StringComparison ComparisonType { get; }
+
+        public StringEqualityAttribute(StringComparison comparisonType)
+        {
+            ComparisonType = comparisonType;
+        }
+    }
+
+    [GeneratedCode("Generator.Equals", "1.0.0.0")]
+    [Conditional("GENERATOR_EQUALS")]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class CustomEqualityAttribute : Attribute
     {
         public Type EqualityType { get; }

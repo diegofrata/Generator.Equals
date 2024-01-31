@@ -79,6 +79,12 @@ namespace Generator.Equals
                 writer.WriteLine(
                     $"&& global::Generator.Equals.SetEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals(this.{propertyName}!, other.{propertyName}!)");
             }
+            else if (memberSymbol.HasAttribute(attributesMetadata.StringEquality))
+            {
+                var attribute = memberSymbol.GetAttribute(attributesMetadata.StringEquality);
+                var comparerType = (StringComparison)attribute?.ConstructorArguments[0].Value!;
+                writer.WriteLine($"&& global::System.StringComparer.{comparerType}.Equals(this.{propertyName}!, other.{propertyName}!)");
+            }
             else if (memberSymbol.HasAttribute(attributesMetadata.CustomEquality))
             {
                 var attribute = memberSymbol.GetAttribute(attributesMetadata.CustomEquality);
@@ -196,6 +202,15 @@ namespace Generator.Equals
                     var types = typeSymbol.GetIEnumerableTypeArguments()!;
                     writer.Write(
                         $"global::Generator.Equals.SetEqualityComparer<{string.Join(", ", types.Value)}>.Default");
+                });
+            }
+            else if (memberSymbol.HasAttribute(attributesMetadata.StringEquality))
+            {
+                BuildHashCodeAdd(() =>
+                {
+                    var attribute = memberSymbol.GetAttribute(attributesMetadata.StringEquality);
+                    var comparerType = (StringComparison)attribute?.ConstructorArguments[0].Value!;
+                    writer.Write($"global::System.StringComparer.{comparerType}");
                 });
             }
             else if (memberSymbol.HasAttribute(attributesMetadata.CustomEquality))
