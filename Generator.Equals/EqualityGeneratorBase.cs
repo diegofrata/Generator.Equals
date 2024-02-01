@@ -2,6 +2,7 @@
 using System.CodeDom.Compiler;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Generator.Equals
 {
@@ -81,9 +82,20 @@ namespace Generator.Equals
             }
             else if (memberSymbol.HasAttribute(attributesMetadata.StringEquality))
             {
-                var attribute = memberSymbol.GetAttribute(attributesMetadata.StringEquality);
-                var comparerType = (StringComparison)attribute?.ConstructorArguments[0].Value!;
-                writer.WriteLine($"&& global::System.StringComparer.{comparerType}.Equals(this.{propertyName}!, other.{propertyName}!)");
+                var attribute = memberSymbol.GetAttribute(attributesMetadata.StringEquality)!;
+
+                // `System.StringComparison` is an enum, so we need to fetch the value as a string
+                // since compilation unit might differ from analyzer unit.
+                // We solve this by fetching the last identifier name in the syntax tree in the for the attribute
+                // and assume that is the enum member name.
+
+                var enumValueAsString = attribute.ApplicationSyntaxReference!.GetSyntax()
+                    .DescendantNodes()
+                    .OfType<IdentifierNameSyntax>()
+                    .Last()
+                    .GetText();
+
+                writer.WriteLine($"&& global::System.StringComparer.{enumValueAsString}.Equals(this.{propertyName}!, other.{propertyName}!)");
             }
             else if (memberSymbol.HasAttribute(attributesMetadata.CustomEquality))
             {
