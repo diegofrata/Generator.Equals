@@ -220,9 +220,20 @@ namespace Generator.Equals
             {
                 BuildHashCodeAdd(() =>
                 {
-                    var attribute = memberSymbol.GetAttribute(attributesMetadata.StringEquality);
-                    var comparerType = (StringComparison)attribute?.ConstructorArguments[0].Value!;
-                    writer.Write($"global::System.StringComparer.{comparerType}");
+                    var attribute = memberSymbol.GetAttribute(attributesMetadata.StringEquality)!;
+
+                    // `System.StringComparison` is an enum, so we need to fetch the value as a string
+                    // since compilation unit might differ from analyzer unit.
+                    // We solve this by fetching the last identifier name in the syntax tree in the for the attribute
+                    // and assume that is the enum member name.
+
+                    var enumValueAsString = attribute.ApplicationSyntaxReference!.GetSyntax()
+                        .DescendantNodes()
+                        .OfType<IdentifierNameSyntax>()
+                        .Last()
+                        .GetText();
+
+                    writer.Write($"global::System.StringComparer.{enumValueAsString}");
                 });
             }
             else if (memberSymbol.HasAttribute(attributesMetadata.CustomEquality))
