@@ -138,6 +138,13 @@ public string Name { get; set; } // Will only return true if strings are the sam
 
 This will ignore whatever equality is implemented for a particular object and compare references instead.
 
+### StringEquality
+
+```c#
+[StringEquality(StringComparison.CurrentCulture | CurrentCultureIgnoreCase | InvariantCulture | InvariantCultureIgnoreCase | Ordinal | OrdinalIgnoreCase)]
+public string Title { get; set; } // Will use the StringComparison set in constructor when comparing strings
+```
+
 ### CustomEquality
 
 ```c#
