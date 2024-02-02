@@ -2,6 +2,7 @@
 using System.CodeDom.Compiler;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Generator.Equals
 {
@@ -78,6 +79,23 @@ namespace Generator.Equals
 
                 writer.WriteLine(
                     $"&& global::Generator.Equals.SetEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals(this.{propertyName}!, other.{propertyName}!)");
+            }
+            else if (memberSymbol.HasAttribute(attributesMetadata.StringEquality))
+            {
+                var attribute = memberSymbol.GetAttribute(attributesMetadata.StringEquality)!;
+                var stringComparisonValue = Convert.ToInt64(attribute.ConstructorArguments[0].Value);
+
+                if (!attributesMetadata.StringComparisonLookup.TryGetValue(stringComparisonValue,
+                        out var enumMemberName))
+                {
+                    // NOTE: Very unlikely as this would mean changes to the StringComparison enum
+                    //       which is not expected to change. It would also mean that the compiler
+                    //       and analyzer are running different dotnet versions.
+                    throw new Exception("should not have gotten here.");
+                }
+
+                writer.WriteLine(
+                    $"&& global::System.StringComparer.{enumMemberName}.Equals(this.{propertyName}!, other.{propertyName}!)");
             }
             else if (memberSymbol.HasAttribute(attributesMetadata.CustomEquality))
             {
@@ -196,6 +214,26 @@ namespace Generator.Equals
                     var types = typeSymbol.GetIEnumerableTypeArguments()!;
                     writer.Write(
                         $"global::Generator.Equals.SetEqualityComparer<{string.Join(", ", types.Value)}>.Default");
+                });
+            }
+            else if (memberSymbol.HasAttribute(attributesMetadata.StringEquality))
+            {
+                BuildHashCodeAdd(() =>
+                {
+                    var attribute = memberSymbol.GetAttribute(attributesMetadata.StringEquality)!;
+                    var stringComparisonValue = Convert.ToInt64(attribute.ConstructorArguments[0].Value);
+
+                    if (!attributesMetadata.StringComparisonLookup.TryGetValue(stringComparisonValue,
+                            out var enumMemberName))
+                    {
+                        // NOTE: Very unlikely as this would mean changes to the StringComparison enum
+                        //       which is not expected to change. It would also mean that the compiler
+                        //       and analyzer are running different dotnet versions.
+                        throw new Exception("should not have gotten here.");
+                    }
+
+                    writer.WriteLine(
+                        $"global::System.StringComparer.{enumMemberName}");
                 });
             }
             else if (memberSymbol.HasAttribute(attributesMetadata.CustomEquality))

@@ -41,6 +41,21 @@ namespace Generator.Equals
         void Execute(SourceProductionContext productionContext, Compilation compilation,
             ImmutableArray<GeneratorAttributeSyntaxContext> syntaxArr)
         {
+            // Build a lookup for the System.StringComparison enum based on the compilation unit
+            INamedTypeSymbol typeSymbol = compilation.GetTypeByMetadataName("System.StringComparison")!;
+
+            if (typeSymbol is not { TypeKind: TypeKind.Enum })
+            {
+                throw new Exception("should not have gotten here. System.StringComparison is not an enum.");
+            }
+
+            // Assume: Underlying type of enum is always `long`
+            var stringComparisonLookup = typeSymbol
+                .GetMembers()
+                .OfType<IFieldSymbol>()
+                .ToImmutableDictionary(key => Convert.ToInt64(key.ConstantValue), elem => elem.Name);
+            
+
             var attributesMetadata = new AttributesMetadata(
                 compilation.GetTypeByMetadataName("Generator.Equals.EquatableAttribute")!,
                 compilation.GetTypeByMetadataName("Generator.Equals.DefaultEqualityAttribute")!,
@@ -49,9 +64,11 @@ namespace Generator.Equals
                 compilation.GetTypeByMetadataName("Generator.Equals.UnorderedEqualityAttribute")!,
                 compilation.GetTypeByMetadataName("Generator.Equals.ReferenceEqualityAttribute")!,
                 compilation.GetTypeByMetadataName("Generator.Equals.SetEqualityAttribute")!,
-                compilation.GetTypeByMetadataName("Generator.Equals.CustomEqualityAttribute")!
+                compilation.GetTypeByMetadataName("Generator.Equals.StringEqualityAttribute")!,
+                compilation.GetTypeByMetadataName("Generator.Equals.CustomEqualityAttribute")!,
+                stringComparisonLookup
             );
-
+            
             var handledSymbols = new HashSet<string>();
 
             foreach (var item in syntaxArr)
