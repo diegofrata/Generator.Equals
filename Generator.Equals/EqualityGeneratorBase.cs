@@ -83,19 +83,19 @@ namespace Generator.Equals
             else if (memberSymbol.HasAttribute(attributesMetadata.StringEquality))
             {
                 var attribute = memberSymbol.GetAttribute(attributesMetadata.StringEquality)!;
+                var stringComparisonValue = Convert.ToInt64(attribute.ConstructorArguments[0].Value);
 
-                // `System.StringComparison` is an enum, so we need to fetch the value as a string
-                // since compilation unit might differ from analyzer unit.
-                // We solve this by fetching the last identifier name in the syntax tree in the for the attribute
-                // and assume that is the enum member name.
+                if (!attributesMetadata.StringComparisonLookup.TryGetValue(stringComparisonValue,
+                        out var enumMemberName))
+                {
+                    // NOTE: Very unlikely as this would mean changes to the StringComparison enum
+                    //       which is not expected to change. It would also mean that the compiler
+                    //       and analyzer are running different dotnet versions.
+                    throw new Exception("should not have gotten here.");
+                }
 
-                var enumValueAsString = attribute.ApplicationSyntaxReference!.GetSyntax()
-                    .DescendantNodes()
-                    .OfType<IdentifierNameSyntax>()
-                    .Last()
-                    .GetText();
-
-                writer.WriteLine($"&& global::System.StringComparer.{enumValueAsString}.Equals(this.{propertyName}!, other.{propertyName}!)");
+                writer.WriteLine(
+                    $"&& global::System.StringComparer.{enumMemberName}.Equals(this.{propertyName}!, other.{propertyName}!)");
             }
             else if (memberSymbol.HasAttribute(attributesMetadata.CustomEquality))
             {
@@ -221,19 +221,19 @@ namespace Generator.Equals
                 BuildHashCodeAdd(() =>
                 {
                     var attribute = memberSymbol.GetAttribute(attributesMetadata.StringEquality)!;
+                    var stringComparisonValue = Convert.ToInt64(attribute.ConstructorArguments[0].Value);
 
-                    // `System.StringComparison` is an enum, so we need to fetch the value as a string
-                    // since compilation unit might differ from analyzer unit.
-                    // We solve this by fetching the last identifier name in the syntax tree in the for the attribute
-                    // and assume that is the enum member name.
+                    if (!attributesMetadata.StringComparisonLookup.TryGetValue(stringComparisonValue,
+                            out var enumMemberName))
+                    {
+                        // NOTE: Very unlikely as this would mean changes to the StringComparison enum
+                        //       which is not expected to change. It would also mean that the compiler
+                        //       and analyzer are running different dotnet versions.
+                        throw new Exception("should not have gotten here.");
+                    }
 
-                    var enumValueAsString = attribute.ApplicationSyntaxReference!.GetSyntax()
-                        .DescendantNodes()
-                        .OfType<IdentifierNameSyntax>()
-                        .Last()
-                        .GetText();
-
-                    writer.Write($"global::System.StringComparer.{enumValueAsString}");
+                    writer.WriteLine(
+                        $"global::System.StringComparer.{enumMemberName}");
                 });
             }
             else if (memberSymbol.HasAttribute(attributesMetadata.CustomEquality))
