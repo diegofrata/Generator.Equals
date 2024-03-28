@@ -14,5 +14,6 @@
         <Description>A source code generator for automatically implementing IEquatable&lt;T&gt; using only attributes.</Description>
         <PackageTags>source generator, equality, equals, equatable</PackageTags>
         <NoPackageAnalysis>true</NoPackageAnalysis>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
     </PropertyGroup>
 </Project>
