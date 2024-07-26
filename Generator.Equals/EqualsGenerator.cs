@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -37,8 +38,7 @@ namespace Generator.Equals
             context.RegisterSourceOutput(combined, (spc, pair) => Execute(spc, pair.Left, pair.Right));
         }
 
-
-        void Execute(SourceProductionContext productionContext, Compilation compilation,
+        private void Execute(SourceProductionContext productionContext, Compilation compilation,
             ImmutableArray<GeneratorAttributeSyntaxContext> syntaxArr)
         {
             // Build a lookup for the System.StringComparison enum based on the compilation unit
@@ -54,20 +54,7 @@ namespace Generator.Equals
                 .GetMembers()
                 .OfType<IFieldSymbol>()
                 .ToImmutableDictionary(key => Convert.ToInt64(key.ConstantValue), elem => elem.Name);
-            
 
-            var attributesMetadata = new AttributesMetadata(
-                compilation.GetTypeByMetadataName("Generator.Equals.EquatableAttribute")!,
-                compilation.GetTypeByMetadataName("Generator.Equals.DefaultEqualityAttribute")!,
-                compilation.GetTypeByMetadataName("Generator.Equals.OrderedEqualityAttribute")!,
-                compilation.GetTypeByMetadataName("Generator.Equals.IgnoreEqualityAttribute")!,
-                compilation.GetTypeByMetadataName("Generator.Equals.UnorderedEqualityAttribute")!,
-                compilation.GetTypeByMetadataName("Generator.Equals.ReferenceEqualityAttribute")!,
-                compilation.GetTypeByMetadataName("Generator.Equals.SetEqualityAttribute")!,
-                compilation.GetTypeByMetadataName("Generator.Equals.StringEqualityAttribute")!,
-                compilation.GetTypeByMetadataName("Generator.Equals.CustomEqualityAttribute")!,
-                stringComparisonLookup
-            );
             
             var handledSymbols = new HashSet<string>();
 
@@ -78,6 +65,19 @@ namespace Generator.Equals
 
                 var symbol = model.GetDeclaredSymbol(node, productionContext.CancellationToken) as ITypeSymbol;
 
+                var attributesMetadata = new AttributesMetadata(
+                    compilation.GetTypeByMetadataName("Generator.Equals.EquatableAttribute")!,
+                    compilation.GetTypeByMetadataName("Generator.Equals.DefaultEqualityAttribute")!,
+                    compilation.GetTypeByMetadataName("Generator.Equals.OrderedEqualityAttribute")!,
+                    compilation.GetTypeByMetadataName("Generator.Equals.IgnoreEqualityAttribute")!,
+                    compilation.GetTypeByMetadataName("Generator.Equals.UnorderedEqualityAttribute")!,
+                    compilation.GetTypeByMetadataName("Generator.Equals.ReferenceEqualityAttribute")!,
+                    compilation.GetTypeByMetadataName("Generator.Equals.SetEqualityAttribute")!,
+                    compilation.GetTypeByMetadataName("Generator.Equals.StringEqualityAttribute")!,
+                    compilation.GetTypeByMetadataName("Generator.Equals.CustomEqualityAttribute")!,
+                    stringComparisonLookup
+                );
+                
                 var equatableAttributeData = symbol?.GetAttributes().FirstOrDefault(x =>
                     x.AttributeClass?.Equals(attributesMetadata.Equatable, SymbolEqualityComparer.Default) ==
                     true);
