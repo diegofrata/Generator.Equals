@@ -1,41 +1,58 @@
+using System.Collections.Immutable;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+
 using SourceGeneratorTestHelpers;
 
 namespace Generator.Equals.DynamicGenerationTests;
 
 public class UnitTest1
 {
+    public static readonly List<PortableExecutableReference> References2 =
+        AppDomain.CurrentDomain.GetAssemblies()
+            .Where(_ => !_.IsDynamic && !string.IsNullOrWhiteSpace(_.Location))
+            .Select(_ => MetadataReference.CreateFromFile(_.Location))
+            .Concat(new[]
+            {
+                // add your app/lib specifics, e.g.:
+                MetadataReference.CreateFromFile(typeof(EquatableAttribute).Assembly.Location),
+            })
+            .ToList();
+
     [Fact]
     public void Test1()
     {
-        string input = """
-                       using Generator.Equals;
+        string input = SourceText.CSharp(
+            """
+             using Generator.Equals;
 
-                       namespace Tests;
+             namespace Tests;
 
-                       [EquatableAttribute]
-                       partial class MyRecord(
-                           [property: OrderedEquality] string[] Fruits
-                       );
-                       """;
+             [Equatable]
+             public partial class MyRecord(
+                 [property: OrderedEquality] string[] Fruits,
+                 [property: StringEquality(StringComparison.OrdinalIgnoreCase)] string Fruit
+             );
+            """
+        );
 
-        var references = new List<MetadataReference>()
-        {
-            MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(EquatableAttribute).Assembly.Location),
-        };
-        
-        // add netstandard
-        references.Add(MetadataReference.CreateFromFile(typeof(System.Runtime.GCSettings).Assembly.Location));
-        
+        var opts = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+            .WithNullableContextOptions(NullableContextOptions.Enable)
+
+            ;
+
+        // var driver = CSharpGeneratorDriver.Create(generator)
+        //     .WithUpdatedAnalyzerConfigOptionsProvider(
+        //         new TestAnalyzerConfigOptionsProvider(globalOptions));
+
         var result = IncrementalGenerator.Run<EqualsGenerator>
         (
             input,
-            new Microsoft.CodeAnalysis.CSharp.CSharpParseOptions()
+            new CSharpParseOptions()
             {
             },
-            references
+            References2
         );
 
         var gensource = result.Results
