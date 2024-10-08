@@ -18,6 +18,19 @@ namespace Generator.Equals
     {
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
+            /*
+                <ItemGroup>
+                <CompilerVisibleProperty Include="MyGenerator_EnableLogging" />
+                </ItemGroup>
+             */
+
+            // context.AnalyzerConfigOptionsProvider.Select((provider, ct) =>
+            //     provider.GlobalOptions.TryGetValue("build_property.MyGenerator_EnableLogging", out var emitLoggingSwitch)
+            //     && emitLoggingSwitch.Equals("true", StringComparison.InvariantCultureIgnoreCase));
+            //
+            // var prov = context.AnalyzerConfigOptionsProvider;
+            // ;
+
             var provider = context.SyntaxProvider
                 .ForAttributeWithMetadataName(
                     "Generator.Equals.EquatableAttribute",
@@ -38,9 +51,14 @@ namespace Generator.Equals
             context.RegisterSourceOutput(combined, (spc, pair) => Execute(spc, pair.Left, pair.Right));
         }
 
-        private void Execute(SourceProductionContext productionContext, Compilation compilation,
-            ImmutableArray<GeneratorAttributeSyntaxContext> syntaxArr)
+        private void Execute(
+            SourceProductionContext productionContext,
+            Compilation compilation,
+            ImmutableArray<GeneratorAttributeSyntaxContext> syntaxArr
+        )
         {
+            // productionContext.
+
             // Build a lookup for the System.StringComparison enum based on the compilation unit
             INamedTypeSymbol typeSymbol = compilation.GetTypeByMetadataName("System.StringComparison")!;
 
@@ -55,7 +73,19 @@ namespace Generator.Equals
                 .OfType<IFieldSymbol>()
                 .ToImmutableDictionary(key => Convert.ToInt64(key.ConstantValue), elem => elem.Name);
 
-            
+            var attributesMetadata = new AttributesMetadata(
+                AttributeMetadata.FromFullName("Generator.Equals.EquatableAttribute")!,
+                AttributeMetadata.FromFullName("Generator.Equals.DefaultEqualityAttribute")!,
+                AttributeMetadata.FromFullName("Generator.Equals.OrderedEqualityAttribute")!,
+                AttributeMetadata.FromFullName("Generator.Equals.IgnoreEqualityAttribute")!,
+                AttributeMetadata.FromFullName("Generator.Equals.UnorderedEqualityAttribute")!,
+                AttributeMetadata.FromFullName("Generator.Equals.ReferenceEqualityAttribute")!,
+                AttributeMetadata.FromFullName("Generator.Equals.SetEqualityAttribute")!,
+                AttributeMetadata.FromFullName("Generator.Equals.StringEqualityAttribute")!,
+                AttributeMetadata.FromFullName("Generator.Equals.CustomEqualityAttribute")!,
+                stringComparisonLookup
+            );
+
             var handledSymbols = new HashSet<string>();
 
             foreach (var item in syntaxArr)
@@ -65,22 +95,8 @@ namespace Generator.Equals
 
                 var symbol = model.GetDeclaredSymbol(node, productionContext.CancellationToken) as ITypeSymbol;
 
-                var attributesMetadata = new AttributesMetadata(
-                    compilation.GetTypeByMetadataName("Generator.Equals.EquatableAttribute")!,
-                    compilation.GetTypeByMetadataName("Generator.Equals.DefaultEqualityAttribute")!,
-                    compilation.GetTypeByMetadataName("Generator.Equals.OrderedEqualityAttribute")!,
-                    compilation.GetTypeByMetadataName("Generator.Equals.IgnoreEqualityAttribute")!,
-                    compilation.GetTypeByMetadataName("Generator.Equals.UnorderedEqualityAttribute")!,
-                    compilation.GetTypeByMetadataName("Generator.Equals.ReferenceEqualityAttribute")!,
-                    compilation.GetTypeByMetadataName("Generator.Equals.SetEqualityAttribute")!,
-                    compilation.GetTypeByMetadataName("Generator.Equals.StringEqualityAttribute")!,
-                    compilation.GetTypeByMetadataName("Generator.Equals.CustomEqualityAttribute")!,
-                    stringComparisonLookup
-                );
-                
                 var equatableAttributeData = symbol?.GetAttributes().FirstOrDefault(x =>
-                    x.AttributeClass?.Equals(attributesMetadata.Equatable, SymbolEqualityComparer.Default) ==
-                    true);
+                    attributesMetadata.Equatable.Equals(x.AttributeClass));
 
                 if (equatableAttributeData == null)
                     continue;
@@ -102,8 +118,7 @@ namespace Generator.Equals
 
                 var source = node switch
                 {
-                    StructDeclarationSyntax _ => StructEqualityGenerator.Generate(symbol!, attributesMetadata,
-                        explicitMode),
+                    StructDeclarationSyntax _ => StructEqualityGenerator.Generate(symbol!, attributesMetadata, explicitMode),
                     RecordDeclarationSyntax _ when node.IsKind(SyntaxKind.RecordStructDeclaration) =>
                         RecordStructEqualityGenerator.Generate(symbol!, attributesMetadata, explicitMode),
                     RecordDeclarationSyntax _ => RecordEqualityGenerator.Generate(symbol!, attributesMetadata,
