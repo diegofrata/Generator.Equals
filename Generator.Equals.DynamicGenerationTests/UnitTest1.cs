@@ -25,15 +25,19 @@ public class UnitTest1
     {
         string input = SourceText.CSharp(
             """
-             using Generator.Equals;
+            using System;
+            using Generator.Equals;
 
              namespace Tests;
 
              [Equatable]
-             public partial class MyRecord(
+             public partial record MyRecord(
                  [property: OrderedEquality] string[] Fruits,
                  [property: StringEquality(StringComparison.OrdinalIgnoreCase)] string Fruit
              );
+
+            //[Equatable]
+            //public partial record Person(int Age);
             """
         );
 
