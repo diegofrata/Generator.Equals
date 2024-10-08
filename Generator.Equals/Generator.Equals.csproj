@@ -7,8 +7,9 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <!-- Do not include the generator as a lib dependency -->
         <IncludeBuildOutput>false</IncludeBuildOutput>
-        <LangVersion>9.0</LangVersion>
+        <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
+<!--        <IsExternalInit>true</IsExternalInit>-->
     </PropertyGroup>
 
 

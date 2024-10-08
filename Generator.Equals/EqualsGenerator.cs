@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -20,103 +21,67 @@ namespace Generator.Equals
             var provider = context.SyntaxProvider
                 .ForAttributeWithMetadataName(
                     "Generator.Equals.EquatableAttribute",
-                    (syntaxNode, _) =>
-                    {
-                        return syntaxNode switch
-                        {
-                            ClassDeclarationSyntax => true,
-                            RecordDeclarationSyntax => true,
-                            StructDeclarationSyntax => true,
-                            _ => false
-                        };
-                    },
+                    (syntaxNode, _) => syntaxNode is ClassDeclarationSyntax or RecordDeclarationSyntax or StructDeclarationSyntax,
                     (syntaxContext, ct) => syntaxContext);
 
-            var combined = context.CompilationProvider.Combine(provider.Collect());
-
-            context.RegisterSourceOutput(combined, (spc, pair) => Execute(spc, pair.Left, pair.Right));
+            context.RegisterSourceOutput(provider, (spc, context) => Execute(spc, context));
         }
 
-
-        void Execute(SourceProductionContext productionContext, Compilation compilation,
-            ImmutableArray<GeneratorAttributeSyntaxContext> syntaxArr)
+        private void Execute(
+            SourceProductionContext productionContext,
+            GeneratorAttributeSyntaxContext syntax
+        )
         {
-            // Build a lookup for the System.StringComparison enum based on the compilation unit
-            INamedTypeSymbol typeSymbol = compilation.GetTypeByMetadataName("System.StringComparison")!;
+            var attributesMetadata = AttributesMetadata.Instance;
 
-            if (typeSymbol is not { TypeKind: TypeKind.Enum })
-            {
-                throw new Exception("should not have gotten here. System.StringComparison is not an enum.");
-            }
-
-            // Assume: Underlying type of enum is always `long`
-            var stringComparisonLookup = typeSymbol
-                .GetMembers()
-                .OfType<IFieldSymbol>()
-                .ToImmutableDictionary(key => Convert.ToInt64(key.ConstantValue), elem => elem.Name);
-            
-
-            var attributesMetadata = new AttributesMetadata(
-                compilation.GetTypeByMetadataName("Generator.Equals.EquatableAttribute")!,
-                compilation.GetTypeByMetadataName("Generator.Equals.DefaultEqualityAttribute")!,
-                compilation.GetTypeByMetadataName("Generator.Equals.OrderedEqualityAttribute")!,
-                compilation.GetTypeByMetadataName("Generator.Equals.IgnoreEqualityAttribute")!,
-                compilation.GetTypeByMetadataName("Generator.Equals.UnorderedEqualityAttribute")!,
-                compilation.GetTypeByMetadataName("Generator.Equals.ReferenceEqualityAttribute")!,
-                compilation.GetTypeByMetadataName("Generator.Equals.SetEqualityAttribute")!,
-                compilation.GetTypeByMetadataName("Generator.Equals.StringEqualityAttribute")!,
-                compilation.GetTypeByMetadataName("Generator.Equals.CustomEqualityAttribute")!,
-                stringComparisonLookup
-            );
-            
             var handledSymbols = new HashSet<string>();
 
-            foreach (var item in syntaxArr)
+            var node = syntax.TargetNode;
+            var model = syntax.SemanticModel;
+
+            var symbol = model.GetDeclaredSymbol(node, productionContext.CancellationToken) as ITypeSymbol;
+
+            var equatableAttributeData = symbol?.GetAttributes().FirstOrDefault(x =>
+                attributesMetadata.Equatable.Equals(x.AttributeClass));
+
+            if (equatableAttributeData == null)
+                return;
+
+            var symbolDisplayString = symbol!.ToDisplayString();
+
+            if (handledSymbols.Contains(symbolDisplayString))
+                return;
+
+            handledSymbols.Add(symbolDisplayString);
+
+            var explicitMode = equatableAttributeData.NamedArguments
+                .FirstOrDefault(pair => pair.Key == "Explicit")
+                .Value.Value is true;
+
+            var ignoreInheritedMembers = equatableAttributeData.NamedArguments
+                .FirstOrDefault(pair => pair.Key == "IgnoreInheritedMembers")
+                .Value.Value is true;
+
+            var source = node switch
             {
-                var node = item.TargetNode;
-                var model = item.SemanticModel;
+                StructDeclarationSyntax _
+                    => StructEqualityGenerator.Generate(symbol!, attributesMetadata, explicitMode),
 
-                var symbol = model.GetDeclaredSymbol(node, productionContext.CancellationToken) as ITypeSymbol;
+                RecordDeclarationSyntax _ when node.IsKind(SyntaxKind.RecordStructDeclaration)
+                    => RecordStructEqualityGenerator.Generate(symbol!, attributesMetadata, explicitMode),
 
-                var equatableAttributeData = symbol?.GetAttributes().FirstOrDefault(x =>
-                    x.AttributeClass?.Equals(attributesMetadata.Equatable, SymbolEqualityComparer.Default) ==
-                    true);
+                RecordDeclarationSyntax _
+                    => RecordEqualityGenerator.Generate(symbol!, attributesMetadata, explicitMode, ignoreInheritedMembers),
 
-                if (equatableAttributeData == null)
-                    continue;
+                ClassDeclarationSyntax _
+                    => ClassEqualityGenerator.Generate(symbol!, attributesMetadata, explicitMode, ignoreInheritedMembers),
 
-                var symbolDisplayString = symbol!.ToDisplayString();
+                _ => throw new Exception("should not have gotten here.")
+            };
 
-                if (handledSymbols.Contains(symbolDisplayString))
-                    continue;
+            var fileName = $"{EscapeFileName(symbolDisplayString)}.Generator.Equals.g.cs"!;
 
-                handledSymbols.Add(symbolDisplayString);
-
-                var explicitMode = equatableAttributeData.NamedArguments
-                    .FirstOrDefault(pair => pair.Key == "Explicit")
-                    .Value.Value is true;
-
-                var ignoreInheritedMembers = equatableAttributeData.NamedArguments
-                    .FirstOrDefault(pair => pair.Key == "IgnoreInheritedMembers")
-                    .Value.Value is true;
-
-                var source = node switch
-                {
-                    StructDeclarationSyntax _ => StructEqualityGenerator.Generate(symbol!, attributesMetadata,
-                        explicitMode),
-                    RecordDeclarationSyntax _ when node.IsKind(SyntaxKind.RecordStructDeclaration) =>
-                        RecordStructEqualityGenerator.Generate(symbol!, attributesMetadata, explicitMode),
-                    RecordDeclarationSyntax _ => RecordEqualityGenerator.Generate(symbol!, attributesMetadata,
-                        explicitMode, ignoreInheritedMembers),
-                    ClassDeclarationSyntax _ => ClassEqualityGenerator.Generate(symbol!, attributesMetadata,
-                        explicitMode, ignoreInheritedMembers),
-                    _ => throw new Exception("should not have gotten here.")
-                };
-
-                var fileName = $"{EscapeFileName(symbolDisplayString)}.Generator.Equals.g.cs"!;
-
-                productionContext.AddSource(fileName, source);
-            }
+            productionContext.AddSource(fileName, source);
 
             static string EscapeFileName(string fileName) => new[] { '<', '>', ',' }
                 .Aggregate(new StringBuilder(fileName), (s, c) => s.Replace(c, '_')).ToString();

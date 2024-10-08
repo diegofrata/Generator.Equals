@@ -1,12 +1,13 @@
 ﻿using System;
 using System.CodeDom.Compiler;
 using System.Linq;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Generator.Equals
 {
-    class EqualityGeneratorBase
+    internal class EqualityGeneratorBase
     {
         protected const string GeneratedCodeAttributeDeclaration = "[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"Generator.Equals\", \"1.0.0.0\")]";
 
@@ -15,6 +16,7 @@ namespace Generator.Equals
         // CS0612: Obsolete with no comment
         // CS0618: obsolete with comment
         internal const string SuppressObsoleteWarningsPragma = "#pragma warning disable CS0612,CS0618";
+
         internal const string SuppressTypeConflictsWarningsPragma = "#pragma warning disable CS0436";
 
         protected static readonly string[] EqualsOperatorCodeComment = @"
@@ -35,7 +37,7 @@ namespace Generator.Equals
 
         protected const string InheritDocComment = "/// <inheritdoc/>";
 
-        static void BuildEquality(AttributesMetadata attributesMetadata, IndentedTextWriter writer,
+        private static void BuildEquality(AttributesMetadata attributesMetadata, IndentedTextWriter writer,
             ISymbol memberSymbol, ITypeSymbol typeSymbol, bool explicitMode)
         {
             if (memberSymbol.HasAttribute(attributesMetadata.IgnoreEquality))
@@ -100,8 +102,8 @@ namespace Generator.Equals
             else if (memberSymbol.HasAttribute(attributesMetadata.CustomEquality))
             {
                 var attribute = memberSymbol.GetAttribute(attributesMetadata.CustomEquality);
-                var comparerType = (INamedTypeSymbol) attribute?.ConstructorArguments[0].Value!;
-                var comparerMemberName = (string) attribute?.ConstructorArguments[1].Value!;
+                var comparerType = (INamedTypeSymbol)attribute?.ConstructorArguments[0].Value!;
+                var comparerMemberName = (string)attribute?.ConstructorArguments[1].Value!;
 
                 if (comparerType.GetMembers().Any(x => x.Name == comparerMemberName && x.IsStatic) || comparerType.GetPropertiesAndFields().Any(x => x.Name == comparerMemberName && x.IsStatic))
                 {
@@ -123,7 +125,7 @@ namespace Generator.Equals
                     $"&& global::Generator.Equals.DefaultEqualityComparer<{typeName}>.Default.Equals(this.{propertyName}!, other.{propertyName}!)");
             }
         }
-        
+
         public static void BuildMembersEquality(ITypeSymbol symbol, AttributesMetadata attributesMetadata, IndentedTextWriter writer,
             bool explicitMode, Predicate<ISymbol>? filter = null)
         {
@@ -131,21 +133,24 @@ namespace Generator.Equals
             {
                 if (filter != null && !filter(member))
                     continue;
-                
+
                 switch (member)
                 {
                     case IPropertySymbol propertySymbol:
                         BuildEquality(attributesMetadata, writer, propertySymbol, propertySymbol.Type, explicitMode);
                         break;
+
                     case IFieldSymbol fieldSymbol:
                         BuildEquality(attributesMetadata, writer, fieldSymbol, fieldSymbol.Type, explicitMode);
                         break;
+
                     default:
                         throw new NotSupportedException($"Member of type {member.GetType()} not supported");
                 }
             }
         }
-        static void BuildHashCode(
+
+        private static void BuildHashCode(
             ISymbol memberSymbol,
             ITypeSymbol typeSymbol,
             AttributesMetadata attributesMetadata,
@@ -266,7 +271,7 @@ namespace Generator.Equals
                 });
             }
         }
-        
+
         public static void BuildMembersHashCode(ITypeSymbol symbol, AttributesMetadata attributesMetadata, IndentedTextWriter writer,
             bool explicitMode, Predicate<ISymbol>? filter = null)
         {
@@ -274,15 +279,17 @@ namespace Generator.Equals
             {
                 if (filter != null && !filter(member))
                     continue;
-                
+
                 switch (member)
                 {
                     case IPropertySymbol propertySymbol:
                         BuildHashCode(propertySymbol, propertySymbol.Type, attributesMetadata, writer, explicitMode);
                         break;
+
                     case IFieldSymbol fieldSymbol:
                         BuildHashCode(fieldSymbol, fieldSymbol.Type, attributesMetadata, writer, explicitMode);
                         break;
+
                     default:
                         throw new NotSupportedException($"Member of type {member.GetType()} not supported");
                 }
