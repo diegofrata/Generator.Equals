@@ -6,7 +6,18 @@
         <ImplicitUsings>disable</ImplicitUsings>
         <NoWarn>NU1701</NoWarn>
         <Nullable>enable</Nullable>
+
+		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+		<CompilerGeneratedFilesOutputPath>$(MSBuildProjectDirectory)\Generated</CompilerGeneratedFilesOutputPath>
     </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Remove="Generated\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="Generated\**" />
+    </ItemGroup>
 
     <ItemGroup>
 

@@ -20,3 +20,5 @@ namespace Generator.Equals.Tests.Structs
         }
     }
 }
+
+

@@ -1,55 +1,27 @@
 ﻿using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Generator.Equals.Models;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Generator.Equals
 {
-    static class ContainingTypesBuilder
+    internal static class ContainingTypesBuilder
     {
-        static IEnumerable<INamespaceOrTypeSymbol> ContainingNamespaceAndTypes(ISymbol symbol, bool includeSelf)
-        {
-            foreach (var item in AllContainingNamespacesAndTypes(symbol, includeSelf))
-            {
-                yield return item;
-
-                if (item.IsNamespace)
-                    yield break;
-            }
-        }
-
-        static IEnumerable<INamespaceOrTypeSymbol> AllContainingNamespacesAndTypes(ISymbol symbol, bool includeSelf)
-        {
-            if (includeSelf && symbol is INamespaceOrTypeSymbol self)
-                yield return self;
-
-            while (true)
-            {
-                symbol = symbol.ContainingSymbol;
-
-                if (!(symbol is INamespaceOrTypeSymbol namespaceOrTypeSymbol))
-                    yield break;
-
-                yield return namespaceOrTypeSymbol;
-            }
-        }
-
-        public static string Build(ISymbol symbol, Action<IndentedTextWriter> content, bool includeSelf = false)
+        public static string Build(ImmutableArray<ContainingSymbol> containingSymbols, Action<IndentedTextWriter> content)
         {
             var buffer = new StringWriter(new StringBuilder(capacity: 4096));
             var writer = new IndentedTextWriter(buffer);
-            var symbols = ContainingNamespaceAndTypes(symbol, includeSelf).ToList();
 
-            for (var i = symbols.Count - 1; i >= 0; i--)
+            foreach (var parentSymbol in containingSymbols.Reverse())
             {
-                var s = symbols[i];
-
-                if (s.IsNamespace)
+                if (parentSymbol is NamespaceContainingSymbol namespaceSymbol)
                 {
                     writer.WriteLine();
                     writer.WriteLine(EqualityGeneratorBase.EnableNullableContext);
@@ -57,22 +29,15 @@ namespace Generator.Equals
                     writer.WriteLine(EqualityGeneratorBase.SuppressTypeConflictsWarningsPragma);
                     writer.WriteLine();
 
-                    var namespaceName = s.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted));
-
-                    if (!string.IsNullOrEmpty(namespaceName))
+                    if (!string.IsNullOrEmpty(namespaceSymbol.Name))
                     {
-                        writer.WriteLine($"namespace {namespaceName}");
+                        writer.WriteLine($"namespace {namespaceSymbol.Name}");
                         writer.AppendOpenBracket();
                     }
                 }
-                else
+                else if (parentSymbol is TypeContainingSymbol typeContainingSymbol)
                 {
-                    var typeDeclarationSyntax = s.DeclaringSyntaxReferences
-                        .Select(x => x.GetSyntax())
-                        .OfType<TypeDeclarationSyntax>()
-                        .First();
-
-                    var keyword = typeDeclarationSyntax.Kind() switch
+                    var keyword = typeContainingSymbol.Kind switch
                     {
                         SyntaxKind.ClassDeclaration => "class",
                         SyntaxKind.RecordDeclaration => "record",
@@ -81,8 +46,8 @@ namespace Generator.Equals
                         var x => throw new ArgumentOutOfRangeException($"Syntax kind {x} not supported")
                     };
 
-                    var typeName = s.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
-                    writer.WriteLine($"partial {keyword} {typeName}");
+                    // var typeName = parentSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+                    writer.WriteLine($"partial {keyword} {parentSymbol.Name}");
                     writer.AppendOpenBracket();
                 }
             }

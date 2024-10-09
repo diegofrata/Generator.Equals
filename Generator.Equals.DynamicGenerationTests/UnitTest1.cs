@@ -23,7 +23,7 @@ public class UnitTest1
     [Fact]
     public void Test1()
     {
-        string input = SourceText.CSharp(
+        var input = SourceText.CSharp(
             """
             using System;
             using Generator.Equals;
@@ -36,19 +36,8 @@ public class UnitTest1
                  [property: StringEquality(StringComparison.OrdinalIgnoreCase)] string Fruit
              );
 
-            //[Equatable]
-            //public partial record Person(int Age);
             """
         );
-
-        var opts = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
-            .WithNullableContextOptions(NullableContextOptions.Enable)
-
-            ;
-
-        // var driver = CSharpGeneratorDriver.Create(generator)
-        //     .WithUpdatedAnalyzerConfigOptionsProvider(
-        //         new TestAnalyzerConfigOptionsProvider(globalOptions));
 
         var result = IncrementalGenerator.Run<EqualsGenerator>
         (
@@ -66,10 +55,162 @@ public class UnitTest1
             ;
 
         Assert.NotNull(gensource);
+    }
 
-        //var genSourceString = gensource.ToString();
+    [Fact]
+    public void Test2_Nested()
+    {
+        var input = SourceText.CSharp(
+            """
+            using System;
+            using System.Collections.Generic;
+            using Generator.Equals;
 
-        //// Assert in the same namespace
-        //Assert.Contains("namespace Tests", genSourceString);
+
+            namespace Generator.Equals.Tests.Records
+            {
+                public partial class CustomEquality
+                {
+                    [Equatable]
+                    public partial record Sample
+                    {
+                        public Sample(string name1, string name2, string name3)
+                        {
+                            Name1 = name1;
+                            Name2 = name2;
+                            Name3 = name3;
+                        }
+
+                        [CustomEquality(typeof(Comparer1))] public string Name1 { get; }
+                        [CustomEquality(typeof(Comparer2), nameof(Comparer2.Instance))] public string Name2 { get; }
+                        [CustomEquality(typeof(LengthEqualityComparer))] public string Name3 { get; }
+                    }
+
+                    class Comparer1
+                    {
+                        public static readonly LengthEqualityComparer Default = new();
+                    }
+
+                    class Comparer2
+                    {
+                        public static readonly LengthEqualityComparer Instance = new();
+                    }
+
+                    class LengthEqualityComparer : IEqualityComparer<string>
+                    {
+                        public bool Equals(string? x, string? y) => x?.Length == y?.Length;
+
+                        public int GetHashCode(string obj) => obj.Length.GetHashCode();
+                    }
+
+                }
+            }
+            """
+        );
+
+        var result = IncrementalGenerator.Run<EqualsGenerator>
+        (
+            input,
+            new CSharpParseOptions()
+            {
+            },
+            References2
+        );
+
+        var gensource = result.Results
+                .SelectMany(x => x.GeneratedSources)
+                .Select(x => x.SourceText)
+                .ToList()
+            ;
+
+        Assert.NotNull(gensource);
+    }
+
+    [Fact]
+    public void Test3_Struct_UnorderedEquality()
+    {
+        var input = SourceText.CSharp(
+            """
+            using System.Collections.Generic;
+
+            namespace Generator.Equals.Tests.Structs
+            {
+                public partial class UnorderedEquality
+                {
+                    [Equatable]
+                    public partial struct Sample
+                    {
+                        [UnorderedEquality] public List<int>? Properties { get; set; }
+                    }
+                }
+            }
+            """
+        );
+
+        var result = IncrementalGenerator.Run<EqualsGenerator>
+        (
+            input,
+            new CSharpParseOptions()
+            {
+            },
+            References2
+        );
+
+        var gensource = result.Results
+                .SelectMany(x => x.GeneratedSources)
+                .Select(x => x.SourceText)
+                .ToList()
+            ;
+
+        Assert.NotNull(gensource);
+    }
+
+    [Fact]
+    public void Test3_Struct_ExplicitMode()
+    {
+        var input = SourceText.CSharp(
+            """
+            namespace Generator.Equals.Tests.Structs
+            {
+                public partial class ExplicitMode
+                {
+                    [Equatable(Explicit = true)]
+                    public partial struct Sample
+                    {
+                        bool _flag;
+
+                        public Sample(string name, int age, bool flag)
+                        {
+                            _flag = flag;
+                            Name = name;
+                            Age = age;
+                        }
+
+                        public string Name { get; }
+
+                        [DefaultEquality]
+                        public int Age { get; }
+                    }
+                }
+            }
+            """
+        );
+
+        var result = IncrementalGenerator.Run<EqualsGenerator>
+        (
+            input,
+            new CSharpParseOptions()
+            {
+            },
+            References2
+        );
+
+        var gensource = result.Results
+                .SelectMany(x => x.GeneratedSources)
+                .Select(x => x.SourceText)
+                .ToList()
+            ;
+
+        Assert.NotNull(gensource);
     }
 }
