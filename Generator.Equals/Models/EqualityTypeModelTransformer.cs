@@ -20,14 +20,15 @@ internal sealed class EqualityTypeModelTransformer
         _token = token;
     }
 
-    public EqualityTypeModel Transform()
+    public EqualityTypeModel? Transform()
     {
         var attributesMetadata = AttributesMetadata.Instance;
 
         var equatableAttributeData = _context.Attributes.SingleOrDefault();
         if (equatableAttributeData is null || !attributesMetadata.Equatable.Equals(equatableAttributeData.AttributeClass))
         {
-            throw new Exception("Expected exactly one EquatableAttribute.");
+            // throw new Exception("Expected exactly one EquatableAttribute.");
+            return null;
         }
 
 
@@ -36,14 +37,14 @@ internal sealed class EqualityTypeModelTransformer
 
         if (_context.TargetSymbol is not ITypeSymbol symbol)
         {
-            throw new Exception("Expected a type symbol.");
+            // TODO: Report diagnostic
+            // throw new Exception("Expected a type symbol.");
+            return null;
         }
 
         var baseTypeName = symbol.BaseType?.ToFQF();
 
-        // Extract the symbol's fully qualified name
         var typeName = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
-
         var fullname = symbol.ToDisplayString();
 
         var containingSymbols = GetContainingSymbols(symbol, includeSelf: symbol.IsRecord);
@@ -66,7 +67,9 @@ internal sealed class EqualityTypeModelTransformer
             )
            )
         {
-            throw new Exception("Expected a struct, record struct, record, or class declaration syntax.");
+            // Todo: Report diagnostic
+            // throw new Exception("Expected a struct, record struct, record, or class declaration syntax.");
+            return null;
         }
 
 
@@ -77,7 +80,7 @@ internal sealed class EqualityTypeModelTransformer
     {
         var parentSymbols = symbol
             .GetParentSymbols(includeSelf)
-            .TakeUntilNamespace();
+            .TakeUntilAfterNamespace();
 
         return parentSymbols.Select(x =>
             {
