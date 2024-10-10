@@ -42,7 +42,8 @@ public class Issue_60_StringEquality_Enumerables
 
         Assert.NotNull(gensource);
 
-        Assert.Contains("new global::Generator.Equals.UnorderedEqualityComparer<string>(StringComparer.OrdinalIgnoreCase)",
-            gensource.FirstOrDefault()?.ToString());
+        var src = gensource.FirstOrDefault()?.ToString();
+
+        Assert.Contains("new global::Generator.Equals.UnorderedEqualityComparer<string>(global::System.StringComparer.OrdinalIgnoreCase)", src);
     }
 }
