@@ -13,11 +13,11 @@ internal sealed record AttributesMetadata(
     AttributeMetadata SetEquality,
     AttributeMetadata StringEquality,
     AttributeMetadata CustomEquality,
-    ImmutableDictionary<long, string> StringComparisonLookup)
+    EquatableImmutableDictionary<long, string> StringComparisonLookup)
 {
     public static AttributesMetadata Instance { get; } = CreateDefault();
 
-    static AttributesMetadata CreateDefault()
+    internal static AttributesMetadata CreateDefault()
     {
         var attributesMetadata = new AttributesMetadata(
             Equatable: AttributeMetadata.FromFullName("Generator.Equals.EquatableAttribute")!,
