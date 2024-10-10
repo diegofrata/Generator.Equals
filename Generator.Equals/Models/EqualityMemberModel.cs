@@ -1,32 +1,15 @@
 namespace Generator.Equals.Models;
 
-internal sealed class EqualityMemberModel
+internal sealed record EqualityMemberModel
 {
-    public string PropertyName { get; }
-    public string TypeName { get; }
-    public EqualityType EqualityType { get; }
-    public string? ComparerType { get; }
-    public string? ComparerMemberName { get; }
-    public string? StringComparer { get; }
+    public required string PropertyName { get; init; }
+    public required string TypeName { get; init; }
+    public required EqualityType EqualityType { get; init; }
+    public string? ComparerType { get; init; }
+    public string? ComparerMemberName { get; init; }
+    public string? StringComparer { get; init; }
     public bool IsDictionary { get; init; }
 
-    public bool Ignored { get; set; }
+    public bool Ignored { get; init; }
     public bool ComparerHasStaticInstance { get; init; }
-
-    public EqualityMemberModel(
-        string propertyName,
-        string typeName,
-        EqualityType equalityType,
-        string? comparerType = null,
-        string? comparerMemberName = null,
-        string? stringComparer = null
-    )
-    {
-        PropertyName = propertyName;
-        TypeName = typeName;
-        EqualityType = equalityType;
-        ComparerType = comparerType;
-        ComparerMemberName = comparerMemberName;
-        StringComparer = stringComparer;
-    }
 }

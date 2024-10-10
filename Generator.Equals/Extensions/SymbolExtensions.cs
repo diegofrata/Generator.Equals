@@ -5,7 +5,7 @@ namespace Generator.Equals.Extensions;
 
 public static class SymbolExtensions
 {
-    public static IEnumerable<INamespaceOrTypeSymbol> TakeUntilNamespace(this IEnumerable<INamespaceOrTypeSymbol> symbols)
+    public static IEnumerable<INamespaceOrTypeSymbol> TakeUntilAfterNamespace(this IEnumerable<INamespaceOrTypeSymbol> symbols)
     {
         foreach (var symbol in symbols)
         {

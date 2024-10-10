@@ -49,9 +49,17 @@ internal static class EqualityMemberModelTransformer
         // IgnoreEquality
         if (memberSymbol.HasAttribute(attributesMetadata.IgnoreEquality))
         {
-            return new EqualityMemberModel(propertyName, typeName, EqualityType.IgnoreEquality)
+            // return new EqualityMemberModel(propertyName, typeName, EqualityType.IgnoreEquality)
+            // {
+            //     Ignored = true
+            // };
+
+            return new EqualityMemberModel
             {
-                Ignored = true
+                PropertyName = propertyName,
+                TypeName = typeName,
+                EqualityType = EqualityType.IgnoreEquality,
+                Ignored = true,
             };
         }
 
@@ -74,34 +82,74 @@ internal static class EqualityMemberModelTransformer
                     ? EqualityType.UnorderedEquality
                     : EqualityType.OrderedEquality;
 
-                return new EqualityMemberModel(propertyName, args.Name, equalityType, stringComparer: enumMemberName);
+                // return new EqualityMemberModel(propertyName, args.Name, equalityType, stringComparer: enumMemberName);
+                return new EqualityMemberModel
+                {
+                    PropertyName = propertyName,
+                    TypeName = args.Name,
+                    EqualityType = equalityType,
+                    StringComparer = enumMemberName
+                };
             }
 
-            return new EqualityMemberModel(propertyName, typeName, EqualityType.StringEquality, stringComparer: enumMemberName);
+            // return new EqualityMemberModel(propertyName, typeName, EqualityType.StringEquality, stringComparer: enumMemberName);
+            return new EqualityMemberModel
+            {
+                PropertyName = propertyName,
+                TypeName = typeName,
+                EqualityType = EqualityType.StringEquality,
+                StringComparer = enumMemberName
+            };
         }
         else if (memberSymbol.HasAttribute(attributesMetadata.UnorderedEquality))
         {
             var args = typeSymbol.GetIDictionaryTypeArguments()
                        ?? typeSymbol.GetIEnumerableTypeArguments()!;
 
-            return new EqualityMemberModel(propertyName, args.Name, EqualityType.UnorderedEquality)
+            // return new EqualityMemberModel(propertyName, args.Name, EqualityType.UnorderedEquality)
+            // {
+            //     IsDictionary = args is DictionaryArgumentsResult
+            // };
+
+            return new EqualityMemberModel
             {
+                PropertyName = propertyName,
+                TypeName = args.Name,
+                EqualityType = EqualityType.UnorderedEquality,
                 IsDictionary = args is DictionaryArgumentsResult
             };
         }
         else if (memberSymbol.HasAttribute(attributesMetadata.OrderedEquality))
         {
             var types = typeSymbol.GetIEnumerableTypeArguments()!;
-            return new EqualityMemberModel(propertyName, types.Name, EqualityType.OrderedEquality);
+            // return new EqualityMemberModel(propertyName, types.Name, EqualityType.OrderedEquality);
+            return new EqualityMemberModel
+            {
+                PropertyName = propertyName,
+                TypeName = types.Name,
+                EqualityType = EqualityType.OrderedEquality
+            };
         }
         else if (memberSymbol.HasAttribute(attributesMetadata.ReferenceEquality))
         {
-            return new EqualityMemberModel(propertyName, typeName, EqualityType.ReferenceEquality);
+            // return new EqualityMemberModel(propertyName, typeName, EqualityType.ReferenceEquality);
+            return new EqualityMemberModel
+            {
+                PropertyName = propertyName,
+                TypeName = typeName,
+                EqualityType = EqualityType.ReferenceEquality
+            };
         }
         else if (memberSymbol.HasAttribute(attributesMetadata.SetEquality))
         {
             var types = typeSymbol.GetIEnumerableTypeArguments()!;
-            return new EqualityMemberModel(propertyName, types.Name, EqualityType.SetEquality);
+            // return new EqualityMemberModel(propertyName, types.Name, EqualityType.SetEquality);
+            return new EqualityMemberModel
+            {
+                PropertyName = propertyName,
+                TypeName = types.Name,
+                EqualityType = EqualityType.SetEquality
+            };
         }
         else if (memberSymbol.HasAttribute(attributesMetadata.CustomEquality))
         {
@@ -114,18 +162,25 @@ internal static class EqualityMemberModelTransformer
             var hasDefault = comparerType.GetMembers().Any(x => x.Name == comparerMemberName && x.IsStatic)
                              || comparerType.GetPropertiesAndFields().Any(x => x.Name == comparerMemberName && x.IsStatic);
 
-            return new EqualityMemberModel(propertyName, typeName, EqualityType.CustomEquality, comparerTypeName,
-                comparerMemberName)
+            return new EqualityMemberModel
             {
+                PropertyName = propertyName,
+                TypeName = typeName,
+                EqualityType = EqualityType.CustomEquality,
+                ComparerType = comparerTypeName,
+                ComparerMemberName = comparerMemberName,
                 ComparerHasStaticInstance = hasDefault
             };
         }
 
         var isIgnored = (explicitMode && !memberSymbol.HasAttribute(attributesMetadata.DefaultEquality));
 
-        return new EqualityMemberModel(propertyName, typeName,
-            isIgnored ? EqualityType.IgnoreEquality : EqualityType.DefaultEquality)
+
+        return new EqualityMemberModel
         {
+            PropertyName = propertyName,
+            TypeName = typeName,
+            EqualityType = isIgnored ? EqualityType.IgnoreEquality : EqualityType.DefaultEquality,
             Ignored = isIgnored
         };
     }

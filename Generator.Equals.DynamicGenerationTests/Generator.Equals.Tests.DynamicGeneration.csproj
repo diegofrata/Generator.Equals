@@ -20,7 +20,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Generator.Equals.Runtime\Generator.Equals.Runtime.csproj" />
-    <ProjectReference Include="..\Generator.Equals\Generator.Equals.csproj" />
+	  <ProjectReference Include="..\Generator.Equals\Generator.Equals.csproj">
+		  <Aliases>genEquals</Aliases>
+	  </ProjectReference>
   </ItemGroup>
 
 	
