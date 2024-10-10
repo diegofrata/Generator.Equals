@@ -174,7 +174,16 @@ internal static class EqualityMemberModelTransformer
         }
 
         var isIgnored = (explicitMode && !memberSymbol.HasAttribute(attributesMetadata.DefaultEquality));
-
+        if (!isIgnored && typeSymbol.IsStringArray() && typeSymbol.GetIEnumerableTypeArguments() is { } sargs)
+        {
+            return new EqualityMemberModel
+            {
+                PropertyName = propertyName,
+                TypeName = sargs.Name,
+                EqualityType = EqualityType.OrderedEquality,
+                StringComparer = "Ordinal"
+            };
+        }
 
         return new EqualityMemberModel
         {

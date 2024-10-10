@@ -6,10 +6,8 @@ namespace Generator.Equals.DynamicGenerationTests.Issues;
 public class Issue_60_StringEquality_Enumerables
 {
     [Fact]
-    public void Test3_Struct_UnorderedEquality()
+    public void Comparison_is_correctly_generated()
     {
-        // StringComparer.OrdinalIgnoreCase;
-        
         var input = SourceText.CSharp(
             """
             using System;
@@ -45,5 +43,43 @@ public class Issue_60_StringEquality_Enumerables
         var src = gensource.FirstOrDefault()?.ToString();
 
         Assert.Contains("new global::Generator.Equals.UnorderedEqualityComparer<string>(global::System.StringComparer.OrdinalIgnoreCase)", src);
+    }
+
+    [Fact]
+    public void Comparison_is_correctly_generated_without_attributes()
+    {
+        var input = SourceText.CSharp(
+            """
+            using System;
+            using System.Collections.Generic;
+            using Generator.Equals;
+
+            [Equatable]
+            public partial class Resource
+            {
+                public string[] Tags { get; set; } = Array.Empty<string>();
+            }
+            """
+        );
+
+        var result = IncrementalGenerator.Run<EqualsGenerator>
+        (
+            input,
+            new CSharpParseOptions(),
+            UnitTest1.References
+        );
+
+        var gensource = result.Results
+                .SelectMany(x => x.GeneratedSources)
+                .Select(x => x.SourceText)
+                .ToList()
+            ;
+
+        Assert.NotNull(gensource);
+
+        var src = gensource.FirstOrDefault()?.ToString();
+
+        Assert.Contains("new global::Generator.Equals.OrderedEqualityComparer<string>(global::System.StringComparer.Ordinal)", src);
+
     }
 }
