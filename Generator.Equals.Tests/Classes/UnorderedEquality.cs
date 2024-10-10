@@ -18,30 +18,30 @@ namespace Generator.Equals.Tests.Classes
                     Properties = Enumerable
                         .Range(1, 1000)
                         .OrderBy(_ => randomSort.NextDouble())
-                        .ToList()
+                        .ToList(),
                 };
             }
 
-            public override bool EqualsOperator(object value1, object value2) => (Sample) value1 == (Sample) value2;
-            public override bool NotEqualsOperator(object value1, object value2) => (Sample) value1 != (Sample) value2;
+            public override bool EqualsOperator(object value1, object value2) => (Sample)value1 == (Sample)value2;
+            public override bool NotEqualsOperator(object value1, object value2) => (Sample)value1 != (Sample)value2;
         }
-        
+
         public class NotEqualsTest : EqualityTestCase
         {
             public override bool Expected => false;
 
             public override object Factory1() => new Sample
             {
-                Properties = Enumerable.Range(1, 1000).ToList()
+                Properties = Enumerable.Range(1, 1000).ToList(),
             };
 
             public override object Factory2() => new Sample
             {
-                Properties = Enumerable.Range(1, 1001).ToList()
+                Properties = Enumerable.Range(1, 1001).ToList(),
             };
 
-            public override bool EqualsOperator(object value1, object value2) => (Sample) value1 == (Sample) value2;
-            public override bool NotEqualsOperator(object value1, object value2) => (Sample) value1 != (Sample) value2;
+            public override bool EqualsOperator(object value1, object value2) => (Sample)value1 == (Sample)value2;
+            public override bool NotEqualsOperator(object value1, object value2) => (Sample)value1 != (Sample)value2;
         }
     }
 }

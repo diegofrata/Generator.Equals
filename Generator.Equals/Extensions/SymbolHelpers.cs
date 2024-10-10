@@ -73,6 +73,18 @@ public static class SymbolHelpers
             ? null 
             : new DictionaryArgumentsResult(res);
     }
+    
+    public static bool IsStringArray(this ITypeSymbol typeSymbol)
+    {
+        // Check if the symbol is an array
+        if (typeSymbol is IArrayTypeSymbol arrayTypeSymbol)
+        {
+            // Check if the element type is string
+            return arrayTypeSymbol.ElementType.SpecialType == SpecialType.System_String;
+        }
+
+        return false;
+    }
 }
 
 public record DictionaryArgumentsResult(ImmutableArray<ITypeSymbol>? Arguments) : ArgumentsResult(Arguments)

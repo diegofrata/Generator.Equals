@@ -16,17 +16,16 @@ internal static class EqualityMemberModelTransformer
     )
     {
         var isRecord = symbol.IsRecord;
-        
+
         var members = symbol.GetPropertiesAndFields();
         var models = members
             .Where(member => filter == null || filter(member))
-            
+
             // ignore equalitycontract if the type is a record
             .Where(member => !isRecord || member.Name != "EqualityContract")
-            
             .Select(member => member switch
             {
-                IPropertySymbol propertySymbol 
+                IPropertySymbol propertySymbol
                     => BuildEqualityModel(propertySymbol, propertySymbol.Type, attributesMetadata, explicitMode),
                 IFieldSymbol fieldSymbol => BuildEqualityModel(fieldSymbol, fieldSymbol.Type, attributesMetadata, explicitMode),
                 _ => throw new NotSupportedException($"Member of type {member.GetType()} not supported")
@@ -36,7 +35,7 @@ internal static class EqualityMemberModelTransformer
         return models;
     }
 
-   
+
     public static EqualityMemberModel BuildEqualityModel(
         ISymbol memberSymbol,
         ITypeSymbol typeSymbol,
@@ -46,7 +45,7 @@ internal static class EqualityMemberModelTransformer
     {
         var propertyName = memberSymbol.ToFQF();
         var typeName = typeSymbol.ToNullableFQF();
-        
+
         // IgnoreEquality
         if (memberSymbol.HasAttribute(attributesMetadata.IgnoreEquality))
         {
@@ -56,8 +55,31 @@ internal static class EqualityMemberModelTransformer
             };
         }
 
-        // Check for different equality attributes and map them to the model
-        if (memberSymbol.HasAttribute(attributesMetadata.UnorderedEquality))
+
+        if (memberSymbol.HasAttribute(attributesMetadata.StringEquality))
+        {
+            var attribute = memberSymbol.GetAttribute(attributesMetadata.StringEquality)!;
+            var stringComparisonValue = Convert.ToInt64(attribute.ConstructorArguments[0].Value);
+
+            if (!attributesMetadata.StringComparisonLookup.TryGetValue(stringComparisonValue, out var enumMemberName))
+            {
+                throw new Exception("Unexpected StringComparison value.");
+            }
+
+
+            // Special case: We do this comparison through either OrderedEquality or UnorderedEquality
+            if (typeSymbol.IsStringArray() && typeSymbol.GetIEnumerableTypeArguments() is { } args)
+            {
+                var equalityType = memberSymbol.HasAttribute(attributesMetadata.UnorderedEquality)
+                    ? EqualityType.UnorderedEquality
+                    : EqualityType.OrderedEquality;
+
+                return new EqualityMemberModel(propertyName, args.Name, equalityType, stringComparer: enumMemberName);
+            }
+
+            return new EqualityMemberModel(propertyName, typeName, EqualityType.StringEquality, stringComparer: enumMemberName);
+        }
+        else if (memberSymbol.HasAttribute(attributesMetadata.UnorderedEquality))
         {
             var args = typeSymbol.GetIDictionaryTypeArguments()
                        ?? typeSymbol.GetIEnumerableTypeArguments()!;
@@ -81,18 +103,6 @@ internal static class EqualityMemberModelTransformer
             var types = typeSymbol.GetIEnumerableTypeArguments()!;
             return new EqualityMemberModel(propertyName, types.Name, EqualityType.SetEquality);
         }
-        else if (memberSymbol.HasAttribute(attributesMetadata.StringEquality))
-        {
-            var attribute = memberSymbol.GetAttribute(attributesMetadata.StringEquality)!;
-            var stringComparisonValue = Convert.ToInt64(attribute.ConstructorArguments[0].Value);
-
-            if (!attributesMetadata.StringComparisonLookup.TryGetValue(stringComparisonValue, out var enumMemberName))
-            {
-                throw new Exception("Unexpected StringComparison value.");
-            }
-
-            return new EqualityMemberModel(propertyName, typeName, EqualityType.StringEquality, stringComparer: enumMemberName);
-        }
         else if (memberSymbol.HasAttribute(attributesMetadata.CustomEquality))
         {
             var attribute = memberSymbol.GetAttribute(attributesMetadata.CustomEquality);
@@ -101,19 +111,20 @@ internal static class EqualityMemberModelTransformer
             var comparerTypeName = comparerType.ToFQF();
             var comparerMemberName = (string)attribute?.ConstructorArguments[1].Value!;
 
-            var hasDefault = comparerType.GetMembers().Any(x => x.Name == comparerMemberName && x.IsStatic) 
-                || comparerType.GetPropertiesAndFields().Any(x => x.Name == comparerMemberName && x.IsStatic);
+            var hasDefault = comparerType.GetMembers().Any(x => x.Name == comparerMemberName && x.IsStatic)
+                             || comparerType.GetPropertiesAndFields().Any(x => x.Name == comparerMemberName && x.IsStatic);
 
-            return new EqualityMemberModel(propertyName, typeName, EqualityType.CustomEquality, comparerTypeName, comparerMemberName)
+            return new EqualityMemberModel(propertyName, typeName, EqualityType.CustomEquality, comparerTypeName,
+                comparerMemberName)
             {
                 ComparerHasStaticInstance = hasDefault
             };
-
         }
-    
+
         var isIgnored = (explicitMode && !memberSymbol.HasAttribute(attributesMetadata.DefaultEquality));
-        
-        return new EqualityMemberModel(propertyName, typeName, isIgnored ? EqualityType.IgnoreEquality : EqualityType.DefaultEquality)
+
+        return new EqualityMemberModel(propertyName, typeName,
+            isIgnored ? EqualityType.IgnoreEquality : EqualityType.DefaultEquality)
         {
             Ignored = isIgnored
         };

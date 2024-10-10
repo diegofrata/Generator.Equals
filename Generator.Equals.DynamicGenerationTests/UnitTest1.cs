@@ -9,7 +9,7 @@ namespace Generator.Equals.DynamicGenerationTests;
 
 public class UnitTest1
 {
-    public static readonly List<PortableExecutableReference> References2 =
+    public static readonly List<PortableExecutableReference> References =
         AppDomain.CurrentDomain.GetAssemblies()
             .Where(_ => !_.IsDynamic && !string.IsNullOrWhiteSpace(_.Location))
             .Select(_ => MetadataReference.CreateFromFile(_.Location))
@@ -45,7 +45,7 @@ public class UnitTest1
             new CSharpParseOptions()
             {
             },
-            References2
+            References
         );
 
         var gensource = result.Results
@@ -114,7 +114,7 @@ public class UnitTest1
             new CSharpParseOptions()
             {
             },
-            References2
+            References
         );
 
         var gensource = result.Results
@@ -153,7 +153,7 @@ public class UnitTest1
             new CSharpParseOptions()
             {
             },
-            References2
+            References
         );
 
         var gensource = result.Results
@@ -202,7 +202,7 @@ public class UnitTest1
             new CSharpParseOptions()
             {
             },
-            References2
+            References
         );
 
         var gensource = result.Results
