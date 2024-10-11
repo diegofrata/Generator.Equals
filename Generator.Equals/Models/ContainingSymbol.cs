@@ -1,12 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Text;
-using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis.CSharp;
 
 namespace Generator.Equals.Models;
 
 internal record ContainingSymbol
 {
-    public string Name { get; init; }
+    public required string Name { get; init; }
 }
 
 internal sealed record NamespaceContainingSymbol : ContainingSymbol

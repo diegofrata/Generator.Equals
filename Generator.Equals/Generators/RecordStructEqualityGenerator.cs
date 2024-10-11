@@ -1,4 +1,5 @@
 ﻿using System.CodeDom.Compiler;
+
 using Generator.Equals.Models;
 
 namespace Generator.Equals.Generators
@@ -38,7 +39,7 @@ namespace Generator.Equals.Generators
 
             writer.WriteLine(@"var hashCode = new global::System.HashCode();");
             writer.WriteLine();
-            
+
             // Assuming you update BuildMembersHashCode to accept the new model
             BuildMembersHashCode(model.BuildEqualityModels, writer);
 
@@ -50,7 +51,7 @@ namespace Generator.Equals.Generators
         public static string Generate(EqualityTypeModel model)
         {
             var code = ContainingTypesBuilder.Build(
-                model.ContainingSymbols, 
+                model.ContainingSymbols,
                 content: writer =>
                 {
                     BuildEquals(model, writer);

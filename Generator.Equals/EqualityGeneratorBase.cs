@@ -1,8 +1,8 @@
-﻿using System;
-using System.CodeDom.Compiler;
+﻿using System.CodeDom.Compiler;
 using System.Collections.Immutable;
-using System.Linq;
+
 using Generator.Equals.Models;
+
 using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals
@@ -114,7 +114,6 @@ namespace Generator.Equals
                     break;
             }
         }
-
 
         internal static void BuildMembersEquality(
             ImmutableArray<EqualityMemberModel> models,

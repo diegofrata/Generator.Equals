@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Immutable;
-using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
+
 using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals.Models;
@@ -35,7 +36,6 @@ internal static class EqualityMemberModelTransformer
         return models;
     }
 
-
     public static EqualityMemberModel BuildEqualityModel(
         ISymbol memberSymbol,
         ITypeSymbol typeSymbol,
@@ -49,11 +49,6 @@ internal static class EqualityMemberModelTransformer
         // IgnoreEquality
         if (memberSymbol.HasAttribute(attributesMetadata.IgnoreEquality))
         {
-            // return new EqualityMemberModel(propertyName, typeName, EqualityType.IgnoreEquality)
-            // {
-            //     Ignored = true
-            // };
-
             return new EqualityMemberModel
             {
                 PropertyName = propertyName,
@@ -106,11 +101,6 @@ internal static class EqualityMemberModelTransformer
             var args = typeSymbol.GetIDictionaryTypeArguments()
                        ?? typeSymbol.GetIEnumerableTypeArguments()!;
 
-            // return new EqualityMemberModel(propertyName, args.Name, EqualityType.UnorderedEquality)
-            // {
-            //     IsDictionary = args is DictionaryArgumentsResult
-            // };
-
             return new EqualityMemberModel
             {
                 PropertyName = propertyName,
@@ -122,7 +112,7 @@ internal static class EqualityMemberModelTransformer
         else if (memberSymbol.HasAttribute(attributesMetadata.OrderedEquality))
         {
             var types = typeSymbol.GetIEnumerableTypeArguments()!;
-            // return new EqualityMemberModel(propertyName, types.Name, EqualityType.OrderedEquality);
+
             return new EqualityMemberModel
             {
                 PropertyName = propertyName,
@@ -132,7 +122,6 @@ internal static class EqualityMemberModelTransformer
         }
         else if (memberSymbol.HasAttribute(attributesMetadata.ReferenceEquality))
         {
-            // return new EqualityMemberModel(propertyName, typeName, EqualityType.ReferenceEquality);
             return new EqualityMemberModel
             {
                 PropertyName = propertyName,
@@ -143,7 +132,6 @@ internal static class EqualityMemberModelTransformer
         else if (memberSymbol.HasAttribute(attributesMetadata.SetEquality))
         {
             var types = typeSymbol.GetIEnumerableTypeArguments()!;
-            // return new EqualityMemberModel(propertyName, types.Name, EqualityType.SetEquality);
             return new EqualityMemberModel
             {
                 PropertyName = propertyName,

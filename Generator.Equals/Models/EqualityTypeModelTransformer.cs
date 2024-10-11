@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
+
 using Generator.Equals.Extensions;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -27,10 +28,10 @@ internal sealed class EqualityTypeModelTransformer
         var equatableAttributeData = _context.Attributes.SingleOrDefault();
         if (equatableAttributeData is null || !attributesMetadata.Equatable.Equals(equatableAttributeData.AttributeClass))
         {
+            // TODO: Report diagnostic
             // throw new Exception("Expected exactly one EquatableAttribute.");
             return null;
         }
-
 
         var explicitMode = equatableAttributeData.GetNamedArgumentValue("Explicit") is true;
         var ignoreInheritedMembers = equatableAttributeData.GetNamedArgumentValue("IgnoreInheritedMembers") is true;
@@ -50,8 +51,13 @@ internal sealed class EqualityTypeModelTransformer
         var containingSymbols = GetContainingSymbols(symbol, includeSelf: symbol.IsRecord);
         var bems = EqualityMemberModelTransformer.BuildEqualityModels(symbol, attributesMetadata, explicitMode);
 
-        var model = new EqualityTypeModel(typeName, containingSymbols, attributesMetadata, explicitMode, ignoreInheritedMembers)
+        var model = new EqualityTypeModel
         {
+            TypeName = typeName,
+            ContainingSymbols = containingSymbols,
+            AttributesMetadata = attributesMetadata,
+            ExplicitMode = explicitMode,
+            IgnoreInheritedMembers = ignoreInheritedMembers,
             BuildEqualityModels = bems,
             IsSealed = symbol.IsSealed,
             BaseTypeName = baseTypeName,
@@ -71,7 +77,6 @@ internal sealed class EqualityTypeModelTransformer
             // throw new Exception("Expected a struct, record struct, record, or class declaration syntax.");
             return null;
         }
-
 
         return model;
     }

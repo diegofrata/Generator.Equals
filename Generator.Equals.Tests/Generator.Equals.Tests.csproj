@@ -6,19 +6,20 @@
         <ImplicitUsings>disable</ImplicitUsings>
         <NoWarn>NU1701</NoWarn>
         <Nullable>enable</Nullable>
-
-		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-		<CompilerGeneratedFilesOutputPath>$(MSBuildProjectDirectory)\Generated</CompilerGeneratedFilesOutputPath>
     </PropertyGroup>
-
+    
+    <!-- For debugging -->
+    <!--
+    <PropertyGroup>
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+        <CompilerGeneratedFilesOutputPath>$(MSBuildProjectDirectory)\Generated</CompilerGeneratedFilesOutputPath>
+    </PropertyGroup>
     <ItemGroup>
       <Compile Remove="Generated\**" />
-    </ItemGroup>
-
-    <ItemGroup>
       <None Include="Generated\**" />
     </ItemGroup>
-
+    -->
+    
     <ItemGroup>
 
         <PackageReference Include="Microsoft.Bcl.HashCode" Version="1.1.1" Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'" />

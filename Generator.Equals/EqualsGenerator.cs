@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+
 using Generator.Equals.Generators;
 using Generator.Equals.Models;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -30,9 +29,9 @@ public class EqualsGenerator : IIncrementalGenerator
         context.RegisterSourceOutput(provider, (spc, ctx) => Execute(spc, ctx));
     }
 
-    private void Execute(SourceProductionContext productionContext, EqualityTypeModel model)
+    private static void Execute(SourceProductionContext productionContext, EqualityTypeModel? model)
     {
-        if (productionContext.CancellationToken.IsCancellationRequested)
+        if (productionContext.CancellationToken.IsCancellationRequested || model is null)
         {
             return;
         }
@@ -45,7 +44,7 @@ public class EqualsGenerator : IIncrementalGenerator
             SyntaxKind.ClassDeclaration => ClassEqualityGenerator.Generate(model),
             _ => null
         };
-        
+
         if (source is null)
         {
             return;
@@ -55,7 +54,7 @@ public class EqualsGenerator : IIncrementalGenerator
         productionContext.AddSource(fileName, source);
     }
 
+    private static readonly char[] _illegalFilenameChars = new[] { '<', '>', ',' };
 
-    private static string EscapeFileName(string fileName) => new[] { '<', '>', ',' }
-        .Aggregate(new StringBuilder(fileName), (s, c) => s.Replace(c, '_')).ToString();
+    private static string EscapeFileName(string fileName) => _illegalFilenameChars.Aggregate(new StringBuilder(fileName), (s, c) => s.Replace(c, '_')).ToString();
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+
 using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals.Models;
@@ -13,8 +14,8 @@ internal sealed record AttributeMetadata(string FullName, string Namespace, stri
 
         var name = parts.Last();
 
-        var shortName = name.EndsWith("Attribute") ? name.Substring(0, name.Length - "Attribute".Length) : name;
-        var longName = name.EndsWith("Attribute") ? name : name + "Attribute";
+        var shortName = name.EndsWith("Attribute", StringComparison.Ordinal) ? name[..^"Attribute".Length] : name;
+        var longName = name.EndsWith("Attribute", StringComparison.Ordinal) ? name : name + "Attribute";
 
         var metadata = new AttributeMetadata
         (

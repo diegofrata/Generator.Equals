@@ -31,6 +31,14 @@ public class Base_Assertions
         var b = CreateEqualityTypeModelMock();
         Assert.Equal(a, b);
     }
+    
+    [Fact]
+    public void AttributesMetadata_Equatable()
+    {
+        var a = AttributesMetadata.CreateDefault();
+        var b = AttributesMetadata.CreateDefault();
+        Assert.True(a.Equals(b));
+    }
 
     internal static EqualityTypeModel CreateEqualityTypeModelMock()
     {
