@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals.Models;

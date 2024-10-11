@@ -1,4 +1,5 @@
 ﻿using System.CodeDom.Compiler;
+
 using Generator.Equals.Models;
 
 namespace Generator.Equals.Generators

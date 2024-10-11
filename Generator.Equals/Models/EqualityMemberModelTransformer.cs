@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Immutable;
-using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
+
 using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals.Models;
@@ -34,7 +35,6 @@ internal static class EqualityMemberModelTransformer
 
         return models;
     }
-
 
     public static EqualityMemberModel BuildEqualityModel(
         ISymbol memberSymbol,
@@ -105,7 +105,7 @@ internal static class EqualityMemberModelTransformer
         else if (memberSymbol.HasAttribute(attributesMetadata.StringEquality))
         {
             var attribute = memberSymbol.GetAttribute(attributesMetadata.StringEquality)!;
-            var stringComparisonValue = Convert.ToInt64(attribute.ConstructorArguments[0].Value);
+            var stringComparisonValue = Convert.ToInt64(attribute.ConstructorArguments[0].Value, CultureInfo.InvariantCulture);
 
             if (!attributesMetadata.StringComparisonLookup.TryGetValue(stringComparisonValue, out var enumMemberName))
             {
@@ -143,7 +143,6 @@ internal static class EqualityMemberModelTransformer
         }
 
         var isIgnored = (explicitMode && !memberSymbol.HasAttribute(attributesMetadata.DefaultEquality));
-
 
         return new EqualityMemberModel
         {

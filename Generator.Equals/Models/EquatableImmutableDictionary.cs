@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Generator.Equals.Models;
 
@@ -12,10 +13,10 @@ internal class EquatableImmutableDictionary<TKey, TValue>(ImmutableDictionary<TK
     public EquatableImmutableDictionary() : this(ImmutableDictionary<TKey, TValue>.Empty)
     {
     }
-    
+
     //TryGetValue
-    public bool TryGetValue(TKey key, out TValue value) => Items.TryGetValue(key, out value);
-    
+    public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value) => Items.TryGetValue(key, out value!);
+
     // Key access
     public TValue this[TKey key] => Items[key];
 
