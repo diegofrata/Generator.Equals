@@ -1,10 +1,18 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using SourceGeneratorTestHelpers;
 
 namespace Generator.Equals.DynamicGenerationTests.Issues;
 
 public class Issue_60_StringEquality_Enumerables
 {
+    public static readonly List<PortableExecutableReference> References =
+        AppDomain.CurrentDomain.GetAssemblies()
+            .Where(x => !x.IsDynamic && !string.IsNullOrWhiteSpace(x.Location))
+            .Select(x => MetadataReference.CreateFromFile(x.Location))
+            .Append(MetadataReference.CreateFromFile(typeof(EquatableAttribute).Assembly.Location))
+            .ToList();
+
     [Fact]
     public void Comparison_is_correctly_generated()
     {
@@ -13,14 +21,14 @@ public class Issue_60_StringEquality_Enumerables
             using System;
             using System.Collections.Generic;
             using Generator.Equals;
-            
+
             [Equatable]
             public partial class Resource
             {
                 [UnorderedEquality]
                 [StringEqualityAttribute(StringComparison.OrdinalIgnoreCase)]
                 public string[] Tags { get; set; } = Array.Empty<string>();
-            
+
             }
             """
         );
@@ -29,7 +37,7 @@ public class Issue_60_StringEquality_Enumerables
         (
             input,
             new CSharpParseOptions(),
-            UnitTest1.References
+            References
         );
 
         var gensource = result.Results
@@ -42,7 +50,9 @@ public class Issue_60_StringEquality_Enumerables
 
         var src = gensource.FirstOrDefault()?.ToString();
 
-        Assert.Contains("new global::Generator.Equals.UnorderedEqualityComparer<string>(global::System.StringComparer.OrdinalIgnoreCase)", src);
+        Assert.Contains(
+            "new global::Generator.Equals.UnorderedEqualityComparer<string>(global::System.StringComparer.OrdinalIgnoreCase)",
+            src);
     }
 
     [Fact]
@@ -66,7 +76,7 @@ public class Issue_60_StringEquality_Enumerables
         (
             input,
             new CSharpParseOptions(),
-            UnitTest1.References
+            References
         );
 
         var gensource = result.Results
@@ -79,7 +89,7 @@ public class Issue_60_StringEquality_Enumerables
 
         var src = gensource.FirstOrDefault()?.ToString();
 
-        Assert.Contains("new global::Generator.Equals.OrderedEqualityComparer<string>(global::System.StringComparer.Ordinal)", src);
-
+        Assert.Contains("new global::Generator.Equals.OrderedEqualityComparer<string>(global::System.StringComparer.Ordinal)",
+            src);
     }
 }
