@@ -73,13 +73,8 @@ public class Base_Assertions
             ExplicitMode = false,
             IgnoreInheritedMembers = false,
             SyntaxKind = SyntaxKind.ClassDeclaration,
-            TypeName = "MyType",
             BaseTypeName = "BaseType",
             IsSealed = true,
-            ContainingSymbols = containingSymbols,
-            AttributesMetadata = attributesMetadata,
-            ExplicitMode = false,
-            IgnoreInheritedMembers = false,
             BuildEqualityModels = equalityMemberModels,
             Fullname = "Namespace1.MyType"
         };
