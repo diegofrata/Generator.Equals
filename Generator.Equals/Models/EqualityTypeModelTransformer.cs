@@ -46,7 +46,7 @@ internal sealed class EqualityTypeModelTransformer
         var baseTypeName = symbol.BaseType?.ToFQF();
 
         var typeName = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
-        var fullname = symbol.ToDisplayString();
+        var fullname = symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
         var containingSymbols = GetContainingSymbols(symbol, includeSelf: symbol.IsRecord);
         var bems = EqualityMemberModelTransformer.BuildEqualityModels(symbol, attributesMetadata, explicitMode);
