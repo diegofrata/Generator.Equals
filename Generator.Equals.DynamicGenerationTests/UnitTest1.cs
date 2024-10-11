@@ -11,11 +11,7 @@ public class UnitTest1
         AppDomain.CurrentDomain.GetAssemblies()
             .Where(_ => !_.IsDynamic && !string.IsNullOrWhiteSpace(_.Location))
             .Select(_ => MetadataReference.CreateFromFile(_.Location))
-            .Concat(new[]
-            {
-                // add your app/lib specifics, e.g.:
-                MetadataReference.CreateFromFile(typeof(EquatableAttribute).Assembly.Location),
-            })
+            .Append(MetadataReference.CreateFromFile(typeof(EquatableAttribute).Assembly.Location))
             .ToList();
 
     [Fact]

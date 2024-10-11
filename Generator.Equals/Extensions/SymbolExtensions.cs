@@ -25,31 +25,10 @@ public static class SymbolExtensions
         {
             symbol = symbol.ContainingSymbol;
 
-            if (!(symbol is INamespaceOrTypeSymbol namespaceOrTypeSymbol))
+            if (symbol is not INamespaceOrTypeSymbol namespaceOrTypeSymbol)
                 yield break;
 
             yield return namespaceOrTypeSymbol;
         }
-    }
-
-    public static bool IsAttribute(this INamedTypeSymbol symbol, Compilation compilation)
-    {
-        var attributeType = compilation.GetTypeByMetadataName("System.Attribute");
-        return symbol.InheritsFrom(attributeType);
-    }
-
-    private static bool InheritsFrom(this INamedTypeSymbol symbol, INamedTypeSymbol baseType)
-    {
-        while (symbol != null)
-        {
-            if (SymbolEqualityComparer.Default.Equals(symbol, baseType))
-            {
-                return true;
-            }
-
-            symbol = symbol.BaseType;
-        }
-
-        return false;
     }
 }

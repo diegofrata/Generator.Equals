@@ -35,16 +35,6 @@ public static class SymbolHelpers
     // ReSharper disable once InconsistentNaming
     public static string ToFQF(this ISymbol symbol) => symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
-    public static AttributeData? GetAttribute(this ISymbol symbol, INamedTypeSymbol attribute)
-    {
-        return symbol
-            .GetAttributes()
-            .FirstOrDefault(x => x.AttributeClass?.Equals(attribute, SymbolEqualityComparer.Default) == true);
-    }
-
-    public static bool HasAttribute(this ISymbol symbol, INamedTypeSymbol attribute) =>
-        GetAttribute(symbol, attribute) != null;
-
     public static INamedTypeSymbol? GetInterface(this ITypeSymbol symbol, string interfaceFqn)
     {
         var result = symbol.AllInterfaces
@@ -77,14 +67,12 @@ public static class SymbolHelpers
 
 public record DictionaryArgumentsResult(ImmutableArray<ITypeSymbol>? Arguments) : ArgumentsResult(Arguments)
 {
-    // implicit from ImmutableArray<ITypeSymbol>? to DictionaryArgumentsResult
     public static implicit operator DictionaryArgumentsResult?(ImmutableArray<ITypeSymbol>? arguments)
         => arguments.HasValue ? new DictionaryArgumentsResult(arguments) : null;
 }
 
 public record EnumerableArgumentsResult(ImmutableArray<ITypeSymbol>? Arguments) : ArgumentsResult(Arguments)
 {
-    // implicit from ImmutableArray<ITypeSymbol>? to EnumerableArgumentsResult
     public static implicit operator EnumerableArgumentsResult?(ImmutableArray<ITypeSymbol>? arguments) 
         => arguments.HasValue ? new EnumerableArgumentsResult(arguments) : null;
 
