@@ -31,7 +31,7 @@ public class Base_Assertions
         var b = CreateEqualityTypeModelMock();
         Assert.Equal(a, b);
     }
-    
+
     [Fact]
     public void AttributesMetadata_Equatable()
     {
@@ -65,14 +65,13 @@ public class Base_Assertions
             }
         );
 
-        return new EqualityTypeModel(
-            typeName: "MyType",
-            containingSymbols: containingSymbols,
-            attributesMetadata: attributesMetadata,
-            explicitMode: false,
-            ignoreInheritedMembers: false
-        )
+        return new EqualityTypeModel
         {
+            TypeName = "MyType",
+            ContainingSymbols = containingSymbols,
+            AttributesMetadata = attributesMetadata,
+            ExplicitMode = false,
+            IgnoreInheritedMembers = false,
             SyntaxKind = SyntaxKind.ClassDeclaration,
             BaseTypeName = "BaseType",
             IsSealed = true,
