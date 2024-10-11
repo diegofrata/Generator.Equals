@@ -1,10 +1,8 @@
 ﻿using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-
 using Generator.Equals.Generators;
 using Generator.Equals.Models;
-
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -54,7 +52,9 @@ public class EqualsGenerator : IIncrementalGenerator
         productionContext.AddSource(fileName, source);
     }
 
-    private static readonly char[] _illegalFilenameChars = new[] { '<', '>', ',' };
+    private static readonly char[] _illegalFilenameChars = new[] { '<', '>', ',', ':' };
 
-    private static string EscapeFileName(string fileName) => _illegalFilenameChars.Aggregate(new StringBuilder(fileName), (s, c) => s.Replace(c, '_')).ToString();
+    private static string EscapeFileName(string fileName) => _illegalFilenameChars
+        .Aggregate(new StringBuilder(fileName), (s, c) => s.Replace(c, '_'))
+        .ToString();
 }

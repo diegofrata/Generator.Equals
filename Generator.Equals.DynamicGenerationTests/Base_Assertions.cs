@@ -65,17 +65,16 @@ public class Base_Assertions
             }
         );
 
-        return new EqualityTypeModel(
-            typeName: "MyType",
-            containingSymbols: containingSymbols,
-            attributesMetadata: attributesMetadata,
-            explicitMode: false,
-            ignoreInheritedMembers: false
-        )
+        return new EqualityTypeModel
         {
             SyntaxKind = SyntaxKind.ClassDeclaration,
+            TypeName = "MyType",
             BaseTypeName = "BaseType",
             IsSealed = true,
+            ContainingSymbols = containingSymbols,
+            AttributesMetadata = attributesMetadata,
+            ExplicitMode = false,
+            IgnoreInheritedMembers = false,
             BuildEqualityModels = equalityMemberModels,
             Fullname = "Namespace1.MyType"
         };
