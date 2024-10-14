@@ -8,8 +8,15 @@ internal static class AttributeDataExtensions
 {
     public static object? GetNamedArgumentValue(this AttributeData attributeData, string name)
     {
-        _ = name ?? throw new ArgumentNullException(nameof(name));
-        _ = attributeData ?? throw new ArgumentNullException(nameof(attributeData));
+        if (string.IsNullOrEmpty(name))
+        {
+            throw new ArgumentNullException(nameof(name));
+        }
+        
+        if (attributeData == null)
+        {
+            throw new ArgumentNullException(nameof(attributeData));
+        }
 
         foreach (var pair in attributeData.NamedArguments)
         {

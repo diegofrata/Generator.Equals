@@ -4,7 +4,7 @@ using Generator.Equals.Models;
 
 namespace Generator.Equals.Generators
 {
-    class RecordEqualityGenerator : EqualityGeneratorBase
+    internal class RecordEqualityGenerator : EqualityGeneratorBase
     {
         static void BuildEquals(
             EqualityTypeModel model,
@@ -30,7 +30,7 @@ namespace Generator.Equals.Generators
                 ? "!ReferenceEquals(other, null) && EqualityContract == other.EqualityContract"
                 : $"base.Equals(({baseTypeName}?)other)");
 
-            BuildMembersEquality(model.BuildEqualityModels, writer); // , m => m.MemberName != "EqualityContract"
+            BuildMembersEquality(model.BuildEqualityModels, writer);
 
             writer.WriteLine(";");
             writer.Indent--;

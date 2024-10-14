@@ -8,7 +8,7 @@ public class Base_Assertions
 {
     // Check if immutable arrays are comparable
     [Fact]
-    public void Immutable_Arrays_Eqatable()
+    public void Immutable_Arrays_Equatable()
     {
         var a = ImmutableArray.Create(1, 2, 3);
         var b = ImmutableArray.Create(1, 2, 3);
@@ -25,7 +25,7 @@ public class Base_Assertions
 
     // Check if equality type model is comparable by value
     [Fact]
-    public void EqualityTypeModel_Eqatable()
+    public void EqualityTypeModel_Equatable()
     {
         var a = CreateEqualityTypeModelMock();
         var b = CreateEqualityTypeModelMock();

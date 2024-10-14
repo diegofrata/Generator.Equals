@@ -21,7 +21,7 @@ public class EqualsGenerator : IIncrementalGenerator
             .ForAttributeWithMetadataName(
                 "Generator.Equals.EquatableAttribute",
                 (syntaxNode, ct) => syntaxNode is ClassDeclarationSyntax or RecordDeclarationSyntax or StructDeclarationSyntax,
-                (syntaxContext, ct) => new EqualityTypeModelTransformer(syntaxContext, ct).Transform()
+                (syntaxContext, ct) => new EqualityTypeModelTransformer(syntaxContext).Transform(ct)
             );
 
         context.RegisterSourceOutput(provider, (spc, ctx) => Execute(spc, ctx));

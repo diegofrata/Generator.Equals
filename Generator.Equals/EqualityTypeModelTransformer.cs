@@ -1,9 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
-
 using Generator.Equals.Extensions;
-
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -13,16 +11,19 @@ namespace Generator.Equals.Models;
 internal sealed class EqualityTypeModelTransformer
 {
     private readonly GeneratorAttributeSyntaxContext _context;
-    private readonly CancellationToken _token;
 
-    public EqualityTypeModelTransformer(GeneratorAttributeSyntaxContext context, CancellationToken token)
+    public EqualityTypeModelTransformer(GeneratorAttributeSyntaxContext context)
     {
         _context = context;
-        _token = token;
     }
 
-    public EqualityTypeModel? Transform()
+    public EqualityTypeModel? Transform(CancellationToken token = default)
     {
+        if (token.IsCancellationRequested)
+        {
+            return null;
+        }
+
         var attributesMetadata = AttributesMetadata.Instance;
 
         var equatableAttributeData = _context.Attributes.SingleOrDefault();
@@ -30,6 +31,11 @@ internal sealed class EqualityTypeModelTransformer
         {
             // TODO: Report diagnostic
             // throw new Exception("Expected exactly one EquatableAttribute.");
+            return null;
+        }
+
+        if (token.IsCancellationRequested)
+        {
             return null;
         }
 
@@ -43,12 +49,27 @@ internal sealed class EqualityTypeModelTransformer
             return null;
         }
 
+        if (token.IsCancellationRequested)
+        {
+            return null;
+        }
+
         var baseTypeName = symbol.BaseType?.ToFQF();
 
         var typeName = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
         var fullname = symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
+        if (token.IsCancellationRequested)
+        {
+            return null;
+        }
+
         var containingSymbols = GetContainingSymbols(symbol, includeSelf: symbol.IsRecord);
+        if (token.IsCancellationRequested)
+        {
+            return null;
+        }
+
         var bems = EqualityMemberModelTransformer.BuildEqualityModels(symbol, attributesMetadata, explicitMode);
 
         var model = new EqualityTypeModel
