@@ -2,7 +2,7 @@ using System;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
-
+using Generator.Equals.Extensions;
 using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals.Models;

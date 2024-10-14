@@ -20,7 +20,6 @@ namespace Generator.Equals.Generators
             writer.WriteLine("return true");
 
             writer.Indent++;
-            // Assuming you update BuildMembersEquality to accept the new model
             BuildMembersEquality(model.BuildEqualityModels, writer);
             writer.WriteLine(";");
             writer.Indent--;
@@ -40,7 +39,6 @@ namespace Generator.Equals.Generators
             writer.WriteLine(@"var hashCode = new global::System.HashCode();");
             writer.WriteLine();
 
-            // Assuming you update BuildMembersHashCode to accept the new model
             BuildMembersHashCode(model.BuildEqualityModels, writer);
 
             writer.WriteLine();
