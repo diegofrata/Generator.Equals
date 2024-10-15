@@ -14,14 +14,11 @@ public static class SymbolHelpers
 
         var members = symbol
             .GetMembers()
-            .Where(x =>
+            .Where(x => !x.IsStatic && x switch
             {
-                return !x.IsStatic && x switch
-                {
-                    IPropertySymbol { IsIndexer: false } => true,
-                    IFieldSymbol { CanBeReferencedByName: true } => true,
-                    _ => false
-                };
+                IPropertySymbol { IsIndexer: false } => true,
+                IFieldSymbol { CanBeReferencedByName: true } => true,
+                _ => false
             });
 
         foreach (var member in members)
