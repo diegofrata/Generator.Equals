@@ -1,4 +1,4 @@
-﻿using System.CodeDom.Compiler;
+using System.CodeDom.Compiler;
 using System.Collections.Immutable;
 
 using Generator.Equals.Models;
@@ -50,16 +50,32 @@ namespace Generator.Equals
                 case EqualityType.IgnoreEquality:
                     break;
 
-                case EqualityType.UnorderedEquality when !memberModel.IsDictionary:
+                case EqualityType.UnorderedEquality
+                    when memberModel is { IsDictionary: false, StringComparer: not null and not "" }:
+                    
+                    writer.WriteLine(
+                        $"&& new global::Generator.Equals.UnorderedEqualityComparer<{memberModel.TypeName}>(global::System.StringComparer.{memberModel.StringComparer}).Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
+                    break;
+
+                case EqualityType.UnorderedEquality 
+                    when memberModel is { IsDictionary: false, StringComparer: null }:
                     writer.WriteLine(
                         $"&& global::Generator.Equals.UnorderedEqualityComparer<{memberModel.TypeName}>.Default.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
                     break;
 
-                case EqualityType.UnorderedEquality when memberModel.IsDictionary:
+                case EqualityType.UnorderedEquality 
+                    when memberModel is { IsDictionary: true, StringComparer: null }:
                     writer.WriteLine(
                         $"&& global::Generator.Equals.DictionaryEqualityComparer<{memberModel.TypeName}>.Default.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
                     break;
 
+                case EqualityType.OrderedEquality
+                    when memberModel is { StringComparer: not null and not "" }:
+                    
+                    writer.WriteLine(
+                        $"&& new global::Generator.Equals.OrderedEqualityComparer<{memberModel.TypeName}>(global::System.StringComparer.{memberModel.StringComparer}).Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
+                    break;
+                
                 case EqualityType.OrderedEquality:
                     writer.WriteLine(
                         $"&& global::Generator.Equals.OrderedEqualityComparer<{memberModel.TypeName}>.Default.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
@@ -136,12 +152,28 @@ namespace Generator.Equals
                 case EqualityType.IgnoreEquality:
                     break;
 
-                case EqualityType.UnorderedEquality when memberModel.IsDictionary:
+                case EqualityType.UnorderedEquality 
+                    when memberModel is { StringComparer: null, IsDictionary: true }:
+                    
                     BuildHashCodeAdd($"global::Generator.Equals.DictionaryEqualityComparer<{memberModel.TypeName}>.Default");
                     break;
 
-                case EqualityType.UnorderedEquality when !memberModel.IsDictionary:
+                case EqualityType.UnorderedEquality 
+                    when memberModel is { StringComparer: null, IsDictionary: false}:
+                    
                     BuildHashCodeAdd($"global::Generator.Equals.UnorderedEqualityComparer<{memberModel.TypeName}>.Default");
+                    break;
+                
+                case EqualityType.UnorderedEquality 
+                    when memberModel is { StringComparer: not null and not "", IsDictionary: false }:
+                    
+                    BuildHashCodeAdd($"new global::Generator.Equals.UnorderedEqualityComparer<{memberModel.TypeName}>(global::System.StringComparer.{memberModel.StringComparer})");
+                    break;
+                
+                case EqualityType.OrderedEquality 
+                    when memberModel is { StringComparer: not null and not "" }:
+                    
+                    BuildHashCodeAdd($"new global::Generator.Equals.OrderedEqualityComparer<{memberModel.TypeName}>(global::System.StringComparer.{memberModel.StringComparer})");
                     break;
 
                 case EqualityType.OrderedEquality:

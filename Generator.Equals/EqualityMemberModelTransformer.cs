@@ -58,8 +58,45 @@ internal static class EqualityMemberModelTransformer
             };
         }
 
-        // Check for different equality attributes and map them to the model
-        if (memberSymbol.HasAttribute(attributesMetadata.UnorderedEquality))
+
+        if (memberSymbol.HasAttribute(attributesMetadata.StringEquality))
+        {
+            var attribute = memberSymbol.GetAttribute(attributesMetadata.StringEquality)!;
+            var stringComparisonValue = Convert.ToInt64(attribute.ConstructorArguments[0].Value);
+
+            if (!attributesMetadata.StringComparisonLookup.TryGetValue(stringComparisonValue, out var enumMemberName))
+            {
+                throw new Exception("Unexpected StringComparison value.");
+            }
+
+
+            // Special case: We do this comparison through either OrderedEquality or UnorderedEquality
+            if (typeSymbol.IsStringArray() && typeSymbol.GetIEnumerableTypeArguments() is { } args)
+            {
+                var equalityType = memberSymbol.HasAttribute(attributesMetadata.UnorderedEquality)
+                    ? EqualityType.UnorderedEquality
+                    : EqualityType.OrderedEquality;
+
+                // return new EqualityMemberModel(propertyName, args.Name, equalityType, stringComparer: enumMemberName);
+                return new EqualityMemberModel
+                {
+                    PropertyName = propertyName,
+                    TypeName = args.Name,
+                    EqualityType = equalityType,
+                    StringComparer = enumMemberName
+                };
+            }
+
+            // return new EqualityMemberModel(propertyName, typeName, EqualityType.StringEquality, stringComparer: enumMemberName);
+            return new EqualityMemberModel
+            {
+                PropertyName = propertyName,
+                TypeName = typeName,
+                EqualityType = EqualityType.StringEquality,
+                StringComparer = enumMemberName
+            };
+        }
+        else if (memberSymbol.HasAttribute(attributesMetadata.UnorderedEquality))
         {
             var args = typeSymbol.GetIDictionaryTypeArguments()
                        ?? typeSymbol.GetIEnumerableTypeArguments()!;
@@ -102,24 +139,6 @@ internal static class EqualityMemberModelTransformer
                 EqualityType = EqualityType.SetEquality
             };
         }
-        else if (memberSymbol.HasAttribute(attributesMetadata.StringEquality))
-        {
-            var attribute = memberSymbol.GetAttribute(attributesMetadata.StringEquality)!;
-            var stringComparisonValue = Convert.ToInt64(attribute.ConstructorArguments[0].Value, CultureInfo.InvariantCulture);
-
-            if (!attributesMetadata.StringComparisonLookup.TryGetValue(stringComparisonValue, out var enumMemberName))
-            {
-                throw new InvalidOperationException("Unexpected StringComparison value.");
-            }
-
-            return new EqualityMemberModel
-            {
-                PropertyName = propertyName,
-                TypeName = typeName,
-                EqualityType = EqualityType.StringEquality,
-                StringComparer = enumMemberName
-            };
-        }
         else if (memberSymbol.HasAttribute(attributesMetadata.CustomEquality))
         {
             var attribute = memberSymbol.GetAttribute(attributesMetadata.CustomEquality);
@@ -143,6 +162,16 @@ internal static class EqualityMemberModelTransformer
         }
 
         var isIgnored = (explicitMode && !memberSymbol.HasAttribute(attributesMetadata.DefaultEquality));
+        if (!isIgnored && typeSymbol.IsStringArray() && typeSymbol.GetIEnumerableTypeArguments() is { } sargs)
+        {
+            return new EqualityMemberModel
+            {
+                PropertyName = propertyName,
+                TypeName = sargs.Name,
+                EqualityType = EqualityType.OrderedEquality,
+                StringComparer = "Ordinal"
+            };
+        }
 
         return new EqualityMemberModel
         {
