@@ -5,7 +5,7 @@ using System.Diagnostics;
 namespace Generator.Equals
 {
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
-    //[Conditional("GENERATOR_EQUALS")]
+    [Conditional("GENERATOR_EQUALS")]
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
     public class EquatableAttribute : Attribute
     {
@@ -21,49 +21,49 @@ namespace Generator.Equals
     }
 
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
-    //[Conditional("GENERATOR_EQUALS")]
+    [Conditional("GENERATOR_EQUALS")]
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class DefaultEqualityAttribute : Attribute
     {
     }
 
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
-    //[Conditional("GENERATOR_EQUALS")]
+    [Conditional("GENERATOR_EQUALS")]
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class OrderedEqualityAttribute : Attribute
     {
     }
 
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
-    //[Conditional("GENERATOR_EQUALS")]
+    [Conditional("GENERATOR_EQUALS")]
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class IgnoreEqualityAttribute : Attribute
     {
     }
 
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
-    //[Conditional("GENERATOR_EQUALS")]
+    [Conditional("GENERATOR_EQUALS")]
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class UnorderedEqualityAttribute : Attribute
     {
     }
 
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
-    //[Conditional("GENERATOR_EQUALS")]
+    [Conditional("GENERATOR_EQUALS")]
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class ReferenceEqualityAttribute : Attribute
     {
     }
 
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
-    //[Conditional("GENERATOR_EQUALS")]
+    [Conditional("GENERATOR_EQUALS")]
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class SetEqualityAttribute : Attribute
     {
     }
 
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
-    //[Conditional("GENERATOR_EQUALS")]
+    [Conditional("GENERATOR_EQUALS")]
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class StringEqualityAttribute : Attribute
     {
@@ -76,7 +76,7 @@ namespace Generator.Equals
     }
 
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
-    //[Conditional("GENERATOR_EQUALS")]
+    [Conditional("GENERATOR_EQUALS")]
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class CustomEqualityAttribute : Attribute
     {
