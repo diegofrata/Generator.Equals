@@ -1,24 +1,36 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net6.0;net48</TargetFrameworks>
+        <TargetFrameworks>net8.0;net48</TargetFrameworks>
         <IsPackable>false</IsPackable>
         <ImplicitUsings>disable</ImplicitUsings>
         <NoWarn>NU1701</NoWarn>
         <Nullable>enable</Nullable>
     </PropertyGroup>
-
+    
+    <!-- For debugging -->
+    <!--
+    <PropertyGroup>
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+        <CompilerGeneratedFilesOutputPath>$(MSBuildProjectDirectory)\Generated</CompilerGeneratedFilesOutputPath>
+    </PropertyGroup>
+    <ItemGroup>
+      <Compile Remove="Generated\**" />
+      <None Include="Generated\**" />
+    </ItemGroup>
+    -->
+    
     <ItemGroup>
 
         <PackageReference Include="Microsoft.Bcl.HashCode" Version="1.1.1" Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'" />
         <PackageReference Include="FluentAssertions" Version="6.8.0" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.4.1" />
-        <PackageReference Include="xunit" Version="2.4.2" />
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+        <PackageReference Include="xunit" Version="2.5.3" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="coverlet.collector" Version="3.2.0">
+        <PackageReference Include="coverlet.collector" Version="6.0.0">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>

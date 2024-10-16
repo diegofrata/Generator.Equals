@@ -5,3 +5,5 @@ obj
 *.DotSettings.user
 .vs
 .DS_Store
+
+Generator.Equals.Tests/Generated/**

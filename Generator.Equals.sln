@@ -9,9 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Generator.Equals.Tests", "G
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Generator.Equals.SnapshotTests", "Generator.Equals.SnapshotTests\Generator.Equals.SnapshotTests.csproj", "{F11B4229-E761-4135-B758-E61AC4FF5303}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Generator.Equals.Tests.TopLevel", "Generator.Equals.Tests.TopLevel\Generator.Equals.Tests.TopLevel.csproj", "{9A48A8A6-4213-4CBB-B184-FE1E50F3721E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Generator.Equals.Tests.TopLevel", "Generator.Equals.Tests.TopLevel\Generator.Equals.Tests.TopLevel.csproj", "{9A48A8A6-4213-4CBB-B184-FE1E50F3721E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Generator.Equals.Runtime", "Generator.Equals.Runtime\Generator.Equals.Runtime.csproj", "{2AD99F42-5E2C-451A-97EE-59C64EC8B270}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Generator.Equals.Runtime", "Generator.Equals.Runtime\Generator.Equals.Runtime.csproj", "{2AD99F42-5E2C-451A-97EE-59C64EC8B270}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

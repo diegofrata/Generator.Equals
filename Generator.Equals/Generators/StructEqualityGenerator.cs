@@ -1,18 +1,15 @@
 ﻿using System.CodeDom.Compiler;
-using Microsoft.CodeAnalysis;
 
-namespace Generator.Equals
+using Generator.Equals.Models;
+
+namespace Generator.Equals.Generators
 {
-    class StructEqualityGenerator : EqualityGeneratorBase
+    internal sealed class StructEqualityGenerator : EqualityGeneratorBase
     {
-        static void BuildEquals(
-            ITypeSymbol symbol,
-            AttributesMetadata attributesMetadata,
-            IndentedTextWriter writer,
-            bool explicitMode)
+        private static void BuildEquals(EqualityTypeModel model, IndentedTextWriter writer)
         {
-            var symbolName = symbol.ToFQF();
-            
+            var symbolName = model.TypeName;
+
             writer.WriteLines(EqualsOperatorCodeComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
             writer.WriteLine("public static bool operator ==(");
@@ -42,7 +39,7 @@ namespace Generator.Equals
             writer.WriteLine("return true");
 
             writer.Indent++;
-            BuildMembersEquality(symbol, attributesMetadata, writer, explicitMode);
+            BuildMembersEquality(model.BuildEqualityModels, writer);
 
             writer.WriteLine(";");
             writer.Indent--;
@@ -50,11 +47,7 @@ namespace Generator.Equals
             writer.AppendCloseBracket();
         }
 
-        static void BuildGetHashCode(
-            ITypeSymbol symbol,
-            AttributesMetadata attributesMetadata,
-            IndentedTextWriter writer,
-            bool explicitMode)
+        private static void BuildGetHashCode(EqualityTypeModel model, IndentedTextWriter writer)
         {
             writer.WriteLine(InheritDocComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
@@ -64,30 +57,28 @@ namespace Generator.Equals
             writer.WriteLine(@"var hashCode = new global::System.HashCode();");
             writer.WriteLine();
 
-            BuildMembersHashCode(symbol, attributesMetadata, writer, explicitMode);
+            BuildMembersHashCode(model.BuildEqualityModels, writer);
 
             writer.WriteLine();
             writer.WriteLine("return hashCode.ToHashCode();");
 
             writer.AppendCloseBracket();
         }
-        
-        public static string Generate(
-            ITypeSymbol symbol,
-            AttributesMetadata attributesMetadata,
-            bool explicitMode)
+
+        public static string Generate(EqualityTypeModel model)
         {
-            var code = ContainingTypesBuilder.Build(symbol, includeSelf: false, content: writer =>
+            // Generate the code using the custom model instead of Roslyn types
+            var code = ContainingTypesBuilder.Build(model.ContainingSymbols, content: writer =>
             {
-                var typeName = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
-                writer.WriteLine($"partial struct {typeName} : global::System.IEquatable<{typeName}>");
+                writer.WriteLine($"partial struct {model.TypeName} : global::System.IEquatable<{model.TypeName}>");
                 writer.AppendOpenBracket();
 
-                BuildEquals(symbol, attributesMetadata, writer, explicitMode);
+                // BuildEquals and BuildGetHashCode are adjusted to accept the custom model instead of Roslyn symbols
+                BuildEquals(model, writer);
 
                 writer.WriteLine();
-                
-                BuildGetHashCode(symbol, attributesMetadata, writer, explicitMode);
+
+                BuildGetHashCode(model, writer);
 
                 writer.AppendCloseBracket();
             });

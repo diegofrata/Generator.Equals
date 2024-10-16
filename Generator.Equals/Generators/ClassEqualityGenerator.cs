@@ -1,19 +1,19 @@
 ﻿using System.CodeDom.Compiler;
-using Microsoft.CodeAnalysis;
 
-namespace Generator.Equals
+using Generator.Equals.Models;
+
+namespace Generator.Equals.Generators
 {
-    class ClassEqualityGenerator : EqualityGeneratorBase
+    internal sealed class ClassEqualityGenerator : EqualityGeneratorBase
     {
-        static void BuildEquals(
-            ITypeSymbol symbol,
-            AttributesMetadata attributesMetadata,
-            IndentedTextWriter writer,
-            bool explicitMode,
-            bool ignoreInheritedMembers)
+        private static void BuildEquals(
+            EqualityTypeModel model,
+            IndentedTextWriter writer
+        )
         {
-            var symbolName = symbol.ToFQF();
-            var baseTypeName = symbol.BaseType?.ToFQF();
+            var ignoreInheritedMembers = model.IgnoreInheritedMembers;
+            var symbolName = model.TypeName;
+            var baseTypeName = model.BaseTypeName;
             var isRootClass = baseTypeName == "object";
 
             writer.WriteLines(EqualsOperatorCodeComment);
@@ -36,7 +36,7 @@ namespace Generator.Equals
             writer.WriteLine("public override bool Equals(object? obj) =>");
             writer.WriteLine(1, $"Equals(obj as {symbolName});");
             writer.WriteLine();
-            
+
             writer.WriteLine(InheritDocComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
             writer.WriteLine($"bool global::System.IEquatable<{symbolName}>.Equals({symbolName}? obj) => Equals((object?) obj);");
@@ -44,38 +44,37 @@ namespace Generator.Equals
 
             writer.WriteLine(InheritDocComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
-            writer.WriteLine($"{(symbol.IsSealed ? "private" : "protected")} bool Equals({symbolName}? other)");
+            writer.WriteLine($"{(model.IsSealed ? "private" : "protected")} bool Equals({symbolName}? other)");
             writer.AppendOpenBracket();
 
             writer.WriteLine("if (ReferenceEquals(null, other)) return false;");
             writer.WriteLine("if (ReferenceEquals(this, other)) return true;");
             writer.WriteLine();
-            
+
             if (isRootClass || ignoreInheritedMembers)
             {
                 writer.WriteLine("return other.GetType() == this.GetType()");
             }
             else
             {
-                writer.WriteLine($"return base.Equals(other as {baseTypeName})");    
+                writer.WriteLine($"return base.Equals(other as {baseTypeName})");
             }
-            
+
             writer.Indent++;
-            BuildMembersEquality(symbol, attributesMetadata, writer, explicitMode);
+            BuildMembersEquality(model.BuildEqualityModels, writer);
             writer.WriteLine(";");
             writer.Indent--;
 
             writer.AppendCloseBracket();
         }
 
-        static void BuildGetHashCode(
-            ITypeSymbol symbol,
-            AttributesMetadata attributesMetadata,
-            IndentedTextWriter writer,
-            bool explicitMode,
-            bool ignoreInheritedMembers)
+        private static void BuildGetHashCode(
+            EqualityTypeModel model,
+            IndentedTextWriter writer
+        )
         {
-            var baseTypeName = symbol.BaseType?.ToFQF();
+            var ignoreInheritedMembers = model.IgnoreInheritedMembers;
+            var baseTypeName = model.BaseTypeName;
 
             writer.WriteLine(InheritDocComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
@@ -89,7 +88,7 @@ namespace Generator.Equals
                 ? "hashCode.Add(this.GetType());"
                 : "hashCode.Add(base.GetHashCode());");
 
-            BuildMembersHashCode(symbol, attributesMetadata, writer, explicitMode);
+            BuildMembersHashCode(model.BuildEqualityModels, writer);
 
             writer.WriteLine();
             writer.WriteLine("return hashCode.ToHashCode();");
@@ -97,23 +96,18 @@ namespace Generator.Equals
             writer.AppendCloseBracket();
         }
 
-        public static string Generate(
-            ITypeSymbol symbol,
-            AttributesMetadata attributesMetadata,
-            bool explicitMode,
-            bool ignoreInheritedMembers)
+        public static string Generate(EqualityTypeModel model)
         {
-            var code = ContainingTypesBuilder.Build(symbol, includeSelf: false, content: writer =>
+            var code = ContainingTypesBuilder.Build(model.ContainingSymbols, content: writer =>
             {
-                var typeName = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
-                writer.WriteLine($"partial class {typeName} : global::System.IEquatable<{typeName}>");
+                writer.WriteLine($"partial class {model.TypeName} : global::System.IEquatable<{model.TypeName}>");
                 writer.AppendOpenBracket();
 
-                BuildEquals(symbol, attributesMetadata, writer, explicitMode, ignoreInheritedMembers);
+                BuildEquals(model, writer);
 
                 writer.WriteLine();
-                
-                BuildGetHashCode(symbol, attributesMetadata, writer, explicitMode, ignoreInheritedMembers);
+
+                BuildGetHashCode(model, writer);
 
                 writer.AppendCloseBracket();
             });

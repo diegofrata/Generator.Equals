@@ -1,20 +1,23 @@
-﻿using System;
-using System.CodeDom.Compiler;
-using System.Linq;
+﻿using System.CodeDom.Compiler;
+using System.Collections.Immutable;
+
+using Generator.Equals.Models;
+
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Generator.Equals
 {
-    class EqualityGeneratorBase
+    internal class EqualityGeneratorBase
     {
-        protected const string GeneratedCodeAttributeDeclaration = "[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"Generator.Equals\", \"1.0.0.0\")]";
+        protected const string GeneratedCodeAttributeDeclaration =
+            "[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"Generator.Equals\", \"1.0.0.0\")]";
 
         internal const string EnableNullableContext = "#nullable enable";
 
         // CS0612: Obsolete with no comment
         // CS0618: obsolete with comment
         internal const string SuppressObsoleteWarningsPragma = "#pragma warning disable CS0612,CS0618";
+
         internal const string SuppressTypeConflictsWarningsPragma = "#pragma warning disable CS0436";
 
         protected static readonly string[] EqualsOperatorCodeComment = @"
@@ -35,257 +38,157 @@ namespace Generator.Equals
 
         protected const string InheritDocComment = "/// <inheritdoc/>";
 
-        static void BuildEquality(AttributesMetadata attributesMetadata, IndentedTextWriter writer,
-            ISymbol memberSymbol, ITypeSymbol typeSymbol, bool explicitMode)
+        private static void BuildEquality(EqualityMemberModel memberModel, IndentedTextWriter writer)
         {
-            if (memberSymbol.HasAttribute(attributesMetadata.IgnoreEquality))
+            if (memberModel.Ignored)
+            {
                 return;
+            }
 
-            var propertyName = memberSymbol.ToFQF();
-
-            var typeName = typeSymbol.ToNullableFQF();
-
-            if (memberSymbol.HasAttribute(attributesMetadata.UnorderedEquality))
+            switch (memberModel.EqualityType)
             {
-                var types = typeSymbol.GetIDictionaryTypeArguments();
+                case EqualityType.IgnoreEquality:
+                    break;
 
-                if (types != null)
-                {
+                case EqualityType.UnorderedEquality when !memberModel.IsDictionary:
                     writer.WriteLine(
-                        $"&& global::Generator.Equals.DictionaryEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals(this.{propertyName}!, other.{propertyName}!)");
-                }
-                else
-                {
-                    types = typeSymbol.GetIEnumerableTypeArguments()!;
+                        $"&& global::Generator.Equals.UnorderedEqualityComparer<{memberModel.TypeName}>.Default.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
+                    break;
+
+                case EqualityType.UnorderedEquality when memberModel.IsDictionary:
                     writer.WriteLine(
-                        $"&& global::Generator.Equals.UnorderedEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals(this.{propertyName}!, other.{propertyName}!)");
-                }
-            }
-            else if (memberSymbol.HasAttribute(attributesMetadata.OrderedEquality))
-            {
-                var types = typeSymbol.GetIEnumerableTypeArguments()!;
+                        $"&& global::Generator.Equals.DictionaryEqualityComparer<{memberModel.TypeName}>.Default.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
+                    break;
 
-                writer.WriteLine(
-                    $"&& global::Generator.Equals.OrderedEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals(this.{propertyName}!, other.{propertyName}!)");
-            }
-            else if (memberSymbol.HasAttribute(attributesMetadata.ReferenceEquality))
-            {
-                writer.WriteLine(
-                    $"&& global::Generator.Equals.ReferenceEqualityComparer<{typeName}>.Default.Equals(this.{propertyName}!, other.{propertyName}!)");
-            }
-            else if (memberSymbol.HasAttribute(attributesMetadata.SetEquality))
-            {
-                var types = typeSymbol.GetIEnumerableTypeArguments()!;
-
-                writer.WriteLine(
-                    $"&& global::Generator.Equals.SetEqualityComparer<{string.Join(", ", types.Value)}>.Default.Equals(this.{propertyName}!, other.{propertyName}!)");
-            }
-            else if (memberSymbol.HasAttribute(attributesMetadata.StringEquality))
-            {
-                var attribute = memberSymbol.GetAttribute(attributesMetadata.StringEquality)!;
-                var stringComparisonValue = Convert.ToInt64(attribute.ConstructorArguments[0].Value);
-
-                if (!attributesMetadata.StringComparisonLookup.TryGetValue(stringComparisonValue,
-                        out var enumMemberName))
-                {
-                    // NOTE: Very unlikely as this would mean changes to the StringComparison enum
-                    //       which is not expected to change. It would also mean that the compiler
-                    //       and analyzer are running different dotnet versions.
-                    throw new Exception("should not have gotten here.");
-                }
-
-                writer.WriteLine(
-                    $"&& global::System.StringComparer.{enumMemberName}.Equals(this.{propertyName}!, other.{propertyName}!)");
-            }
-            else if (memberSymbol.HasAttribute(attributesMetadata.CustomEquality))
-            {
-                var attribute = memberSymbol.GetAttribute(attributesMetadata.CustomEquality);
-                var comparerType = (INamedTypeSymbol) attribute?.ConstructorArguments[0].Value!;
-                var comparerMemberName = (string) attribute?.ConstructorArguments[1].Value!;
-
-                if (comparerType.GetMembers().Any(x => x.Name == comparerMemberName && x.IsStatic) || comparerType.GetPropertiesAndFields().Any(x => x.Name == comparerMemberName && x.IsStatic))
-                {
+                case EqualityType.OrderedEquality:
                     writer.WriteLine(
-                        $"&& {comparerType.ToFQF()}.{comparerMemberName}.Equals(this.{propertyName}!, other.{propertyName}!)");
-                }
-                else
-                {
+                        $"&& global::Generator.Equals.OrderedEqualityComparer<{memberModel.TypeName}>.Default.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
+                    break;
+
+                case EqualityType.ReferenceEquality:
                     writer.WriteLine(
-                        $"&& new {comparerType.ToFQF()}().Equals(this.{propertyName}!, other.{propertyName}!)");
-                }
-            }
-            else if (
-                memberSymbol.HasAttribute(attributesMetadata.DefaultEquality) ||
-                (!explicitMode && memberSymbol is IPropertySymbol)
-                )
-            {
-                writer.WriteLine(
-                    $"&& global::Generator.Equals.DefaultEqualityComparer<{typeName}>.Default.Equals(this.{propertyName}!, other.{propertyName}!)");
+                        $"&& global::Generator.Equals.ReferenceEqualityComparer<{memberModel.TypeName}>.Default.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
+                    break;
+
+                case EqualityType.SetEquality:
+                    writer.WriteLine(
+                        $"&& global::Generator.Equals.SetEqualityComparer<{memberModel.TypeName}>.Default.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
+                    break;
+
+                case EqualityType.StringEquality:
+                    writer.WriteLine(
+                        $"&& global::System.StringComparer.{memberModel.StringComparer}.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
+                    break;
+
+                case EqualityType.CustomEquality when memberModel.ComparerHasStaticInstance:
+                    writer.WriteLine(
+                        $"&& {memberModel.ComparerType}.{memberModel.ComparerMemberName}.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
+
+                    break;
+
+                case EqualityType.CustomEquality when !memberModel.ComparerHasStaticInstance:
+                    writer.WriteLine(
+                        $"&& new {memberModel.ComparerType}().Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
+
+                    break;
+
+                case EqualityType.DefaultEquality:
+                    writer.WriteLine(
+                        $"&& global::Generator.Equals.DefaultEqualityComparer<{memberModel.TypeName}>.Default.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
+                    break;
             }
         }
-        
-        public static void BuildMembersEquality(ITypeSymbol symbol, AttributesMetadata attributesMetadata, IndentedTextWriter writer,
-            bool explicitMode, Predicate<ISymbol>? filter = null)
+
+        internal static void BuildMembersEquality(
+            ImmutableArray<EqualityMemberModel> models,
+            IndentedTextWriter writer
+        )
         {
-            foreach (var member in symbol.GetPropertiesAndFields())
+            foreach (var model in models)
             {
-                if (filter != null && !filter(member))
-                    continue;
-                
-                switch (member)
-                {
-                    case IPropertySymbol propertySymbol:
-                        BuildEquality(attributesMetadata, writer, propertySymbol, propertySymbol.Type, explicitMode);
-                        break;
-                    case IFieldSymbol fieldSymbol:
-                        BuildEquality(attributesMetadata, writer, fieldSymbol, fieldSymbol.Type, explicitMode);
-                        break;
-                    default:
-                        throw new NotSupportedException($"Member of type {member.GetType()} not supported");
-                }
+                BuildEquality(model, writer);
             }
         }
-        static void BuildHashCode(
+
+        private static void BuildHashCode(
             ISymbol memberSymbol,
             ITypeSymbol typeSymbol,
             AttributesMetadata attributesMetadata,
             IndentedTextWriter writer,
-            bool explicitMode)
+            bool explicitMode
+        )
         {
-            if (memberSymbol.HasAttribute(attributesMetadata.IgnoreEquality))
-                return;
+            var model = EqualityMemberModelTransformer
+                .BuildEqualityModel(memberSymbol, typeSymbol, attributesMetadata, explicitMode);
 
-            var propertyName = memberSymbol.ToFQF();
+            BuildHashCode(model, writer);
+        }
 
-            var typeName = typeSymbol.ToNullableFQF();
-
-            void BuildHashCodeAdd(Action action)
+        private static void BuildHashCode(EqualityMemberModel memberModel, IndentedTextWriter writer)
+        {
+            if (memberModel.Ignored)
             {
-                writer.WriteLine($"hashCode.Add(");
+                return;
+            }
 
+            switch (memberModel.EqualityType)
+            {
+                case EqualityType.IgnoreEquality:
+                    break;
+
+                case EqualityType.UnorderedEquality when memberModel.IsDictionary:
+                    BuildHashCodeAdd($"global::Generator.Equals.DictionaryEqualityComparer<{memberModel.TypeName}>.Default");
+                    break;
+
+                case EqualityType.UnorderedEquality when !memberModel.IsDictionary:
+                    BuildHashCodeAdd($"global::Generator.Equals.UnorderedEqualityComparer<{memberModel.TypeName}>.Default");
+                    break;
+
+                case EqualityType.OrderedEquality:
+                    BuildHashCodeAdd($"global::Generator.Equals.OrderedEqualityComparer<{memberModel.TypeName}>.Default");
+                    break;
+
+                case EqualityType.ReferenceEquality:
+                    BuildHashCodeAdd($"global::Generator.Equals.ReferenceEqualityComparer<{memberModel.TypeName}>.Default");
+                    break;
+
+                case EqualityType.SetEquality:
+                    BuildHashCodeAdd($"global::Generator.Equals.SetEqualityComparer<{memberModel.TypeName}>.Default");
+                    break;
+
+                case EqualityType.StringEquality:
+                    BuildHashCodeAdd($"global::System.StringComparer.{memberModel.StringComparer}");
+                    break;
+
+                case EqualityType.CustomEquality when memberModel.ComparerHasStaticInstance:
+                    BuildHashCodeAdd($"{memberModel.ComparerType}.{memberModel.ComparerMemberName}");
+                    break;
+
+                case EqualityType.CustomEquality when !memberModel.ComparerHasStaticInstance:
+                    BuildHashCodeAdd($"new {memberModel.ComparerType}()");
+                    break;
+
+                case EqualityType.DefaultEquality:
+                    BuildHashCodeAdd($"global::Generator.Equals.DefaultEqualityComparer<{memberModel.TypeName}>.Default");
+                    break;
+            }
+
+            void BuildHashCodeAdd(string comparer)
+            {
+                writer.WriteLine("hashCode.Add(");
                 writer.Indent++;
-                writer.WriteLine($"this.{propertyName}!,");
-
-                action();
+                writer.WriteLine($"this.{memberModel.PropertyName}!,");
+                writer.WriteLine(comparer);
                 writer.Indent--;
-
                 writer.WriteLine(");");
             }
-
-            if (memberSymbol.HasAttribute(attributesMetadata.UnorderedEquality))
-            {
-                BuildHashCodeAdd(() =>
-                {
-                    var types = typeSymbol.GetIDictionaryTypeArguments();
-
-                    if (types != null)
-                    {
-                        writer.Write(
-                            $"global::Generator.Equals.DictionaryEqualityComparer<{string.Join(", ", types.Value)}>.Default");
-                    }
-                    else
-                    {
-                        types = typeSymbol.GetIEnumerableTypeArguments()!;
-                        writer.Write(
-                            $"global::Generator.Equals.UnorderedEqualityComparer<{string.Join(", ", types.Value)}>.Default");
-                    }
-                });
-            }
-            else if (memberSymbol.HasAttribute(attributesMetadata.OrderedEquality))
-            {
-                BuildHashCodeAdd(() =>
-                {
-                    var types = typeSymbol.GetIEnumerableTypeArguments()!;
-                    writer.Write(
-                        $"global::Generator.Equals.OrderedEqualityComparer<{string.Join(", ", types.Value)}>.Default");
-                });
-            }
-            else if (memberSymbol.HasAttribute(attributesMetadata.ReferenceEquality))
-            {
-                BuildHashCodeAdd(() =>
-                {
-                    writer.Write($"global::Generator.Equals.ReferenceEqualityComparer<{typeName}>.Default");
-                });
-            }
-            else if (memberSymbol.HasAttribute(attributesMetadata.SetEquality))
-            {
-                BuildHashCodeAdd(() =>
-                {
-                    var types = typeSymbol.GetIEnumerableTypeArguments()!;
-                    writer.Write(
-                        $"global::Generator.Equals.SetEqualityComparer<{string.Join(", ", types.Value)}>.Default");
-                });
-            }
-            else if (memberSymbol.HasAttribute(attributesMetadata.StringEquality))
-            {
-                BuildHashCodeAdd(() =>
-                {
-                    var attribute = memberSymbol.GetAttribute(attributesMetadata.StringEquality)!;
-                    var stringComparisonValue = Convert.ToInt64(attribute.ConstructorArguments[0].Value);
-
-                    if (!attributesMetadata.StringComparisonLookup.TryGetValue(stringComparisonValue,
-                            out var enumMemberName))
-                    {
-                        // NOTE: Very unlikely as this would mean changes to the StringComparison enum
-                        //       which is not expected to change. It would also mean that the compiler
-                        //       and analyzer are running different dotnet versions.
-                        throw new Exception("should not have gotten here.");
-                    }
-
-                    writer.WriteLine(
-                        $"global::System.StringComparer.{enumMemberName}");
-                });
-            }
-            else if (memberSymbol.HasAttribute(attributesMetadata.CustomEquality))
-            {
-                BuildHashCodeAdd(() =>
-                {
-                    var attribute = memberSymbol.GetAttribute(attributesMetadata.CustomEquality);
-                    var comparerType = (INamedTypeSymbol)attribute?.ConstructorArguments[0].Value!;
-                    var comparerMemberName = (string)attribute?.ConstructorArguments[1].Value!;
-
-                    if (comparerType.GetMembers().Any(x => x.Name == comparerMemberName && x.IsStatic) || comparerType
-                            .GetPropertiesAndFields().Any(x => x.Name == comparerMemberName && x.IsStatic))
-                    {
-                        writer.Write($"{comparerType.ToFQF()}.{comparerMemberName}");
-                    }
-                    else
-                    {
-                        writer.Write($"new {comparerType.ToFQF()}()");
-                    }
-                });
-            }
-            else if (
-                memberSymbol.HasAttribute(attributesMetadata.DefaultEquality) ||
-                (!explicitMode && memberSymbol is IPropertySymbol)
-            )
-            {
-                BuildHashCodeAdd(() =>
-                {
-                    writer.Write($"global::Generator.Equals.DefaultEqualityComparer<{typeName}>.Default");
-                });
-            }
         }
-        
-        public static void BuildMembersHashCode(ITypeSymbol symbol, AttributesMetadata attributesMetadata, IndentedTextWriter writer,
-            bool explicitMode, Predicate<ISymbol>? filter = null)
+
+        public static void BuildMembersHashCode(ImmutableArray<EqualityMemberModel> models, IndentedTextWriter writer)
         {
-            foreach (var member in symbol.GetPropertiesAndFields())
+            foreach (var model in models)
             {
-                if (filter != null && !filter(member))
-                    continue;
-                
-                switch (member)
-                {
-                    case IPropertySymbol propertySymbol:
-                        BuildHashCode(propertySymbol, propertySymbol.Type, attributesMetadata, writer, explicitMode);
-                        break;
-                    case IFieldSymbol fieldSymbol:
-                        BuildHashCode(fieldSymbol, fieldSymbol.Type, attributesMetadata, writer, explicitMode);
-                        break;
-                    default:
-                        throw new NotSupportedException($"Member of type {member.GetType()} not supported");
-                }
+                BuildHashCode(model, writer);
             }
         }
     }
