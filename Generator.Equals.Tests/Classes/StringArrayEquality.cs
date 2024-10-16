@@ -1,4 +1,6 @@
 ﻿using System;
+// ReSharper disable InconsistentNaming
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
 namespace Generator.Equals.Tests.Classes;
 
@@ -156,3 +158,5 @@ public partial class StringArrayEquality
         public override bool NotEqualsOperator(object value1, object value2) => (Sample)value1 != (Sample)value2;
     }
 }
+
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
