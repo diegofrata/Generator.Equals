@@ -222,3 +222,16 @@ partial class Doctor : Person
     public string Specialization { get; set; }
 }
 ```
+
+### Global Options
+
+You can configure global options by creating an ``.globalconfig`` file which looks like this:
+
+```ini
+generator_equals_comparison_string = OrdinalIgnoreCase
+generator_equals_comparison_enumerable = Unordered
+```
+
+generator_equals_comparison_string: Possible values are `CurrentCulture`, `CurrentCultureIgnoreCase`, `InvariantCulture`, `InvariantCultureIgnoreCase`, `Ordinal`, `OrdinalIgnoreCase`. Default is `Ordinal`.
+
+generator_equals_comparison_enumerable: Possible values are `Ordered`, `Unordered`. Default is `Ordered`.

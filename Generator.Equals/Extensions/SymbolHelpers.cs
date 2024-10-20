@@ -86,6 +86,11 @@ public static class SymbolHelpers
 
         return false;
     }
+    
+    public static bool IsString(this ITypeSymbol typeSymbol)
+    {
+        return typeSymbol.SpecialType == SpecialType.System_String;
+    }
 }
 
 public record DictionaryArgumentsResult(ImmutableArray<ITypeSymbol>? Arguments) : ArgumentsResult(Arguments);

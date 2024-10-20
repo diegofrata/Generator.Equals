@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Generator.Equals.Tests.DynamicGeneration.Utils;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using SourceGeneratorTestHelpers;
 
@@ -6,12 +7,7 @@ namespace Generator.Equals.DynamicGenerationTests.Issues;
 
 public class Issue_60_StringEquality_Enumerables
 {
-    public static readonly List<PortableExecutableReference> References =
-        AppDomain.CurrentDomain.GetAssemblies()
-            .Where(x => !x.IsDynamic && !string.IsNullOrWhiteSpace(x.Location))
-            .Select(x => MetadataReference.CreateFromFile(x.Location))
-            .Append(MetadataReference.CreateFromFile(typeof(EquatableAttribute).Assembly.Location))
-            .ToList();
+    public static readonly List<PortableExecutableReference> References = GeneratorTestHelper.References;
 
     [Fact]
     public void Comparison_is_correctly_generated()

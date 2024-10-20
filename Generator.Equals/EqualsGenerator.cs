@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Generator.Equals.Generators;
@@ -24,15 +25,27 @@ public class EqualsGenerator : IIncrementalGenerator
                 (syntaxContext, ct) => new EqualityTypeModelTransformer(syntaxContext).Transform(ct)
             );
 
-        context.RegisterSourceOutput(provider, (spc, ctx) => Execute(spc, ctx));
+        var config = context.AnalyzerConfigOptionsProvider
+            .Select((options, _) => new GeneratorOptions(options.GlobalOptions));
+
+        var combinedProvider = provider.Combine(config);
+
+
+        // context.RegisterSourceOutput(provider, (spc, ctx) => Execute(spc, ctx));
+        context.RegisterSourceOutput(combinedProvider, (spc, ctx) => Execute2(spc, ctx));
     }
 
-    private static void Execute(SourceProductionContext productionContext, EqualityTypeModel? model)
+
+    private void Execute2(SourceProductionContext productionContext, (EqualityTypeModel? model, GeneratorOptions options) ctx)
     {
-        if (productionContext.CancellationToken.IsCancellationRequested || model is null)
+        if (productionContext.CancellationToken.IsCancellationRequested || ctx.model is null)
         {
             return;
         }
+
+        var model = ctx.model
+            .WithGeneratorOptions(ctx.options);
+
 
         var source = model.SyntaxKind switch
         {
@@ -47,6 +60,11 @@ public class EqualsGenerator : IIncrementalGenerator
         {
             return;
         }
+
+        //Test: prepend  "CounterEnabled: {options.CounterEnabled}" to the generated source
+        source = $"// CounterEnabled: {ctx.options.DefaultStringComparison}\n" +
+                 $"// ArrayCompare: {ctx.options.ArrayCompare}\n" +
+                 $"{source}";
 
         var fileName = $"{EscapeFileName(model.Fullname)}.Generator.Equals.g.cs"!;
         productionContext.AddSource(fileName, source);

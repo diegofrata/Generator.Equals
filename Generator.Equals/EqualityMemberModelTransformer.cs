@@ -64,9 +64,13 @@ internal static class EqualityMemberModelTransformer
             var attribute = memberSymbol.GetAttribute(attributesMetadata.StringEquality)!;
             var stringComparisonValue = Convert.ToInt64(attribute.ConstructorArguments[0].Value);
 
+            bool isDefaultStringComparer = false;
             if (!attributesMetadata.StringComparisonLookup.TryGetValue(stringComparisonValue, out var enumMemberName))
             {
-                throw new Exception("Unexpected StringComparison value.");
+                // Todo: Diagnostic
+                // throw new Exception("Unexpected StringComparison value.");
+                enumMemberName = "Ordinal";
+                isDefaultStringComparer = true;
             }
 
 
@@ -77,13 +81,18 @@ internal static class EqualityMemberModelTransformer
                     ? EqualityType.UnorderedEquality
                     : EqualityType.OrderedEquality;
 
+                var isDefault = equalityType == EqualityType.OrderedEquality &&
+                                !memberSymbol.HasAttribute(attributesMetadata.OrderedEquality);
+
                 // return new EqualityMemberModel(propertyName, args.Name, equalityType, stringComparer: enumMemberName);
                 return new EqualityMemberModel
                 {
                     PropertyName = propertyName,
                     TypeName = args.Name,
                     EqualityType = equalityType,
-                    StringComparer = enumMemberName
+                    StringComparer = enumMemberName,
+                    IsDefaultEqualityType = isDefault,
+                    IsDefaultStringComparer = isDefaultStringComparer
                 };
             }
 
@@ -162,23 +171,65 @@ internal static class EqualityMemberModelTransformer
         }
 
         var isIgnored = (explicitMode && !memberSymbol.HasAttribute(attributesMetadata.DefaultEquality));
-        if (!isIgnored && typeSymbol.IsStringArray() && typeSymbol.GetIEnumerableTypeArguments() is { } sargs)
+        if (isIgnored)
         {
             return new EqualityMemberModel
             {
                 PropertyName = propertyName,
-                TypeName = sargs.Name,
-                EqualityType = EqualityType.OrderedEquality,
-                StringComparer = "Ordinal"
+                TypeName = typeName,
+                EqualityType = EqualityType.IgnoreEquality,
+                Ignored = true
             };
         }
+
+        // if is string: 
+        if (typeSymbol.IsString())
+        {
+            return new EqualityMemberModel
+            {
+                PropertyName = propertyName,
+                TypeName = typeName,
+                EqualityType = EqualityType.StringEquality,
+                StringComparer = "Ordinal",
+                IsDefaultEqualityType = true,
+                IsDefaultStringComparer = true
+            };
+        }
+
+        if (typeSymbol.GetIEnumerableTypeArguments() is { } sargs)
+        {
+            if (string.Equals(sargs.Name, "string", StringComparison.Ordinal))
+            {
+                return new EqualityMemberModel
+                {
+                    PropertyName = propertyName,
+                    TypeName = sargs.Name,
+                    EqualityType = EqualityType.OrderedEquality,
+                    StringComparer = "Ordinal",
+                    IsDefaultEqualityType = true,
+                    IsDefaultStringComparer = true
+                };
+            }
+            else
+            {
+                return new EqualityMemberModel
+                {
+                    PropertyName = propertyName,
+                    TypeName = sargs.Name,
+                    EqualityType = EqualityType.OrderedEquality,
+                    IsDefaultEqualityType = true
+                };
+            }
+        }
+
 
         return new EqualityMemberModel
         {
             PropertyName = propertyName,
             TypeName = typeName,
-            EqualityType = isIgnored ? EqualityType.IgnoreEquality : EqualityType.DefaultEquality,
-            Ignored = isIgnored
+            EqualityType = EqualityType.DefaultEquality,
+            Ignored = false,
+            IsDefaultEqualityType = true
         };
     }
 }
