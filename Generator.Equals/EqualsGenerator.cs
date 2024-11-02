@@ -49,10 +49,10 @@ public class EqualsGenerator : IIncrementalGenerator
 
         var source = model.SyntaxKind switch
         {
-            SyntaxKind.StructDeclaration => StructEqualityGenerator.Generate(model),
-            SyntaxKind.RecordStructDeclaration => RecordStructEqualityGenerator.Generate(model),
-            SyntaxKind.RecordDeclaration => RecordEqualityGenerator.Generate(model),
-            SyntaxKind.ClassDeclaration => ClassEqualityGenerator.Generate(model),
+            SyntaxKind.StructDeclaration => StructGenerator.Generate(model),
+            SyntaxKind.RecordStructDeclaration => RecordStructGenerator.Generate(model),
+            SyntaxKind.RecordDeclaration => RecordGenerator.Generate(model),
+            SyntaxKind.ClassDeclaration => ClassGenerator.Generate(model),
             _ => null
         };
 

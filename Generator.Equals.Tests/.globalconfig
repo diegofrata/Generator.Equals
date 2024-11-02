@@ -1,0 +1,2 @@
+generator_equals_comparison_string = OrdinalIgnoreCase
+generator_equals_comparison_enumerable = Unordered
