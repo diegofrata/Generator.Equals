@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Generator.Equals.Tests.Classes
@@ -7,7 +8,8 @@ namespace Generator.Equals.Tests.Classes
         [Equatable]
         public partial class Sample
         {
-            [UnorderedEquality] public List<int>? Properties { get; set; }
+            [UnorderedEquality] 
+            public List<int>? Properties { get; set; }
         }
     }
 }

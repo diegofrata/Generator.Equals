@@ -12,4 +12,12 @@ internal sealed record EqualityMemberModel
 
     public bool Ignored { get; init; }
     public bool ComparerHasStaticInstance { get; init; }
+    
+    
+    /// <summary>
+    /// OrderedEquality vs UnorderedEquality.
+    /// Specifies that the equality type is not explicitly set and can be overridden by global settings.
+    /// </summary>
+    public bool IsDefaultEqualityType { get; init; }
+    public bool IsDefaultStringComparer { get; init; }
 }

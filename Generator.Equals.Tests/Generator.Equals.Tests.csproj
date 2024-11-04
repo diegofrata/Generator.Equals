@@ -6,6 +6,8 @@
         <ImplicitUsings>disable</ImplicitUsings>
         <NoWarn>NU1701</NoWarn>
         <Nullable>enable</Nullable>
+
+        <DemoSourceGenerator_Counter>1</DemoSourceGenerator_Counter>
     </PropertyGroup>
     
     <!-- For debugging -->
@@ -40,5 +42,7 @@
         <ProjectReference Include="..\Generator.Equals.Runtime\Generator.Equals.Runtime.csproj" />
         <ProjectReference Include="..\Generator.Equals\Generator.Equals.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
-
+	<ItemGroup>
+		<CompilerVisibleProperty Include="DemoSourceGenerator_Counter" />
+	</ItemGroup>
 </Project>

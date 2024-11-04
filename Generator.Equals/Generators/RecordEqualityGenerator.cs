@@ -1,83 +1,78 @@
 ﻿using System.CodeDom.Compiler;
-
+using Generator.Equals.Generators.Core;
 using Generator.Equals.Models;
 
-namespace Generator.Equals.Generators
+namespace Generator.Equals.Generators;
+
+internal static class RecordGenerator
 {
-    internal class RecordEqualityGenerator : EqualityGeneratorBase
+    static void BuildEquals(
+        EqualityTypeModel model,
+        IndentedTextWriter writer
+    )
     {
-        static void BuildEquals(
-            EqualityTypeModel model,
-            IndentedTextWriter writer
-        )
-        {
-            bool ignoreInheritedMembers = model.IgnoreInheritedMembers;
-            var symbolName = model.TypeName;
-            var baseTypeName = model.BaseTypeName;
+        bool ignoreInheritedMembers = model.IgnoreInheritedMembers;
+        var symbolName = model.TypeName;
+        var baseTypeName = model.BaseTypeName;
 
-            writer.WriteLine(InheritDocComment);
-            writer.WriteLine(GeneratedCodeAttributeDeclaration);
-            writer.WriteLine(model.IsSealed
-                ? $"public bool Equals({symbolName}? other)"
-                : $"public virtual bool Equals({symbolName}? other)");
-            writer.AppendOpenBracket();
+        writer.WriteLine(GeneratorConstants.InheritDocComment);
+        writer.WriteLine(GeneratorConstants.GeneratedCodeAttributeDeclaration);
+        writer.WriteLine(model.IsSealed
+            ? $"public bool Equals({symbolName}? other)"
+            : $"public virtual bool Equals({symbolName}? other)");
+        writer.AppendOpenBracket();
 
-            writer.WriteLine("return");
+        writer.WriteLine("return");
 
-            writer.Indent++;
+        writer.Indent++;
 
-            writer.WriteLine(baseTypeName == "object" || ignoreInheritedMembers
-                ? "!ReferenceEquals(other, null) && EqualityContract == other.EqualityContract"
-                : $"base.Equals(({baseTypeName}?)other)");
+        writer.WriteLine(baseTypeName == "object" || ignoreInheritedMembers
+            ? "!ReferenceEquals(other, null) && EqualityContract == other.EqualityContract"
+            : $"base.Equals(({baseTypeName}?)other)");
 
-            BuildMembersEquality(model.BuildEqualityModels, writer);
+        EqualityMethodGenerator.BuildMembersEquality(model.BuildEqualityModels, writer);
 
-            writer.WriteLine(";");
-            writer.Indent--;
+        writer.WriteLine(";");
+        writer.Indent--;
 
-            writer.AppendCloseBracket();
-        }
-
-        static void BuildGetHashCode(
-            EqualityTypeModel model,
-            IndentedTextWriter writer
-        )
-        {
-            bool ignoreInheritedMembers = model.IgnoreInheritedMembers;
-            var baseTypeName = model.BaseTypeName;
-
-            writer.WriteLine(InheritDocComment);
-            writer.WriteLine(GeneratedCodeAttributeDeclaration);
-            writer.WriteLine(@"public override int GetHashCode()");
-            writer.AppendOpenBracket();
-
-            writer.WriteLine(@"var hashCode = new global::System.HashCode();");
-            writer.WriteLine();
-
-            writer.WriteLine(baseTypeName == "object" || ignoreInheritedMembers
-                ? "hashCode.Add(this.EqualityContract);"
-                : "hashCode.Add(base.GetHashCode());");
-
-            BuildMembersHashCode(model.BuildEqualityModels, writer);
-
-            writer.WriteLine();
-            writer.WriteLine("return hashCode.ToHashCode();");
-
-            writer.AppendCloseBracket();
-        }
-
-        public static string Generate(EqualityTypeModel model)
-        {
-            var code = ContainingTypesBuilder.Build(model.ContainingSymbols, content: writer =>
-            {
-                BuildEquals(model, writer);
-
-                writer.WriteLine();
-
-                BuildGetHashCode(model, writer);
-            });
-
-            return code;
-        }
+        writer.AppendCloseBracket();
     }
+
+    static void BuildGetHashCode(
+        EqualityTypeModel model,
+        IndentedTextWriter writer
+    )
+    {
+        bool ignoreInheritedMembers = model.IgnoreInheritedMembers;
+        var baseTypeName = model.BaseTypeName;
+
+        writer.WriteLine(GeneratorConstants.InheritDocComment);
+        writer.WriteLine(GeneratorConstants.GeneratedCodeAttributeDeclaration);
+        writer.WriteLine(@"public override int GetHashCode()");
+        writer.AppendOpenBracket();
+
+        writer.WriteLine(@"var hashCode = new global::System.HashCode();");
+        writer.WriteLine();
+
+        writer.WriteLine(baseTypeName == "object" || ignoreInheritedMembers
+            ? "hashCode.Add(this.EqualityContract);"
+            : "hashCode.Add(base.GetHashCode());");
+
+        HashCodeMethodGenerator.BuildMembersHashCode(model.BuildEqualityModels, writer);
+
+        writer.WriteLine();
+        writer.WriteLine("return hashCode.ToHashCode();");
+
+        writer.AppendCloseBracket();
+    }
+
+    public static string Generate(EqualityTypeModel model) => 
+        ContainingTypesBuilder.Build(model, static (model, writer) =>
+        {
+            BuildEquals(model, writer);
+
+            writer.WriteLine();
+
+            BuildGetHashCode(model, writer);
+        });
 }

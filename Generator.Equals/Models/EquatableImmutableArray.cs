@@ -12,6 +12,11 @@ internal struct EquatableImmutableArray<T>(ImmutableArray<T> items) : IEquatable
     {
     }
 
+    public EquatableImmutableArray(T[] items) : this(items.ToImmutableArray())
+    {
+    }
+
+
     public bool Equals(EquatableImmutableArray<T> other)
     {
         return Items.SequenceEqual(other.Items);
