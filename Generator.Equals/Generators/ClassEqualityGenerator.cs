@@ -15,6 +15,9 @@ internal sealed class ClassGenerator
         var symbolName = model.TypeName;
         var baseTypeName = model.BaseTypeName;
         var isRootClass = baseTypeName == "object";
+        
+        writer.WriteLine("// Fields");
+        LocalFieldGenerator.BuildEqualityComparerFields(model.BuildEqualityModels, writer);
 
         writer.WriteLines(GeneratorConstants.EqualsOperatorCodeComment);
         writer.WriteLine(GeneratorConstants.GeneratedCodeAttributeDeclaration);

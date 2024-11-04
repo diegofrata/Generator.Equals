@@ -11,7 +11,7 @@ public partial class StringArrayEquality
     {
         // Order doesnt matter, case doesn't matter
         [UnorderedEquality, StringEquality(StringComparison.OrdinalIgnoreCase)]
-        public string[] Unordered_Case_Insensitive { get; set; }
+        public string[] Unordered_Case_Insensitive_SS { get; set; }
 
         // Order matters, case doesn't matter
         [OrderedEquality, StringEquality(StringComparison.OrdinalIgnoreCase)]
@@ -38,7 +38,7 @@ public partial class StringArrayEquality
         {
             return new Sample
             {
-                Unordered_Case_Insensitive = new[] { "a", "b", "c" },
+                Unordered_Case_Insensitive_SS = new[] { "a", "b", "c" },
                 Ordered_Case_Insensitive = new[] { "a", "b", "c" },
                 Unordered_Case_Sensitive = new[] { "a", "b", "c" },
                 Ordered_Case_Sensitive = new[] { "a", "b", "c" },
@@ -50,7 +50,7 @@ public partial class StringArrayEquality
         {
             return new Sample
             {
-                Unordered_Case_Insensitive = new[] { "b", "A", "c" },
+                Unordered_Case_Insensitive_SS = new[] { "b", "A", "c" },
                 Ordered_Case_Insensitive = new[] { "A", "b", "c" },
                 Unordered_Case_Sensitive = new[] { "b", "a", "c" },
                 Ordered_Case_Sensitive = new[] { "a", "b", "c" },
@@ -70,12 +70,12 @@ public partial class StringArrayEquality
 
         public override object Factory1() => new Sample
         {
-            Unordered_Case_Insensitive = new[] { "a", "b", "c" },
+            Unordered_Case_Insensitive_SS = new[] { "a", "b", "c" },
         };
 
         public override object Factory2() => new Sample
         {
-            Unordered_Case_Insensitive = new[] { "b", "X", "c" },
+            Unordered_Case_Insensitive_SS = new[] { "b", "X", "c" },
         };
 
         public override bool EqualsOperator(object value1, object value2) => (Sample)value1 == (Sample)value2;

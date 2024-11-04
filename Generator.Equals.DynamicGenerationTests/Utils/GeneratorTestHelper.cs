@@ -17,7 +17,7 @@ public class GeneratorTestHelper
     public static GeneratorDriverRunResult RunGenerator
     (
         [StringSyntax("c#-test")] string source,
-        Dictionary<string, string>? options
+        Dictionary<string, string>? options = null
     )
     {
         // If source has no namespace, add one
