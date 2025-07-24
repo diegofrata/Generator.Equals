@@ -82,7 +82,7 @@ public record EnumerableArgumentsResult(ImmutableArray<ITypeSymbol>? Arguments) 
 
 public abstract record ArgumentsResult(ImmutableArray<ITypeSymbol>? Arguments)
 {
-    public string Name => string.Join(", ", Arguments!.Value);
+    public string Name => string.Join(", ", Arguments!.Value.Select(v => v.ToNullableFQF()));
     public bool HasValue => Arguments.HasValue;
 
     public ImmutableArray<ITypeSymbol>? Value => Arguments;
