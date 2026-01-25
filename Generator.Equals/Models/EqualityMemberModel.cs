@@ -12,4 +12,9 @@ internal sealed record EqualityMemberModel
 
     public bool Ignored { get; init; }
     public bool ComparerHasStaticInstance { get; init; }
+
+    // Element comparer properties for collection equality attributes
+    public string? ElementComparerType { get; init; }
+    public string? ElementComparerMemberName { get; init; }
+    public bool ElementComparerHasStaticInstance { get; init; }
 }

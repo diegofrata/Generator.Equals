@@ -32,6 +32,26 @@ namespace Generator.Equals
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class OrderedEqualityAttribute : Attribute
     {
+        public Type? ComparerType { get; }
+        public string ComparerMemberName { get; }
+        public StringComparison? StringComparison { get; }
+
+        public OrderedEqualityAttribute()
+        {
+            ComparerMemberName = "Default";
+        }
+
+        public OrderedEqualityAttribute(StringComparison stringComparison)
+        {
+            StringComparison = stringComparison;
+            ComparerMemberName = "Default";
+        }
+
+        public OrderedEqualityAttribute(Type comparerType, string comparerMemberName = "Default")
+        {
+            ComparerType = comparerType;
+            ComparerMemberName = comparerMemberName;
+        }
     }
 
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
@@ -46,6 +66,26 @@ namespace Generator.Equals
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class UnorderedEqualityAttribute : Attribute
     {
+        public Type? ComparerType { get; }
+        public string ComparerMemberName { get; }
+        public StringComparison? StringComparison { get; }
+
+        public UnorderedEqualityAttribute()
+        {
+            ComparerMemberName = "Default";
+        }
+
+        public UnorderedEqualityAttribute(StringComparison stringComparison)
+        {
+            StringComparison = stringComparison;
+            ComparerMemberName = "Default";
+        }
+
+        public UnorderedEqualityAttribute(Type comparerType, string comparerMemberName = "Default")
+        {
+            ComparerType = comparerType;
+            ComparerMemberName = comparerMemberName;
+        }
     }
 
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
@@ -60,6 +100,26 @@ namespace Generator.Equals
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class SetEqualityAttribute : Attribute
     {
+        public Type? ComparerType { get; }
+        public string ComparerMemberName { get; }
+        public StringComparison? StringComparison { get; }
+
+        public SetEqualityAttribute()
+        {
+            ComparerMemberName = "Default";
+        }
+
+        public SetEqualityAttribute(StringComparison stringComparison)
+        {
+            StringComparison = stringComparison;
+            ComparerMemberName = "Default";
+        }
+
+        public SetEqualityAttribute(Type comparerType, string comparerMemberName = "Default")
+        {
+            ComparerType = comparerType;
+            ComparerMemberName = comparerMemberName;
+        }
     }
 
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
