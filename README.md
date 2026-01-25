@@ -97,7 +97,7 @@ As the name implies, the property is ignored during Equals and GetHashCode calls
 ### OrderedEquality
 
 ```c#
-[OrderedEquality] 
+[OrderedEquality]
 public string[] Fruits { get; set; } // Fruits have to be in the same order for the array to be considered equal.
 ```
 
@@ -105,13 +105,29 @@ This equality comparer will compare properties as a sequence instead of a refere
 
 Bear in mind that the property has to implement IEnumerable<T> and the that the items themselves implement equality (you can use Generator.Equals in the items too!).
 
+You can also specify a custom comparer for the elements:
+
+```c#
+// Using StringComparison for string collections
+[OrderedEquality(StringComparison.OrdinalIgnoreCase)]
+public string[] Tags { get; set; }
+
+// Using a custom comparer type
+[OrderedEquality(typeof(StringComparer), nameof(StringComparer.OrdinalIgnoreCase))]
+public string[] Names { get; set; }
+
+// Using a custom IEqualityComparer<T> with a Default static member
+[OrderedEquality(typeof(MyCustomComparer))]
+public string[] Values { get; set; }
+```
+
 ### UnorderedEquality
 
 ```c#
-[UnorderedEquality] 
+[UnorderedEquality]
 public string[] Fruits { get; set; } // Does not care about the order of the fruits!
 
-[UnorderedEquality] 
+[UnorderedEquality]
 public IDictionary<string, object> Properties { get; set; } // Works with dictionaries too!
 ```
 
@@ -119,16 +135,41 @@ This equality comparer will compare properties as an unordered sequence instead 
 
 As with OrderedEquality, bear in mind that the property (or key and values if using a dictionary) has to implement IEnumerable<T> and the that the items themselves implement equality (you can use Generator.Equals in the items too!).
 
+You can also specify a custom comparer for the elements:
+
+```c#
+// Using StringComparison for string collections
+[UnorderedEquality(StringComparison.OrdinalIgnoreCase)]
+public List<string> Tags { get; set; }
+
+// Using a custom comparer type
+[UnorderedEquality(typeof(StringComparer), nameof(StringComparer.OrdinalIgnoreCase))]
+public List<string> Names { get; set; }
+```
+
 ### SetEquality
 
 ```c#
-[SetEquality] 
-public HashSet<string> Fruits { get; set; } // Fruits can be in any order and it can be repeated
+[SetEquality]
+public HashSet<string> Fruits { get; set; } // Fruits can be in any order and duplicates are ignored
 ```
 
-This equality comparer will do a set comparison, using ```SetEquals``` whenever the underlying collection implements `ISet<T>`, otherwise falling back to  manually comparing both collections, which can be expensive for large collections.
+This equality comparer will do a set comparison, using ```SetEquals``` whenever the underlying collection implements `ISet<T>`, otherwise falling back to manually comparing both collections, which can be expensive for large collections.
 
-Hashing always returns 0 for this type of equality,
+You can also specify a custom comparer for the elements:
+
+```c#
+// Using StringComparison for string collections
+[SetEquality(StringComparison.OrdinalIgnoreCase)]
+public HashSet<string> Tags { get; set; }
+
+// Using a custom comparer type
+[SetEquality(typeof(StringComparer), nameof(StringComparer.OrdinalIgnoreCase))]
+public HashSet<string> Names { get; set; }
+```
+
+Hashing always returns 0 for this type of equality.
+
 ### ReferenceEquality
 
 ```c#

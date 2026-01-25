@@ -38,6 +38,31 @@ namespace Generator.Equals
 
         protected const string InheritDocComment = "/// <inheritdoc/>";
 
+        private static string GetCollectionComparerExpression(
+            string comparerClassName,
+            string elementTypeName,
+            EqualityMemberModel memberModel)
+        {
+            // Check if element comparer is specified
+            if (memberModel.ElementComparerType != null)
+            {
+                string elementComparerExpr;
+                if (memberModel.ElementComparerHasStaticInstance)
+                {
+                    elementComparerExpr = $"{memberModel.ElementComparerType}.{memberModel.ElementComparerMemberName}";
+                }
+                else
+                {
+                    elementComparerExpr = $"new {memberModel.ElementComparerType}()";
+                }
+
+                return $"new global::Generator.Equals.{comparerClassName}<{elementTypeName}>({elementComparerExpr})";
+            }
+
+            // No element comparer, use default
+            return $"global::Generator.Equals.{comparerClassName}<{elementTypeName}>.Default";
+        }
+
         private static void BuildEquality(EqualityMemberModel memberModel, IndentedTextWriter writer)
         {
             if (memberModel.Ignored)
@@ -51,9 +76,12 @@ namespace Generator.Equals
                     break;
 
                 case EqualityType.UnorderedEquality when !memberModel.IsDictionary:
+                {
+                    var comparer = GetCollectionComparerExpression("UnorderedEqualityComparer", memberModel.TypeName, memberModel);
                     writer.WriteLine(
-                        $"&& global::Generator.Equals.UnorderedEqualityComparer<{memberModel.TypeName}>.Default.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
+                        $"&& {comparer}.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
                     break;
+                }
 
                 case EqualityType.UnorderedEquality when memberModel.IsDictionary:
                     writer.WriteLine(
@@ -61,9 +89,12 @@ namespace Generator.Equals
                     break;
 
                 case EqualityType.OrderedEquality:
+                {
+                    var comparer = GetCollectionComparerExpression("OrderedEqualityComparer", memberModel.TypeName, memberModel);
                     writer.WriteLine(
-                        $"&& global::Generator.Equals.OrderedEqualityComparer<{memberModel.TypeName}>.Default.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
+                        $"&& {comparer}.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
                     break;
+                }
 
                 case EqualityType.ReferenceEquality:
                     writer.WriteLine(
@@ -71,9 +102,12 @@ namespace Generator.Equals
                     break;
 
                 case EqualityType.SetEquality:
+                {
+                    var comparer = GetCollectionComparerExpression("SetEqualityComparer", memberModel.TypeName, memberModel);
                     writer.WriteLine(
-                        $"&& global::Generator.Equals.SetEqualityComparer<{memberModel.TypeName}>.Default.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
+                        $"&& {comparer}.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
                     break;
+                }
 
                 case EqualityType.StringEquality:
                     writer.WriteLine(
@@ -141,11 +175,11 @@ namespace Generator.Equals
                     break;
 
                 case EqualityType.UnorderedEquality when !memberModel.IsDictionary:
-                    BuildHashCodeAdd($"global::Generator.Equals.UnorderedEqualityComparer<{memberModel.TypeName}>.Default");
+                    BuildHashCodeAdd(GetCollectionComparerExpression("UnorderedEqualityComparer", memberModel.TypeName, memberModel));
                     break;
 
                 case EqualityType.OrderedEquality:
-                    BuildHashCodeAdd($"global::Generator.Equals.OrderedEqualityComparer<{memberModel.TypeName}>.Default");
+                    BuildHashCodeAdd(GetCollectionComparerExpression("OrderedEqualityComparer", memberModel.TypeName, memberModel));
                     break;
 
                 case EqualityType.ReferenceEquality:
@@ -153,7 +187,7 @@ namespace Generator.Equals
                     break;
 
                 case EqualityType.SetEquality:
-                    BuildHashCodeAdd($"global::Generator.Equals.SetEqualityComparer<{memberModel.TypeName}>.Default");
+                    BuildHashCodeAdd(GetCollectionComparerExpression("SetEqualityComparer", memberModel.TypeName, memberModel));
                     break;
 
                 case EqualityType.StringEquality:

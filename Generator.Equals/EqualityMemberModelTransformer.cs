@@ -7,8 +7,62 @@ using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals.Models;
 
+internal record ElementComparerInfo(
+    string? ComparerType,
+    string? MemberName,
+    bool HasStaticInstance
+);
+
 internal static class EqualityMemberModelTransformer
 {
+    private static ElementComparerInfo? ExtractElementComparerInfo(
+        AttributeData attribute,
+        AttributesMetadata attributesMetadata
+    )
+    {
+        var args = attribute.ConstructorArguments;
+
+        if (args.Length == 0)
+        {
+            return null;
+        }
+
+        // Check for StringComparison argument (first constructor overload)
+        if (args[0].Type?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::System.StringComparison")
+        {
+            var stringComparisonValue = Convert.ToInt64(args[0].Value, CultureInfo.InvariantCulture);
+            if (attributesMetadata.StringComparisonLookup.TryGetValue(stringComparisonValue, out var enumMemberName))
+            {
+                return new ElementComparerInfo(
+                    "global::System.StringComparer",
+                    enumMemberName,
+                    true
+                );
+            }
+            return null;
+        }
+
+        // Check for Type argument (second constructor overload)
+        if (args[0].Value is INamedTypeSymbol comparerType)
+        {
+            var comparerTypeName = comparerType.ToFQF();
+            var comparerMemberName = args.Length > 1 && args[1].Value is string memberName
+                ? memberName
+                : "Default";
+
+            var hasStaticInstance = comparerType.GetMembers().Any(x => x.Name == comparerMemberName && x.IsStatic)
+                                    || comparerType.GetPropertiesAndFields().Any(x => x.Name == comparerMemberName && x.IsStatic);
+
+            return new ElementComparerInfo(
+                comparerTypeName,
+                comparerMemberName,
+                hasStaticInstance
+            );
+        }
+
+        return null;
+    }
+
     public static ImmutableArray<EqualityMemberModel> BuildEqualityModels(
         ITypeSymbol symbol,
         AttributesMetadata attributesMetadata,
@@ -64,23 +118,35 @@ internal static class EqualityMemberModelTransformer
             var args = typeSymbol.GetIDictionaryTypeArguments()
                        ?? typeSymbol.GetIEnumerableTypeArguments()!;
 
+            var attribute = memberSymbol.GetAttribute(attributesMetadata.UnorderedEquality)!;
+            var elementComparer = ExtractElementComparerInfo(attribute, attributesMetadata);
+
             return new EqualityMemberModel
             {
                 PropertyName = propertyName,
                 TypeName = args.Name,
                 EqualityType = EqualityType.UnorderedEquality,
-                IsDictionary = args is DictionaryArgumentsResult
+                IsDictionary = args is DictionaryArgumentsResult,
+                ElementComparerType = elementComparer?.ComparerType,
+                ElementComparerMemberName = elementComparer?.MemberName,
+                ElementComparerHasStaticInstance = elementComparer?.HasStaticInstance ?? false
             };
         }
         else if (memberSymbol.HasAttribute(attributesMetadata.OrderedEquality))
         {
             var types = typeSymbol.GetIEnumerableTypeArguments()!;
 
+            var attribute = memberSymbol.GetAttribute(attributesMetadata.OrderedEquality)!;
+            var elementComparer = ExtractElementComparerInfo(attribute, attributesMetadata);
+
             return new EqualityMemberModel
             {
                 PropertyName = propertyName,
                 TypeName = types.Name,
-                EqualityType = EqualityType.OrderedEquality
+                EqualityType = EqualityType.OrderedEquality,
+                ElementComparerType = elementComparer?.ComparerType,
+                ElementComparerMemberName = elementComparer?.MemberName,
+                ElementComparerHasStaticInstance = elementComparer?.HasStaticInstance ?? false
             };
         }
         else if (memberSymbol.HasAttribute(attributesMetadata.ReferenceEquality))
@@ -95,11 +161,18 @@ internal static class EqualityMemberModelTransformer
         else if (memberSymbol.HasAttribute(attributesMetadata.SetEquality))
         {
             var types = typeSymbol.GetIEnumerableTypeArguments()!;
+
+            var attribute = memberSymbol.GetAttribute(attributesMetadata.SetEquality)!;
+            var elementComparer = ExtractElementComparerInfo(attribute, attributesMetadata);
+
             return new EqualityMemberModel
             {
                 PropertyName = propertyName,
                 TypeName = types.Name,
-                EqualityType = EqualityType.SetEquality
+                EqualityType = EqualityType.SetEquality,
+                ElementComparerType = elementComparer?.ComparerType,
+                ElementComparerMemberName = elementComparer?.MemberName,
+                ElementComparerHasStaticInstance = elementComparer?.HasStaticInstance ?? false
             };
         }
         else if (memberSymbol.HasAttribute(attributesMetadata.StringEquality))
