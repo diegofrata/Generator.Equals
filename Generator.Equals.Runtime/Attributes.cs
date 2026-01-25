@@ -22,14 +22,14 @@ namespace Generator.Equals
 
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
     [Conditional("GENERATOR_EQUALS")]
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = true)]
     public class DefaultEqualityAttribute : Attribute
     {
     }
 
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
     [Conditional("GENERATOR_EQUALS")]
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = true)]
     public class OrderedEqualityAttribute : Attribute
     {
         public Type? ComparerType { get; }
@@ -56,14 +56,14 @@ namespace Generator.Equals
 
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
     [Conditional("GENERATOR_EQUALS")]
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = true)]
     public class IgnoreEqualityAttribute : Attribute
     {
     }
 
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
     [Conditional("GENERATOR_EQUALS")]
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = true)]
     public class UnorderedEqualityAttribute : Attribute
     {
         public Type? ComparerType { get; }
@@ -90,14 +90,14 @@ namespace Generator.Equals
 
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
     [Conditional("GENERATOR_EQUALS")]
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = true)]
     public class ReferenceEqualityAttribute : Attribute
     {
     }
 
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
     [Conditional("GENERATOR_EQUALS")]
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = true)]
     public class SetEqualityAttribute : Attribute
     {
         public Type? ComparerType { get; }
@@ -124,7 +124,7 @@ namespace Generator.Equals
 
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
     [Conditional("GENERATOR_EQUALS")]
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = true)]
     public class StringEqualityAttribute : Attribute
     {
         public StringComparison ComparisonType { get; }
@@ -137,7 +137,7 @@ namespace Generator.Equals
 
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
     [Conditional("GENERATOR_EQUALS")]
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = true)]
     public class CustomEqualityAttribute : Attribute
     {
         public Type EqualityType { get; }

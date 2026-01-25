@@ -8,7 +8,7 @@ namespace Generator.Equals.Generators
     {
         private static void BuildEquals(EqualityTypeModel model, IndentedTextWriter writer)
         {
-            var symbolName = model.TypeName;
+            var symbolName = model.Fullname;
 
             writer.WriteLines(EqualsOperatorCodeComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
@@ -70,7 +70,7 @@ namespace Generator.Equals.Generators
             // Generate the code using the custom model instead of Roslyn types
             var code = ContainingTypesBuilder.Build(model.ContainingSymbols, content: writer =>
             {
-                writer.WriteLine($"partial struct {model.TypeName} : global::System.IEquatable<{model.TypeName}>");
+                writer.WriteLine($"partial struct {model.TypeName} : global::System.IEquatable<{model.Fullname}>");
                 writer.AppendOpenBracket();
 
                 // BuildEquals and BuildGetHashCode are adjusted to accept the custom model instead of Roslyn symbols

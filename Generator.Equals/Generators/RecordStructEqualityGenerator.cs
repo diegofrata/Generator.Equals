@@ -10,7 +10,7 @@ namespace Generator.Equals.Generators
             EqualityTypeModel model,
             IndentedTextWriter writer)
         {
-            var symbolName = model.TypeName;
+            var symbolName = model.Fullname;
 
             writer.WriteLine(InheritDocComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);

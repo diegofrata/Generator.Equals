@@ -3,7 +3,6 @@ using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals.SnapshotTests
 {
-    [UsesVerify]
     public class TopLevelSourceTests : SnapshotTestBase
     {
         static string ThisPath([CallerFilePath] string path = null!) => path;

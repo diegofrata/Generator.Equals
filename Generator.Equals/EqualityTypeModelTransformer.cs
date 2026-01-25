@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using Generator.Equals.Extensions;
@@ -70,7 +71,23 @@ internal sealed class EqualityTypeModelTransformer
             return null;
         }
 
-        var bems = EqualityMemberModelTransformer.BuildEqualityModels(symbol, attributesMetadata, explicitMode);
+        // When IgnoreInheritedMembers = false (default), skip overriding properties
+        // ONLY IF the base type where the property is originally declared has [Equatable].
+        // If the base type doesn't have [Equatable], we must include the property here
+        // (with inherited attribute if any) since base.Equals() won't compare it.
+        // When IgnoreInheritedMembers = true, include all members including overrides.
+        Predicate<ISymbol>? filter = ignoreInheritedMembers
+            ? null
+            : s => s is not IPropertySymbol prop || !ShouldSkipOverridingProperty(prop, attributesMetadata);
+
+        // For classes (not records), if the base type doesn't have [Equatable], we need to
+        // treat this class as a "root class" for equality purposes since base.Equals()
+        // would just use object reference equality. We use baseHasEquatable to track this.
+        var baseHasEquatable = symbol.BaseType != null
+            && symbol.BaseType.SpecialType != SpecialType.System_Object
+            && symbol.BaseType.HasAttribute(attributesMetadata.Equatable);
+
+        var bems = EqualityMemberModelTransformer.BuildEqualityModels(symbol, attributesMetadata, explicitMode, filter);
 
         var model = new EqualityTypeModel
         {
@@ -83,7 +100,8 @@ internal sealed class EqualityTypeModelTransformer
             IsSealed = symbol.IsSealed,
             BaseTypeName = baseTypeName,
             Fullname = fullname,
-            SyntaxKind = _context.TargetNode.Kind()
+            SyntaxKind = _context.TargetNode.Kind(),
+            BaseHasEquatable = baseHasEquatable
         };
 
         if (model.SyntaxKind is not (
@@ -100,6 +118,31 @@ internal sealed class EqualityTypeModelTransformer
         }
 
         return model;
+    }
+
+    /// <summary>
+    /// Determines if an overriding property should be skipped because a parent type
+    /// in the override chain has [Equatable] and will handle it via base.Equals().
+    /// </summary>
+    private static bool ShouldSkipOverridingProperty(IPropertySymbol property, AttributesMetadata attributesMetadata)
+    {
+        if (!property.IsOverride)
+            return false;
+
+        // Walk up the override chain and check each type for [Equatable]
+        var overridden = property.OverriddenProperty;
+        while (overridden != null)
+        {
+            // If any parent type in the chain has [Equatable], skip this property
+            if (overridden.ContainingType.HasAttribute(attributesMetadata.Equatable))
+            {
+                return true;
+            }
+            overridden = overridden.OverriddenProperty;
+        }
+
+        // No parent type has [Equatable], so we need to include this property
+        return false;
     }
 
     public static ImmutableArray<ContainingSymbol> GetContainingSymbols(ISymbol symbol, bool includeSelf = false)

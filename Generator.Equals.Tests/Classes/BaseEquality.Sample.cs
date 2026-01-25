@@ -9,7 +9,7 @@ namespace Generator.Equals.Tests.Classes
             {
                 Age = age;
             }
-            
+
             public int Age { get; }
         }
 

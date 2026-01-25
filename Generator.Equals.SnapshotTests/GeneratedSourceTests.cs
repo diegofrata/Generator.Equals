@@ -7,7 +7,6 @@ using Microsoft.CodeAnalysis.Testing;
 
 namespace Generator.Equals.SnapshotTests
 {
-    [UsesVerify]
     public class GeneratedSourceTests : SnapshotTestBase
     {
         static IEnumerable<object[]> FindSampleFiles([CallerFilePath] string? path = null)

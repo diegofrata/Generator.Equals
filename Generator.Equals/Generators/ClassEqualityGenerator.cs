@@ -12,9 +12,11 @@ namespace Generator.Equals.Generators
         )
         {
             var ignoreInheritedMembers = model.IgnoreInheritedMembers;
-            var symbolName = model.TypeName;
+            var symbolName = model.Fullname;
             var baseTypeName = model.BaseTypeName;
-            var isRootClass = baseTypeName == "object";
+            // Treat as root class if base is object OR if base doesn't have [Equatable]
+            // (since base.Equals() would just use object reference equality)
+            var isRootClass = baseTypeName == "object" || !model.BaseHasEquatable;
 
             writer.WriteLines(EqualsOperatorCodeComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
@@ -76,6 +78,8 @@ namespace Generator.Equals.Generators
             var ignoreInheritedMembers = model.IgnoreInheritedMembers;
             var baseTypeName = model.BaseTypeName;
 
+            var isRootClass = baseTypeName == "object" || !model.BaseHasEquatable;
+
             writer.WriteLine(InheritDocComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
             writer.WriteLine(@"public override int GetHashCode()");
@@ -84,7 +88,7 @@ namespace Generator.Equals.Generators
             writer.WriteLine(@"var hashCode = new global::System.HashCode();");
             writer.WriteLine();
 
-            writer.WriteLine(baseTypeName == "object" || ignoreInheritedMembers
+            writer.WriteLine(isRootClass || ignoreInheritedMembers
                 ? "hashCode.Add(this.GetType());"
                 : "hashCode.Add(base.GetHashCode());");
 
@@ -100,7 +104,7 @@ namespace Generator.Equals.Generators
         {
             var code = ContainingTypesBuilder.Build(model.ContainingSymbols, content: writer =>
             {
-                writer.WriteLine($"partial class {model.TypeName} : global::System.IEquatable<{model.TypeName}>");
+                writer.WriteLine($"partial class {model.TypeName} : global::System.IEquatable<{model.Fullname}>");
                 writer.AppendOpenBracket();
 
                 BuildEquals(model, writer);

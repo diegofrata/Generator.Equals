@@ -1,5 +1,6 @@
-﻿using System.Collections.Immutable;
-using DiffEngine;
+extern alias GeneratorEquals;
+
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
@@ -8,22 +9,9 @@ namespace Generator.Equals.SnapshotTests
 {
     public abstract class SnapshotTestBase
     {
-        static readonly Lazy<bool> Init = new(DoInit, LazyThreadSafetyMode.ExecutionAndPublication);
-
-        static bool DoInit()
-        {
-            DiffTools.UseOrder(DiffTool.VisualStudioCode);
-            VerifySourceGenerators.Enable();
-            VerifySourceGeneratorsPatch.Patch();
-            ClipboardAccept.Enable();
-            return true;
-        }
-
-        protected SnapshotTestBase()
-        {
-            if (!Init.Value)
-                throw new InvalidOperationException();
-        }
+        // Reference to the Generator.Equals.Runtime assembly for the [Equatable] attribute
+        private static readonly MetadataReference RuntimeReference = MetadataReference.CreateFromFile(
+            typeof(Generator.Equals.EquatableAttribute).Assembly.Location);
 
         public enum TargetFramework
         {
@@ -65,18 +53,37 @@ namespace Generator.Equals.SnapshotTests
                         options: parseOptions,
                         cancellationToken: ct),
                 },
-                references: references,
+                references: references.Add(RuntimeReference),
                 options: new CSharpCompilationOptions(outputKind, nullableContextOptions: NullableContextOptions.Enable));
 
             var driver = CSharpGeneratorDriver
-                .Create(new[] { new EqualsGenerator().AsSourceGenerator() }, parseOptions: parseOptions)
+                .Create(new[] { new GeneratorEquals::Generator.Equals.EqualsGenerator().AsSourceGenerator() }, parseOptions: parseOptions)
                 .RunGeneratorsAndUpdateCompilation(compilation, out _, out var diagnostics, ct);
 
             var targetFileName = $"{fileName}.{targetFramework}";
 
+            var runResult = driver.GetRunResult();
+
+            // Filter and order generated sources
+            var generatedSources = runResult.Results
+                .SelectMany(r => r.GeneratedSources)
+                .Where(s => !s.HintName.StartsWith("Generator.Equals.Runtime"))
+                .OrderBy(s => s.HintName)
+                .ToArray();
+
+            // Create targets for each generated source file
+            var targets = generatedSources.Select(s =>
+            {
+                var name = Path.GetFileNameWithoutExtension(s.HintName);
+                var content = $"//HintName: {s.HintName}\n{s.SourceText}";
+                return new Target("cs", content, name);
+            });
+
             await Task.WhenAll(
                 Verify(diagnostics).UseDirectory(directory).UseFileName($"{targetFileName}.Diagnostics"),
-                Verify(driver).UseDirectory(directory).UseFileName(targetFileName)
+                Verify(targets)
+                    .UseDirectory(directory)
+                    .UseFileName(targetFileName)
             );
         }
     }

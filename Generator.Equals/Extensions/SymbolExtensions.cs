@@ -44,26 +44,30 @@ internal static class SymbolExtensions
     [SuppressMessage("ReSharper", "ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator", Justification = "Performance")]
     public static bool HasAttribute(this ISymbol symbol, AttributeMetadata metadata)
     {
-        foreach (var attribute in symbol.GetAttributes())
-        {
-            if (metadata.Equals(attribute.AttributeClass))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return symbol.GetAttributeIncludingInherited(metadata) != null;
     }
 
-    //GetAttribute
     public static AttributeData? GetAttribute(this ISymbol symbol, AttributeMetadata metadata)
     {
-        foreach (var attribute in symbol.GetAttributes())
+        return symbol.GetAttributeIncludingInherited(metadata);
+    }
+
+    private static AttributeData? GetAttributeIncludingInherited(this ISymbol symbol, AttributeMetadata metadata)
+    {
+        var current = symbol;
+
+        while (current != null)
         {
-            if (metadata.Equals(attribute.AttributeClass))
+            foreach (var attribute in current.GetAttributes())
             {
-                return attribute;
+                if (metadata.Equals(attribute.AttributeClass))
+                {
+                    return attribute;
+                }
             }
+
+            // If this is an overriding property, continue up the override chain
+            current = (current as IPropertySymbol)?.OverriddenProperty;
         }
 
         return null;

@@ -15,4 +15,11 @@ internal sealed record EqualityTypeModel
     public required bool IgnoreInheritedMembers { get; init; }
     public required EquatableImmutableArray<EqualityMemberModel> BuildEqualityModels { get; init; }
     public required string Fullname { get; init; }
+
+    /// <summary>
+    /// For classes, indicates whether the base type has [Equatable].
+    /// If false, base.Equals() would use object reference equality,
+    /// so the class should be treated as a "root class" for equality purposes.
+    /// </summary>
+    public bool BaseHasEquatable { get; init; }
 }

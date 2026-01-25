@@ -13,6 +13,29 @@ In order to use this library, you must:
 
 Simply add the package `Generator.Equals` to your project. Keep reading to learn how to add the attributes to your types.
 
+## Migrating from version 3
+
+Version 4 introduces support for inherited equality attributes on overridden properties, making repeating attributes 
+unnecessary. When a child class overrides a virtual property from a parent class, it now automatically inherits the 
+equality attribute (e.g., `[OrderedEquality]`) from the parent. You no longer need to redeclare attributes on overriding 
+properties.
+
+```c#
+[Equatable]
+public partial class Parent
+{
+    [OrderedEquality]
+    public virtual int[] Values { get; set; }
+}
+
+[Equatable]
+public partial class Child : Parent
+{
+    // Automatically inherits [OrderedEquality] from Parent
+    public override int[] Values { get; set; }
+}
+```
+
 ## Migrating from version 2
 
 Migrating to version 3 is very straightforward.

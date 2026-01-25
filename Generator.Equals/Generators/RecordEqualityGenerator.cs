@@ -12,7 +12,7 @@ namespace Generator.Equals.Generators
         )
         {
             bool ignoreInheritedMembers = model.IgnoreInheritedMembers;
-            var symbolName = model.TypeName;
+            var symbolName = model.Fullname;
             var baseTypeName = model.BaseTypeName;
 
             writer.WriteLine(InheritDocComment);
