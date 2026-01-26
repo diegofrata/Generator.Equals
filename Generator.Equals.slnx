@@ -6,6 +6,6 @@
   </Configurations>
   <Project Path="Generator.Equals.Runtime/Generator.Equals.Runtime.csproj" />
   <Project Path="Generator.Equals.Tests.TopLevel/Generator.Equals.Tests.TopLevel.csproj" />
-  <Project Path="Generator.Equals.Tests.V3/Generator.Equals.Tests.V3.csproj" />
+  <Project Path="Generator.Equals.Tests/Generator.Equals.Tests.csproj" />
   <Project Path="Generator.Equals/Generator.Equals.csproj" />
 </Solution>
