@@ -15,9 +15,11 @@ Simply add the package `Generator.Equals` to your project. Keep reading to learn
 
 ## Migrating from version 3
 
-Version 4 introduces support for inherited equality attributes on overridden properties, making repeating attributes 
-unnecessary. When a child class overrides a virtual property from a parent class, it now automatically inherits the 
-equality attribute (e.g., `[OrderedEquality]`) from the parent. You no longer need to redeclare attributes on overriding 
+### Inherited Equality Attributes
+
+Version 4 introduces support for inherited equality attributes on overridden properties, making repeating attributes
+unnecessary. When a child class overrides a virtual property from a parent class, it now automatically inherits the
+equality attribute (e.g., `[OrderedEquality]`) from the parent. You no longer need to redeclare attributes on overriding
 properties.
 
 ```c#
@@ -33,6 +35,66 @@ public partial class Child : Parent
 {
     // Automatically inherits [OrderedEquality] from Parent
     public override int[] Values { get; set; }
+}
+```
+
+### Improved Inheritance Chain Detection
+
+Version 4 improves how `base.Equals()` is called in inheritance hierarchies. Previously, generated code would only
+call `base.Equals()` if the **immediate** base class had `[Equatable]`. Now, the generator walks the **entire**
+inheritance chain and calls `base.Equals()` if:
+
+1. **Any ancestor** has the `[Equatable]` attribute, OR
+2. **Any ancestor** has manually overridden `Equals(object)`
+
+This fixes scenarios where equality was incorrectly skipped in multi-level inheritance:
+
+```c#
+[Equatable]
+public partial class GrandParent
+{
+    public string Name { get; set; }
+}
+
+// No [Equatable] - inherits GrandParent's Equals
+public class Parent : GrandParent
+{
+    public int Age { get; set; }
+}
+
+[Equatable]
+public partial class Child : Parent
+{
+    public string School { get; set; }
+}
+```
+
+**Before (v3):** `Child.Equals()` did NOT call `base.Equals()` because `Parent` lacks `[Equatable]`.
+Only `School` was compared, ignoring `Name`.
+
+**After (v4):** `Child.Equals()` calls `base.Equals()` because `GrandParent` has `[Equatable]`.
+Both `School` and `Name` are compared correctly.
+
+### Skip Base Equals (Breaking Change)
+
+The `IgnoreInheritedMembers` property has been renamed to `SkipBaseEquals` to better reflect its purpose.
+
+| v3 | v4 |
+|----|-----|
+| `[Equatable(IgnoreInheritedMembers = true)]` | `[Equatable(SkipBaseEquals = true)]` |
+
+The property controls whether `base.Equals()` is called:
+
+- `SkipBaseEquals = false` (default): Calls `base.Equals()` when any ancestor has meaningful equality
+- `SkipBaseEquals = true`: Never calls `base.Equals()`, treating the class as an equality root
+
+```c#
+[Equatable(SkipBaseEquals = true)]
+public partial class Child : Parent
+{
+    // Will NOT call base.Equals() even if Parent has [Equatable]
+    // Only properties defined in Child are compared
+    public string School { get; set; }
 }
 ```
 
@@ -266,22 +328,29 @@ partial class MyClass
 ```
 
 
-### Ignore Inherited Members
+### Skip Base Equals
 
-You can also choose to ignore members from parent classes/record by setting `IgnoreInheritedMembers` to true.
+By default, when any ancestor class has `[Equatable]` or a custom `Equals` override, the generated code
+calls `base.Equals()` to include ancestor equality in the comparison.
+
+Set `SkipBaseEquals = true` to skip calling `base.Equals()` and treat the class as an equality root.
+This is useful when you want to completely redefine equality for a derived class without considering
+the base class's equality logic.
 
 ```cs
 using Generator.Equals;
 
-class Person 
+[Equatable]
+partial class Person
 {
     public string Name { get; set; }
 }
 
-[Equatable(IgnoreInheritedMembers = true)]
+[Equatable(SkipBaseEquals = true)]
 partial class Doctor : Person
 {
-    // Only members in the Doctor class will be used for comparison.
+    // Will NOT call base.Equals(), so Person.Name is not compared.
+    // Only Id and Specialization are used for equality.
     public string Id { get; set; }
     public string Specialization { get; set; }
 }

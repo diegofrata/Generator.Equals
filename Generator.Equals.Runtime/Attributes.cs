@@ -15,9 +15,11 @@ namespace Generator.Equals
         public bool Explicit { get; set; }
 
         /// <summary>
-        /// Equality and hash code do not consider members of base classes.
+        /// When true, the generated Equals method will not call base.Equals(),
+        /// treating this type as an equality root. Only properties defined
+        /// directly on this type will be compared.
         /// </summary>
-        public bool IgnoreInheritedMembers { get; set; }
+        public bool SkipBaseEquals { get; set; }
     }
 
     [GeneratedCode("Generator.Equals", "1.0.0.0")]

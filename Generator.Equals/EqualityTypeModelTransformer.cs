@@ -41,7 +41,7 @@ internal sealed class EqualityTypeModelTransformer
         }
 
         var explicitMode = equatableAttributeData.GetNamedArgumentValue("Explicit") is true;
-        var ignoreInheritedMembers = equatableAttributeData.GetNamedArgumentValue("IgnoreInheritedMembers") is true;
+        var skipBaseEquals = equatableAttributeData.GetNamedArgumentValue("SkipBaseEquals") is true;
 
         if (_context.TargetSymbol is not ITypeSymbol symbol)
         {
@@ -71,21 +71,20 @@ internal sealed class EqualityTypeModelTransformer
             return null;
         }
 
-        // When IgnoreInheritedMembers = false (default), skip overriding properties
+        // When SkipBaseEquals = false (default), skip overriding properties
         // ONLY IF the base type where the property is originally declared has [Equatable].
         // If the base type doesn't have [Equatable], we must include the property here
         // (with inherited attribute if any) since base.Equals() won't compare it.
-        // When IgnoreInheritedMembers = true, include all members including overrides.
-        Predicate<ISymbol>? filter = ignoreInheritedMembers
+        // When SkipBaseEquals = true, include all members including overrides.
+        Predicate<ISymbol>? filter = skipBaseEquals
             ? null
             : s => s is not IPropertySymbol prop || !ShouldSkipOverridingProperty(prop, attributesMetadata);
 
-        // For classes (not records), if the base type doesn't have [Equatable], we need to
-        // treat this class as a "root class" for equality purposes since base.Equals()
-        // would just use object reference equality. We use baseHasEquatable to track this.
-        var baseHasEquatable = symbol.BaseType != null
-            && symbol.BaseType.SpecialType != SpecialType.System_Object
-            && symbol.BaseType.HasAttribute(attributesMetadata.Equatable);
+        // For classes (not records), we need to determine if calling base.Equals() will
+        // reach a meaningful equality implementation. We walk up the inheritance chain
+        // to find if any ancestor has [Equatable]. If so, we should call base.Equals()
+        // because it will eventually reach that ancestor's generated Equals method.
+        var baseHasEquatable = AnyAncestorHasEquatable(symbol.BaseType, attributesMetadata);
 
         var bems = EqualityMemberModelTransformer.BuildEqualityModels(symbol, attributesMetadata, explicitMode, filter);
 
@@ -95,7 +94,7 @@ internal sealed class EqualityTypeModelTransformer
             ContainingSymbols = containingSymbols,
             AttributesMetadata = attributesMetadata,
             ExplicitMode = explicitMode,
-            IgnoreInheritedMembers = ignoreInheritedMembers,
+            SkipBaseEquals = skipBaseEquals,
             BuildEqualityModels = bems,
             IsSealed = symbol.IsSealed,
             BaseTypeName = baseTypeName,
@@ -118,6 +117,51 @@ internal sealed class EqualityTypeModelTransformer
         }
 
         return model;
+    }
+
+    /// <summary>
+    /// Determines if any ancestor in the inheritance chain has a meaningful Equals implementation.
+    /// This includes types with [Equatable] OR types that manually override Equals(object).
+    /// If so, calling base.Equals() will eventually reach that implementation.
+    /// </summary>
+    private static bool AnyAncestorHasEquatable(INamedTypeSymbol? baseType, AttributesMetadata attributesMetadata)
+    {
+        var current = baseType;
+        while (current != null && current.SpecialType != SpecialType.System_Object)
+        {
+            // Check for [Equatable] attribute
+            if (current.HasAttribute(attributesMetadata.Equatable))
+            {
+                return true;
+            }
+
+            // Check for manually overridden Equals(object) method
+            if (HasOverriddenEquals(current))
+            {
+                return true;
+            }
+
+            current = current.BaseType;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if the type has overridden Equals(object) method (not inherited from a base).
+    /// </summary>
+    private static bool HasOverriddenEquals(INamedTypeSymbol type)
+    {
+        foreach (var member in type.GetMembers("Equals"))
+        {
+            if (member is IMethodSymbol method
+                && method.IsOverride
+                && method.Parameters.Length == 1
+                && method.Parameters[0].Type.SpecialType == SpecialType.System_Object)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     /// <summary>

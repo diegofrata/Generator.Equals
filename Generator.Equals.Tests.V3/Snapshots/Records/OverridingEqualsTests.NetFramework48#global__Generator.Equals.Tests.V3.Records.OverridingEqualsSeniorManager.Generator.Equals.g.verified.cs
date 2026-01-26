@@ -1,0 +1,36 @@
+﻿//HintName: global__Generator.Equals.Tests.V3.Records.OverridingEqualsSeniorManager.Generator.Equals.g.cs
+
+#nullable enable
+#pragma warning disable CS0612,CS0618
+#pragma warning disable CS0436
+
+namespace Generator.Equals.Tests.V3.Records
+{
+    partial record OverridingEqualsSeniorManager
+    {
+        /// <inheritdoc/>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
+        public virtual bool Equals(global::Generator.Equals.Tests.V3.Records.OverridingEqualsSeniorManager? other)
+        {
+            return
+                base.Equals((global::Generator.Equals.Tests.V3.Records.OverridingEqualsManager?)other)
+                && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.Shares!, other.Shares!)
+                ;
+        }
+        
+        /// <inheritdoc/>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
+        public override int GetHashCode()
+        {
+            var hashCode = new global::System.HashCode();
+            
+            hashCode.Add(base.GetHashCode());
+            hashCode.Add(
+                this.Shares!,
+                global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default
+            );
+            
+            return hashCode.ToHashCode();
+        }
+    }
+}

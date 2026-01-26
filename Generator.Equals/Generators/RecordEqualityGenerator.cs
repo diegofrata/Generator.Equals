@@ -11,7 +11,7 @@ namespace Generator.Equals.Generators
             IndentedTextWriter writer
         )
         {
-            bool ignoreInheritedMembers = model.IgnoreInheritedMembers;
+            bool skipBaseEquals = model.SkipBaseEquals;
             var symbolName = model.Fullname;
             var baseTypeName = model.BaseTypeName;
 
@@ -26,7 +26,7 @@ namespace Generator.Equals.Generators
 
             writer.Indent++;
 
-            writer.WriteLine(baseTypeName == "object" || ignoreInheritedMembers
+            writer.WriteLine(baseTypeName == "object" || skipBaseEquals
                 ? "!ReferenceEquals(other, null) && EqualityContract == other.EqualityContract"
                 : $"base.Equals(({baseTypeName}?)other)");
 
@@ -43,7 +43,7 @@ namespace Generator.Equals.Generators
             IndentedTextWriter writer
         )
         {
-            bool ignoreInheritedMembers = model.IgnoreInheritedMembers;
+            bool skipBaseEquals = model.SkipBaseEquals;
             var baseTypeName = model.BaseTypeName;
 
             writer.WriteLine(InheritDocComment);
@@ -54,7 +54,7 @@ namespace Generator.Equals.Generators
             writer.WriteLine(@"var hashCode = new global::System.HashCode();");
             writer.WriteLine();
 
-            writer.WriteLine(baseTypeName == "object" || ignoreInheritedMembers
+            writer.WriteLine(baseTypeName == "object" || skipBaseEquals
                 ? "hashCode.Add(this.EqualityContract);"
                 : "hashCode.Add(base.GetHashCode());");
 

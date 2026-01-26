@@ -11,7 +11,7 @@ namespace Generator.Equals.Generators
             IndentedTextWriter writer
         )
         {
-            var ignoreInheritedMembers = model.IgnoreInheritedMembers;
+            var skipBaseEquals = model.SkipBaseEquals;
             var symbolName = model.Fullname;
             var baseTypeName = model.BaseTypeName;
             // Treat as root class if base is object OR if base doesn't have [Equatable]
@@ -53,7 +53,7 @@ namespace Generator.Equals.Generators
             writer.WriteLine("if (ReferenceEquals(this, other)) return true;");
             writer.WriteLine();
 
-            if (isRootClass || ignoreInheritedMembers)
+            if (isRootClass || skipBaseEquals)
             {
                 writer.WriteLine("return other.GetType() == this.GetType()");
             }
@@ -75,7 +75,7 @@ namespace Generator.Equals.Generators
             IndentedTextWriter writer
         )
         {
-            var ignoreInheritedMembers = model.IgnoreInheritedMembers;
+            var skipBaseEquals = model.SkipBaseEquals;
             var baseTypeName = model.BaseTypeName;
 
             var isRootClass = baseTypeName == "object" || !model.BaseHasEquatable;
@@ -88,7 +88,7 @@ namespace Generator.Equals.Generators
             writer.WriteLine(@"var hashCode = new global::System.HashCode();");
             writer.WriteLine();
 
-            writer.WriteLine(isRootClass || ignoreInheritedMembers
+            writer.WriteLine(isRootClass || skipBaseEquals
                 ? "hashCode.Add(this.GetType());"
                 : "hashCode.Add(base.GetHashCode());");
 

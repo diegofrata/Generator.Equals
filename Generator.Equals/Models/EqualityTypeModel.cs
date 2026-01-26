@@ -12,7 +12,7 @@ internal sealed record EqualityTypeModel
     public required EquatableImmutableArray<ContainingSymbol> ContainingSymbols { get; init; }
     public required AttributesMetadata AttributesMetadata { get; init; }
     public required bool ExplicitMode { get; init; }
-    public required bool IgnoreInheritedMembers { get; init; }
+    public required bool SkipBaseEquals { get; init; }
     public required EquatableImmutableArray<EqualityMemberModel> BuildEqualityModels { get; init; }
     public required string Fullname { get; init; }
 
