@@ -36,20 +36,20 @@ public partial class FieldEqualityTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.RecordStructs;
+                                namespace Generator.Equals.Tests.RecordStructs;
 
-        [Equatable]
-        public partial record struct FieldEqualitySample
-        {
-            public FieldEqualitySample(string[] addresses)
-            {
-                _addresses = addresses;
-            }
+                                [Equatable]
+                                public partial record struct FieldEqualitySample
+                                {
+                                    public FieldEqualitySample(string[] addresses)
+                                    {
+                                        _addresses = addresses;
+                                    }
 
-            [OrderedEquality] readonly string[] _addresses;
-        }
-        """;
+                                    [OrderedEquality] readonly string[] _addresses;
+                                }
+                                """;
 }

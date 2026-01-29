@@ -50,31 +50,31 @@ public partial class OverridingEqualsTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using System;
-        using Generator.Equals;
+    const string SampleSource = """
+                                using System;
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Records;
+                                namespace Generator.Equals.Tests.Records;
 
-        [Equatable]
-        public partial record OverridingEqualsPerson(int Age);
+                                [Equatable]
+                                public partial record OverridingEqualsPerson(int Age);
 
-        public record OverridingEqualsManager(int Age, string Department) : OverridingEqualsPerson(Age)
-        {
-            public virtual bool Equals(OverridingEqualsManager? other)
-            {
-                if (ReferenceEquals(null, other)) return false;
-                if (ReferenceEquals(this, other)) return true;
-                return base.Equals(other) && Department == other.Department;
-            }
+                                public record OverridingEqualsManager(int Age, string Department) : OverridingEqualsPerson(Age)
+                                {
+                                    public virtual bool Equals(OverridingEqualsManager? other)
+                                    {
+                                        if (ReferenceEquals(null, other)) return false;
+                                        if (ReferenceEquals(this, other)) return true;
+                                        return base.Equals(other) && Department == other.Department;
+                                    }
 
-            public override int GetHashCode()
-            {
-                return HashCode.Combine(base.GetHashCode(), Department);
-            }
-        }
+                                    public override int GetHashCode()
+                                    {
+                                        return HashCode.Combine(base.GetHashCode(), Department);
+                                    }
+                                }
 
-        [Equatable]
-        public partial record OverridingEqualsSeniorManager(int Age, string Department, int Shares) : OverridingEqualsManager(Age, Department);
-        """;
+                                [Equatable]
+                                public partial record OverridingEqualsSeniorManager(int Age, string Department, int Shares) : OverridingEqualsManager(Age, Department);
+                                """;
 }

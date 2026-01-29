@@ -54,24 +54,24 @@ public partial class StringEqualityTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using System;
-        using Generator.Equals;
+    const string SampleSource = """
+                                using System;
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Structs;
+                                namespace Generator.Equals.Tests.Structs;
 
-        [Equatable]
-        public partial struct StringEqualitySampleCaseInsensitive
-        {
-            [StringEquality(StringComparison.CurrentCultureIgnoreCase)]
-            public string Name { get; init; }
-        }
+                                [Equatable]
+                                public partial struct StringEqualitySampleCaseInsensitive
+                                {
+                                    [StringEquality(StringComparison.CurrentCultureIgnoreCase)]
+                                    public string Name { get; init; }
+                                }
 
-        [Equatable]
-        public partial struct StringEqualitySampleCaseSensitive
-        {
-            [StringEquality(StringComparison.CurrentCulture)]
-            public string Name { get; init; }
-        }
-        """;
+                                [Equatable]
+                                public partial struct StringEqualitySampleCaseSensitive
+                                {
+                                    [StringEquality(StringComparison.CurrentCulture)]
+                                    public string Name { get; init; }
+                                }
+                                """;
 }

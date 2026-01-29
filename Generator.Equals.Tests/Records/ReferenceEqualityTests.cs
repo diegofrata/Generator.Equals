@@ -10,7 +10,7 @@ public partial class ReferenceEqualityTests : SnapshotTestBase
     [Equatable]
     public partial record Sample([property: ReferenceEquality] string Name);
 
-    private static readonly string SharedName = "Dave";
+    static readonly string SharedName = "Dave";
 
     public static TheoryData<Sample, Sample, bool> EqualityCases => new()
     {
@@ -31,12 +31,12 @@ public partial class ReferenceEqualityTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Records;
+                                namespace Generator.Equals.Tests.Records;
 
-        [Equatable]
-        public partial record ReferenceEqualitySample([property: ReferenceEquality] string Name);
-        """;
+                                [Equatable]
+                                public partial record ReferenceEqualitySample([property: ReferenceEquality] string Name);
+                                """;
 }

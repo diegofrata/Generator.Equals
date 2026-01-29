@@ -30,12 +30,12 @@ public partial class GenericParameterEqualityTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.RecordStructs;
+                                namespace Generator.Equals.Tests.RecordStructs;
 
-        [Equatable]
-        public partial record struct GenericParameterEqualitySample<TName, TAge>(TName Name, TAge Age);
-        """;
+                                [Equatable]
+                                public partial record struct GenericParameterEqualitySample<TName, TAge>(TName Name, TAge Age);
+                                """;
 }

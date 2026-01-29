@@ -45,23 +45,23 @@ public partial class ObsoleteMembersTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using System;
-        using Generator.Equals;
+    const string SampleSource = """
+                                using System;
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Structs;
+                                namespace Generator.Equals.Tests.Structs;
 
-        [Equatable]
-        public partial struct ObsoleteMembersSample
-        {
-            public ObsoleteMembersSample(string noComment, string comment)
-            {
-                NoComment = noComment;
-                Comment = comment;
-            }
+                                [Equatable]
+                                public partial struct ObsoleteMembersSample
+                                {
+                                    public ObsoleteMembersSample(string noComment, string comment)
+                                    {
+                                        NoComment = noComment;
+                                        Comment = comment;
+                                    }
 
-            [Obsolete] public string NoComment { get; }
-            [Obsolete("a comment")] public string Comment { get; }
-        }
-        """;
+                                    [Obsolete] public string NoComment { get; }
+                                    [Obsolete("a comment")] public string Comment { get; }
+                                }
+                                """;
 }

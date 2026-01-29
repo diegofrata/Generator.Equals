@@ -42,20 +42,20 @@ public partial class ReferenceEqualityTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Classes;
+                                namespace Generator.Equals.Tests.Classes;
 
-        [Equatable]
-        public partial class ReferenceEqualitySample
-        {
-            public ReferenceEqualitySample(string name)
-            {
-                Name = name;
-            }
+                                [Equatable]
+                                public partial class ReferenceEqualitySample
+                                {
+                                    public ReferenceEqualitySample(string name)
+                                    {
+                                        Name = name;
+                                    }
 
-            [ReferenceEquality] public string Name { get; }
-        }
-        """;
+                                    [ReferenceEquality] public string Name { get; }
+                                }
+                                """;
 }

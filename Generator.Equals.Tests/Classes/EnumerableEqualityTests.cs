@@ -58,16 +58,16 @@ public partial class EnumerableEqualityTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using System.Collections.Generic;
-        using Generator.Equals;
+    const string SampleSource = """
+                                using System.Collections.Generic;
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Classes;
+                                namespace Generator.Equals.Tests.Classes;
 
-        [Equatable]
-        public partial class EnumerableEqualitySample
-        {
-            [UnorderedEquality] public IEnumerable<int>? Properties { get; set; }
-        }
-        """;
+                                [Equatable]
+                                public partial class EnumerableEqualitySample
+                                {
+                                    [UnorderedEquality] public IEnumerable<int>? Properties { get; set; }
+                                }
+                                """;
 }

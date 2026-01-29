@@ -44,22 +44,22 @@ public partial class InheritedOverrideSkippedTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Classes;
+                                namespace Generator.Equals.Tests.Classes;
 
-        [Equatable]
-        public abstract partial class InheritedOverrideSkippedParent
-        {
-            [OrderedEquality]
-            public virtual int[] Ints { get; set; } = null!;
-        }
+                                [Equatable]
+                                public abstract partial class InheritedOverrideSkippedParent
+                                {
+                                    [OrderedEquality]
+                                    public virtual int[] Ints { get; set; } = null!;
+                                }
 
-        [Equatable]
-        public partial class InheritedOverrideSkippedChild : InheritedOverrideSkippedParent
-        {
-            public override int[] Ints { get; set; } = null!;
-        }
-        """;
+                                [Equatable]
+                                public partial class InheritedOverrideSkippedChild : InheritedOverrideSkippedParent
+                                {
+                                    public override int[] Ints { get; set; } = null!;
+                                }
+                                """;
 }

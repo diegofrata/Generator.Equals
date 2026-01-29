@@ -35,16 +35,16 @@ public partial class PrimaryConstructorTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Structs;
+                                namespace Generator.Equals.Tests.Structs;
 
-        [Equatable]
-        public partial struct PrimaryCtorSample(string name, int age)
-        {
-            public string Name { get; } = name;
-            public int Age { get; } = age;
-        }
-        """;
+                                [Equatable]
+                                public partial struct PrimaryCtorSample(string name, int age)
+                                {
+                                    public string Name { get; } = name;
+                                    public int Age { get; } = age;
+                                }
+                                """;
 }

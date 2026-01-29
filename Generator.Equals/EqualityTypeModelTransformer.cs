@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -9,9 +10,9 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Generator.Equals.Models;
 
-internal sealed class EqualityTypeModelTransformer
+sealed class EqualityTypeModelTransformer
 {
-    private readonly GeneratorAttributeSyntaxContext _context;
+    readonly GeneratorAttributeSyntaxContext _context;
 
     public EqualityTypeModelTransformer(GeneratorAttributeSyntaxContext context)
     {
@@ -41,7 +42,7 @@ internal sealed class EqualityTypeModelTransformer
         }
 
         var explicitMode = equatableAttributeData.GetNamedArgumentValue("Explicit") is true;
-        var skipBaseEquals = equatableAttributeData.GetNamedArgumentValue("SkipBaseEquals") is true;
+        var ignoreInheritedMembers = equatableAttributeData.GetNamedArgumentValue("IgnoreInheritedMembers") is true;
 
         if (_context.TargetSymbol is not ITypeSymbol symbol)
         {
@@ -71,12 +72,12 @@ internal sealed class EqualityTypeModelTransformer
             return null;
         }
 
-        // When SkipBaseEquals = false (default), skip overriding properties
+        // When IgnoreInheritedMembers = false (default), skip overriding properties
         // ONLY IF the base type where the property is originally declared has [Equatable].
         // If the base type doesn't have [Equatable], we must include the property here
         // (with inherited attribute if any) since base.Equals() won't compare it.
-        // When SkipBaseEquals = true, include all members including overrides.
-        Predicate<ISymbol>? filter = skipBaseEquals
+        // When IgnoreInheritedMembers = true, include all members including overrides.
+        Predicate<ISymbol>? filter = ignoreInheritedMembers
             ? null
             : s => s is not IPropertySymbol prop || !ShouldSkipOverridingProperty(prop, attributesMetadata);
 
@@ -88,19 +89,26 @@ internal sealed class EqualityTypeModelTransformer
 
         var bems = EqualityMemberModelTransformer.BuildEqualityModels(symbol, attributesMetadata, explicitMode, filter);
 
+        // When IgnoreInheritedMembers=false and no ancestor has [Equatable],
+        // we need to collect all inherited properties to compare them explicitly.
+        var inheritedModels = (!ignoreInheritedMembers && !baseHasEquatable)
+            ? CollectInheritedProperties(symbol, symbol.BaseType, attributesMetadata, explicitMode)
+            : new EquatableImmutableArray<EqualityMemberModel>();
+
         var model = new EqualityTypeModel
         {
             TypeName = typeName,
             ContainingSymbols = containingSymbols,
             AttributesMetadata = attributesMetadata,
             ExplicitMode = explicitMode,
-            SkipBaseEquals = skipBaseEquals,
+            IgnoreInheritedMembers = ignoreInheritedMembers,
             BuildEqualityModels = bems,
             IsSealed = symbol.IsSealed,
             BaseTypeName = baseTypeName,
             Fullname = fullname,
             SyntaxKind = _context.TargetNode.Kind(),
-            BaseHasEquatable = baseHasEquatable
+            BaseHasEquatable = baseHasEquatable,
+            InheritedEqualityModels = inheritedModels
         };
 
         if (model.SyntaxKind is not (
@@ -124,7 +132,7 @@ internal sealed class EqualityTypeModelTransformer
     /// This includes types with [Equatable] OR types that manually override Equals(object).
     /// If so, calling base.Equals() will eventually reach that implementation.
     /// </summary>
-    private static bool AnyAncestorHasEquatable(INamedTypeSymbol? baseType, AttributesMetadata attributesMetadata)
+    static bool AnyAncestorHasEquatable(INamedTypeSymbol? baseType, AttributesMetadata attributesMetadata)
     {
         var current = baseType;
         while (current != null && current.SpecialType != SpecialType.System_Object)
@@ -149,7 +157,7 @@ internal sealed class EqualityTypeModelTransformer
     /// <summary>
     /// Checks if the type has overridden Equals(object) method (not inherited from a base).
     /// </summary>
-    private static bool HasOverriddenEquals(INamedTypeSymbol type)
+    static bool HasOverriddenEquals(INamedTypeSymbol type)
     {
         foreach (var member in type.GetMembers("Equals"))
         {
@@ -165,10 +173,61 @@ internal sealed class EqualityTypeModelTransformer
     }
 
     /// <summary>
+    /// Collects all properties from ancestor types that don't have [Equatable].
+    /// Stops when reaching System.Object, a type with [Equatable], or a type that overrides Equals(object).
+    /// Excludes properties that are overridden by the current type (they'll be handled by BuildEqualityModels).
+    /// </summary>
+    static EquatableImmutableArray<EqualityMemberModel> CollectInheritedProperties(
+        ITypeSymbol currentType,
+        INamedTypeSymbol? baseType,
+        AttributesMetadata attributesMetadata,
+        bool explicitMode)
+    {
+        // Collect names of properties that are overridden in the current type
+        // These will be handled by BuildEqualityModels on the current type
+        var overriddenPropertyNames = new HashSet<string>(
+            currentType.GetMembers()
+                .OfType<IPropertySymbol>()
+                .Where(p => p.IsOverride)
+                .Select(p => p.Name));
+
+        var builder = ImmutableArray.CreateBuilder<EqualityMemberModel>();
+        var current = baseType;
+
+        while (current != null && current.SpecialType != SpecialType.System_Object)
+        {
+            // Stop if this ancestor has [Equatable] - it will handle its own equality
+            if (current.HasAttribute(attributesMetadata.Equatable))
+            {
+                break;
+            }
+
+            // Stop if this ancestor overrides Equals(object) - it has custom equality logic
+            if (HasOverriddenEquals(current))
+            {
+                break;
+            }
+
+            // Collect properties from this ancestor, excluding those overridden by the current type
+            // For inherited properties, we don't use explicit mode - we want all properties
+            Predicate<ISymbol> filter = s => s is not IPropertySymbol prop || !overriddenPropertyNames.Contains(prop.Name);
+            var ancestorModels = EqualityMemberModelTransformer.BuildEqualityModels(
+                current, attributesMetadata, explicitMode: false, filter);
+
+            // Add to the beginning so that ancestor properties come first (grandparent, then parent)
+            builder.InsertRange(0, ancestorModels);
+
+            current = current.BaseType;
+        }
+
+        return builder.ToImmutable();
+    }
+
+    /// <summary>
     /// Determines if an overriding property should be skipped because a parent type
     /// in the override chain has [Equatable] and will handle it via base.Equals().
     /// </summary>
-    private static bool ShouldSkipOverridingProperty(IPropertySymbol property, AttributesMetadata attributesMetadata)
+    static bool ShouldSkipOverridingProperty(IPropertySymbol property, AttributesMetadata attributesMetadata)
     {
         if (!property.IsOverride)
             return false;

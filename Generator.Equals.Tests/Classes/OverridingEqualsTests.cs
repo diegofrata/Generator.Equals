@@ -83,62 +83,62 @@ public partial class OverridingEqualsTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using System;
-        using Generator.Equals;
+    const string SampleSource = """
+                                using System;
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Classes;
+                                namespace Generator.Equals.Tests.Classes;
 
-        [Equatable]
-        public partial class OverridingEqualsPerson
-        {
-            public OverridingEqualsPerson(int age)
-            {
-                Age = age;
-            }
+                                [Equatable]
+                                public partial class OverridingEqualsPerson
+                                {
+                                    public OverridingEqualsPerson(int age)
+                                    {
+                                        Age = age;
+                                    }
 
-            public int Age { get; }
-        }
+                                    public int Age { get; }
+                                }
 
-        public class OverridingEqualsManager : OverridingEqualsPerson, IEquatable<OverridingEqualsManager>
-        {
-            public OverridingEqualsManager(int age, string department) : base(age)
-            {
-                Department = department;
-            }
+                                public class OverridingEqualsManager : OverridingEqualsPerson, IEquatable<OverridingEqualsManager>
+                                {
+                                    public OverridingEqualsManager(int age, string department) : base(age)
+                                    {
+                                        Department = department;
+                                    }
 
-            public string Department { get; }
+                                    public string Department { get; }
 
-            public bool Equals(OverridingEqualsManager? other)
-            {
-                if (ReferenceEquals(null, other)) return false;
-                if (ReferenceEquals(this, other)) return true;
-                return base.Equals(other) && Department == other.Department;
-            }
+                                    public bool Equals(OverridingEqualsManager? other)
+                                    {
+                                        if (ReferenceEquals(null, other)) return false;
+                                        if (ReferenceEquals(this, other)) return true;
+                                        return base.Equals(other) && Department == other.Department;
+                                    }
 
-            public override bool Equals(object? obj)
-            {
-                if (ReferenceEquals(null, obj)) return false;
-                if (ReferenceEquals(this, obj)) return true;
-                if (obj.GetType() != this.GetType()) return false;
-                return Equals((OverridingEqualsManager)obj);
-            }
+                                    public override bool Equals(object? obj)
+                                    {
+                                        if (ReferenceEquals(null, obj)) return false;
+                                        if (ReferenceEquals(this, obj)) return true;
+                                        if (obj.GetType() != this.GetType()) return false;
+                                        return Equals((OverridingEqualsManager)obj);
+                                    }
 
-            public override int GetHashCode()
-            {
-                return HashCode.Combine(base.GetHashCode(), Department);
-            }
-        }
+                                    public override int GetHashCode()
+                                    {
+                                        return HashCode.Combine(base.GetHashCode(), Department);
+                                    }
+                                }
 
-        [Equatable]
-        public partial class OverridingEqualsSeniorManager : OverridingEqualsManager
-        {
-            public OverridingEqualsSeniorManager(int age, string department, int shares) : base(age, department)
-            {
-                Shares = shares;
-            }
+                                [Equatable]
+                                public partial class OverridingEqualsSeniorManager : OverridingEqualsManager
+                                {
+                                    public OverridingEqualsSeniorManager(int age, string department, int shares) : base(age, department)
+                                    {
+                                        Shares = shares;
+                                    }
 
-            public int Shares { get; }
-        }
-        """;
+                                    public int Shares { get; }
+                                }
+                                """;
 }

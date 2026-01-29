@@ -38,22 +38,22 @@ public partial class IgnoreEqualityTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Structs;
+                                namespace Generator.Equals.Tests.Structs;
 
-        [Equatable]
-        public partial struct IgnoreEqualitySample
-        {
-            public IgnoreEqualitySample(string name, int age)
-            {
-                Name = name;
-                Age = age;
-            }
+                                [Equatable]
+                                public partial struct IgnoreEqualitySample
+                                {
+                                    public IgnoreEqualitySample(string name, int age)
+                                    {
+                                        Name = name;
+                                        Age = age;
+                                    }
 
-            public string Name { get; }
-            [IgnoreEquality] public int Age { get; }
-        }
-        """;
+                                    public string Name { get; }
+                                    [IgnoreEquality] public int Age { get; }
+                                }
+                                """;
 }

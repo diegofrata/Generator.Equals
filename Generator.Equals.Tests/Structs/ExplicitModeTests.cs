@@ -38,22 +38,22 @@ public partial class ExplicitModeTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Structs;
+                                namespace Generator.Equals.Tests.Structs;
 
-        [Equatable(Explicit = true)]
-        public partial struct ExplicitModeSample
-        {
-            public ExplicitModeSample(string name, int age)
-            {
-                Name = name;
-                Age = age;
-            }
+                                [Equatable(Explicit = true)]
+                                public partial struct ExplicitModeSample
+                                {
+                                    public ExplicitModeSample(string name, int age)
+                                    {
+                                        Name = name;
+                                        Age = age;
+                                    }
 
-            public string Name { get; }
-            [DefaultEquality] public int Age { get; }
-        }
-        """;
+                                    public string Name { get; }
+                                    [DefaultEquality] public int Age { get; }
+                                }
+                                """;
 }

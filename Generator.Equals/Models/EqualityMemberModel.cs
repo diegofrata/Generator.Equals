@@ -1,6 +1,6 @@
 namespace Generator.Equals.Models;
 
-internal sealed record EqualityMemberModel
+sealed record EqualityMemberModel
 {
     public required string PropertyName { get; init; }
     public required string TypeName { get; init; }

@@ -37,16 +37,16 @@ public partial class UnorderedEqualityTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using System.Collections.Generic;
-        using Generator.Equals;
+    const string SampleSource = """
+                                using System.Collections.Generic;
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Records;
+                                namespace Generator.Equals.Tests.Records;
 
-        [Equatable]
-        public partial record UnorderedEqualitySample
-        {
-            [UnorderedEquality] public List<int>? Properties { get; init; }
-        }
-        """;
+                                [Equatable]
+                                public partial record UnorderedEqualitySample
+                                {
+                                    [UnorderedEquality] public List<int>? Properties { get; init; }
+                                }
+                                """;
 }

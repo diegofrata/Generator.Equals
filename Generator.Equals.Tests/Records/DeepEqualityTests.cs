@@ -40,18 +40,18 @@ public partial class DeepEqualityTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Records;
+                                namespace Generator.Equals.Tests.Records;
 
-        [Equatable]
-        public partial record DeepEqualitySample(DeepEqualityPerson Person);
+                                [Equatable]
+                                public partial record DeepEqualitySample(DeepEqualityPerson Person);
 
-        [Equatable]
-        public partial record DeepEqualityPerson(int Age);
+                                [Equatable]
+                                public partial record DeepEqualityPerson(int Age);
 
-        [Equatable]
-        public partial record DeepEqualityManager(int Age, string Department) : DeepEqualityPerson(Age);
-        """;
+                                [Equatable]
+                                public partial record DeepEqualityManager(int Age, string Department) : DeepEqualityPerson(Age);
+                                """;
 }

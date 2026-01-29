@@ -4,14 +4,14 @@ using Generator.Equals.Models;
 
 namespace Generator.Equals.Generators
 {
-    internal class RecordEqualityGenerator : EqualityGeneratorBase
+    class RecordEqualityGenerator : EqualityGeneratorBase
     {
         static void BuildEquals(
             EqualityTypeModel model,
             IndentedTextWriter writer
         )
         {
-            bool skipBaseEquals = model.SkipBaseEquals;
+            bool ignoreInheritedMembers = model.IgnoreInheritedMembers;
             var symbolName = model.Fullname;
             var baseTypeName = model.BaseTypeName;
 
@@ -26,10 +26,12 @@ namespace Generator.Equals.Generators
 
             writer.Indent++;
 
-            writer.WriteLine(baseTypeName == "object" || skipBaseEquals
+            writer.WriteLine(baseTypeName == "object" || ignoreInheritedMembers
                 ? "!ReferenceEquals(other, null) && EqualityContract == other.EqualityContract"
                 : $"base.Equals(({baseTypeName}?)other)");
 
+            // Include inherited members (when no ancestor has [Equatable])
+            BuildMembersEquality(model.InheritedEqualityModels, writer);
             BuildMembersEquality(model.BuildEqualityModels, writer);
 
             writer.WriteLine(";");
@@ -43,7 +45,7 @@ namespace Generator.Equals.Generators
             IndentedTextWriter writer
         )
         {
-            bool skipBaseEquals = model.SkipBaseEquals;
+            bool ignoreInheritedMembers = model.IgnoreInheritedMembers;
             var baseTypeName = model.BaseTypeName;
 
             writer.WriteLine(InheritDocComment);
@@ -54,10 +56,12 @@ namespace Generator.Equals.Generators
             writer.WriteLine(@"var hashCode = new global::System.HashCode();");
             writer.WriteLine();
 
-            writer.WriteLine(baseTypeName == "object" || skipBaseEquals
+            writer.WriteLine(baseTypeName == "object" || ignoreInheritedMembers
                 ? "hashCode.Add(this.EqualityContract);"
                 : "hashCode.Add(base.GetHashCode());");
 
+            // Include inherited members (when no ancestor has [Equatable])
+            BuildMembersHashCode(model.InheritedEqualityModels, writer);
             BuildMembersHashCode(model.BuildEqualityModels, writer);
 
             writer.WriteLine();

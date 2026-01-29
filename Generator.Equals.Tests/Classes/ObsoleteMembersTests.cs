@@ -48,30 +48,30 @@ public partial class ObsoleteMembersTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using System;
-        using Generator.Equals;
+    const string SampleSource = """
+                                using System;
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Classes;
+                                namespace Generator.Equals.Tests.Classes;
 
-        [Equatable]
-        public partial class ObsoleteMembersSample
-        {
-            public ObsoleteMembersSample(string value)
-            {
-        #pragma warning disable CS0612
-                NoComment = value;
-        #pragma warning restore CS0612
-        #pragma warning disable CS0618
-                Comment = value;
-        #pragma warning restore CS0618
-            }
+                                [Equatable]
+                                public partial class ObsoleteMembersSample
+                                {
+                                    public ObsoleteMembersSample(string value)
+                                    {
+                                #pragma warning disable CS0612
+                                        NoComment = value;
+                                #pragma warning restore CS0612
+                                #pragma warning disable CS0618
+                                        Comment = value;
+                                #pragma warning restore CS0618
+                                    }
 
-            [Obsolete]
-            public string NoComment { get; }
+                                    [Obsolete]
+                                    public string NoComment { get; }
 
-            [Obsolete("Having a comment causes a different error code")]
-            public string Comment { get; }
-        }
-        """;
+                                    [Obsolete("Having a comment causes a different error code")]
+                                    public string Comment { get; }
+                                }
+                                """;
 }

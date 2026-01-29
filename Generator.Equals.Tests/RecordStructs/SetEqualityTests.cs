@@ -40,16 +40,16 @@ public partial class SetEqualityTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using System.Collections.Generic;
-        using Generator.Equals;
+    const string SampleSource = """
+                                using System.Collections.Generic;
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.RecordStructs;
+                                namespace Generator.Equals.Tests.RecordStructs;
 
-        [Equatable]
-        public partial record struct SetEqualitySample
-        {
-            [SetEquality] public List<int>? Properties { get; set; }
-        }
-        """;
+                                [Equatable]
+                                public partial record struct SetEqualitySample
+                                {
+                                    [SetEquality] public List<int>? Properties { get; set; }
+                                }
+                                """;
 }

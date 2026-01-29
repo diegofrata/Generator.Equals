@@ -4,14 +4,14 @@ using Generator.Equals.Models;
 
 namespace Generator.Equals.Generators
 {
-    internal sealed class ClassEqualityGenerator : EqualityGeneratorBase
+    sealed class ClassEqualityGenerator : EqualityGeneratorBase
     {
-        private static void BuildEquals(
+        static void BuildEquals(
             EqualityTypeModel model,
             IndentedTextWriter writer
         )
         {
-            var skipBaseEquals = model.SkipBaseEquals;
+            var ignoreInheritedMembers = model.IgnoreInheritedMembers;
             var symbolName = model.Fullname;
             var baseTypeName = model.BaseTypeName;
             // Treat as root class if base is object OR if base doesn't have [Equatable]
@@ -53,7 +53,7 @@ namespace Generator.Equals.Generators
             writer.WriteLine("if (ReferenceEquals(this, other)) return true;");
             writer.WriteLine();
 
-            if (isRootClass || skipBaseEquals)
+            if (isRootClass || ignoreInheritedMembers)
             {
                 writer.WriteLine("return other.GetType() == this.GetType()");
             }
@@ -63,6 +63,8 @@ namespace Generator.Equals.Generators
             }
 
             writer.Indent++;
+            // Include inherited members (when no ancestor has [Equatable])
+            BuildMembersEquality(model.InheritedEqualityModels, writer);
             BuildMembersEquality(model.BuildEqualityModels, writer);
             writer.WriteLine(";");
             writer.Indent--;
@@ -70,12 +72,12 @@ namespace Generator.Equals.Generators
             writer.AppendCloseBracket();
         }
 
-        private static void BuildGetHashCode(
+        static void BuildGetHashCode(
             EqualityTypeModel model,
             IndentedTextWriter writer
         )
         {
-            var skipBaseEquals = model.SkipBaseEquals;
+            var ignoreInheritedMembers = model.IgnoreInheritedMembers;
             var baseTypeName = model.BaseTypeName;
 
             var isRootClass = baseTypeName == "object" || !model.BaseHasEquatable;
@@ -88,10 +90,12 @@ namespace Generator.Equals.Generators
             writer.WriteLine(@"var hashCode = new global::System.HashCode();");
             writer.WriteLine();
 
-            writer.WriteLine(isRootClass || skipBaseEquals
+            writer.WriteLine(isRootClass || ignoreInheritedMembers
                 ? "hashCode.Add(this.GetType());"
                 : "hashCode.Add(base.GetHashCode());");
 
+            // Include inherited members (when no ancestor has [Equatable])
+            BuildMembersHashCode(model.InheritedEqualityModels, writer);
             BuildMembersHashCode(model.BuildEqualityModels, writer);
 
             writer.WriteLine();

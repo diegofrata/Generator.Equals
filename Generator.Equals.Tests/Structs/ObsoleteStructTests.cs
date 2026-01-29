@@ -40,22 +40,22 @@ public partial class ObsoleteStructTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using System;
-        using Generator.Equals;
+    const string SampleSource = """
+                                using System;
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Structs;
+                                namespace Generator.Equals.Tests.Structs;
 
-        [Equatable]
-        [Obsolete("Make sure the obsolete on the object model does not add warnings")]
-        public partial struct ObsoleteStructSample
-        {
-            public ObsoleteStructSample(string name)
-            {
-                Name = name;
-            }
+                                [Equatable]
+                                [Obsolete("Make sure the obsolete on the object model does not add warnings")]
+                                public partial struct ObsoleteStructSample
+                                {
+                                    public ObsoleteStructSample(string name)
+                                    {
+                                        Name = name;
+                                    }
 
-            public string Name { get; }
-        }
-        """;
+                                    public string Name { get; }
+                                }
+                                """;
 }

@@ -41,20 +41,20 @@ public partial class OrderedEqualityTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Classes;
+                                namespace Generator.Equals.Tests.Classes;
 
-        [Equatable]
-        public partial class OrderedEqualitySample
-        {
-            public OrderedEqualitySample(string[] addresses)
-            {
-                Addresses = addresses;
-            }
+                                [Equatable]
+                                public partial class OrderedEqualitySample
+                                {
+                                    public OrderedEqualitySample(string[] addresses)
+                                    {
+                                        Addresses = addresses;
+                                    }
 
-            [OrderedEquality] public string[] Addresses { get; }
-        }
-        """;
+                                    [OrderedEquality] public string[] Addresses { get; }
+                                }
+                                """;
 }

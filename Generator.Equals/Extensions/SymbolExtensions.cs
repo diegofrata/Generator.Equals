@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals.Extensions;
 
-internal static class SymbolExtensions
+static class SymbolExtensions
 {
     public static IEnumerable<INamespaceOrTypeSymbol> TakeUntilAfterNamespace(this IEnumerable<INamespaceOrTypeSymbol> symbols)
     {
@@ -52,7 +52,7 @@ internal static class SymbolExtensions
         return symbol.GetAttributeIncludingInherited(metadata);
     }
 
-    private static AttributeData? GetAttributeIncludingInherited(this ISymbol symbol, AttributeMetadata metadata)
+    static AttributeData? GetAttributeIncludingInherited(this ISymbol symbol, AttributeMetadata metadata)
     {
         var current = symbol;
 

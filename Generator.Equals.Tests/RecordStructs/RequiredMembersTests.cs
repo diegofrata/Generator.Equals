@@ -53,17 +53,17 @@ public partial class RequiredMembersTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.RecordStructs;
+                                namespace Generator.Equals.Tests.RecordStructs;
 
-        [Equatable]
-        public partial record struct RequiredMembersSample
-        {
-            public required string Name { get; init; }
-            public required int Age { get; init; }
-            public string? Optional { get; init; }
-        }
-        """;
+                                [Equatable]
+                                public partial record struct RequiredMembersSample
+                                {
+                                    public required string Name { get; init; }
+                                    public required int Age { get; init; }
+                                    public string? Optional { get; init; }
+                                }
+                                """;
 }

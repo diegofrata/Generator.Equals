@@ -10,7 +10,7 @@ namespace Generator.Equals.Tests.Infrastructure;
 
 public abstract class SnapshotTestBase
 {
-    private static readonly MetadataReference RuntimeReference = MetadataReference.CreateFromFile(
+    static readonly MetadataReference RuntimeReference = MetadataReference.CreateFromFile(
         typeof(Generator.Equals.EquatableAttribute).Assembly.Location);
 
     public enum TargetFramework

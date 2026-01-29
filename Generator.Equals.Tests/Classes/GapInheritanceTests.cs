@@ -66,29 +66,29 @@ public partial class GapInheritanceTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Classes;
+                                namespace Generator.Equals.Tests.Classes;
 
-        // Root class with [Equatable]
-        [Equatable]
-        public partial class GapGrandParent
-        {
-            public string Name { get; set; } = "";
-        }
+                                // Root class with [Equatable]
+                                [Equatable]
+                                public partial class GapGrandParent
+                                {
+                                    public string Name { get; set; } = "";
+                                }
 
-        // Middle class WITHOUT [Equatable] - inherits GrandParent's Equals
-        public class GapParent : GapGrandParent
-        {
-            public int Age { get; set; }
-        }
+                                // Middle class WITHOUT [Equatable] - inherits GrandParent's Equals
+                                public class GapParent : GapGrandParent
+                                {
+                                    public int Age { get; set; }
+                                }
 
-        // Leaf class with [Equatable] - should call base.Equals() to reach GrandParent's equality
-        [Equatable]
-        public partial class GapChild : GapParent
-        {
-            public string School { get; set; } = "";
-        }
-        """;
+                                // Leaf class with [Equatable] - should call base.Equals() to reach GrandParent's equality
+                                [Equatable]
+                                public partial class GapChild : GapParent
+                                {
+                                    public string School { get; set; } = "";
+                                }
+                                """;
 }

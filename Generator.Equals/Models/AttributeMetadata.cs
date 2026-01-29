@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals.Models;
 
-internal sealed record AttributeMetadata(string FullName, string Namespace, string LongName, string ShortName)
+sealed record AttributeMetadata(string FullName, string Namespace, string LongName, string ShortName)
 {
     // Returns an AttributeMetadata instance for a full name
     public static AttributeMetadata FromFullName(string fullName)

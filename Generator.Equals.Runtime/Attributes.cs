@@ -15,11 +15,14 @@ namespace Generator.Equals
         public bool Explicit { get; set; }
 
         /// <summary>
-        /// When true, the generated Equals method will not call base.Equals(),
-        /// treating this type as an equality root. Only properties defined
-        /// directly on this type will be compared.
+        /// When true, only members declared directly on this type are compared,
+        /// treating this type as an equality root. No base.Equals() call is made
+        /// and inherited members are not included.
+        /// When false (default) and any ancestor has [Equatable], base.Equals() is called.
+        /// When false and NO ancestor has [Equatable], all inherited members from the
+        /// entire inheritance chain are explicitly compared.
         /// </summary>
-        public bool SkipBaseEquals { get; set; }
+        public bool IgnoreInheritedMembers { get; set; }
     }
 
     [GeneratedCode("Generator.Equals", "1.0.0.0")]

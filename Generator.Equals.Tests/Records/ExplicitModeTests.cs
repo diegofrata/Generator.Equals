@@ -28,12 +28,12 @@ public partial class ExplicitModeTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Records;
+                                namespace Generator.Equals.Tests.Records;
 
-        [Equatable(Explicit = true)]
-        public partial record ExplicitModeSample(string Name, [property: DefaultEquality] int Age);
-        """;
+                                [Equatable(Explicit = true)]
+                                public partial record ExplicitModeSample(string Name, [property: DefaultEquality] int Age);
+                                """;
 }

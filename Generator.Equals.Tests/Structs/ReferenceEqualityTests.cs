@@ -18,7 +18,7 @@ public partial class ReferenceEqualityTests : SnapshotTestBase
         [ReferenceEquality] public string Name { get; }
     }
 
-    private static readonly string SharedName = "Dave";
+    static readonly string SharedName = "Dave";
 
     public static TheoryData<Sample, Sample, bool> EqualityCases => new()
     {
@@ -39,20 +39,20 @@ public partial class ReferenceEqualityTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Structs;
+                                namespace Generator.Equals.Tests.Structs;
 
-        [Equatable]
-        public partial struct ReferenceEqualitySample
-        {
-            public ReferenceEqualitySample(string name)
-            {
-                Name = name;
-            }
+                                [Equatable]
+                                public partial struct ReferenceEqualitySample
+                                {
+                                    public ReferenceEqualitySample(string name)
+                                    {
+                                        Name = name;
+                                    }
 
-            [ReferenceEquality] public string Name { get; }
-        }
-        """;
+                                    [ReferenceEquality] public string Name { get; }
+                                }
+                                """;
 }

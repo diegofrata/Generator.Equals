@@ -4,9 +4,9 @@ using Generator.Equals.Models;
 
 namespace Generator.Equals.Generators
 {
-    internal sealed class RecordStructEqualityGenerator : EqualityGeneratorBase
+    sealed class RecordStructEqualityGenerator : EqualityGeneratorBase
     {
-        private static void BuildEquals(
+        static void BuildEquals(
             EqualityTypeModel model,
             IndentedTextWriter writer)
         {
@@ -27,7 +27,7 @@ namespace Generator.Equals.Generators
             writer.AppendCloseBracket();
         }
 
-        private static void BuildGetHashCode(
+        static void BuildGetHashCode(
             EqualityTypeModel model,
             IndentedTextWriter writer)
         {

@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 
 namespace Generator.Equals.Models;
 
-internal sealed record AttributesMetadata(
+sealed record AttributesMetadata(
     AttributeMetadata Equatable,
     AttributeMetadata DefaultEquality,
     AttributeMetadata OrderedEquality,

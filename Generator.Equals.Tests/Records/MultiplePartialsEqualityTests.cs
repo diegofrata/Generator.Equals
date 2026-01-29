@@ -62,26 +62,26 @@ public partial class MultiplePartialsEqualityTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Records;
+                                namespace Generator.Equals.Tests.Records;
 
-        [Equatable]
-        public partial record MultiplePartialsEqualitySample
-        {
-            [OrderedEquality] public string[]? Addresses { get; init; }
-        }
+                                [Equatable]
+                                public partial record MultiplePartialsEqualitySample
+                                {
+                                    [OrderedEquality] public string[]? Addresses { get; init; }
+                                }
 
-        public partial record MultiplePartialsEqualitySample
-        {
-            public string FirstName { get; init; } = string.Empty;
-            public string LastName { get; init; } = string.Empty;
-        }
+                                public partial record MultiplePartialsEqualitySample
+                                {
+                                    public string FirstName { get; init; } = string.Empty;
+                                    public string LastName { get; init; } = string.Empty;
+                                }
 
-        public partial record MultiplePartialsEqualitySample
-        {
-            [IgnoreEquality] public int Age { get; init; }
-        }
-        """;
+                                public partial record MultiplePartialsEqualitySample
+                                {
+                                    [IgnoreEquality] public int Age { get; init; }
+                                }
+                                """;
 }

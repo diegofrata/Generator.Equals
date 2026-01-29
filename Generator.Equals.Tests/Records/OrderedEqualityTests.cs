@@ -30,12 +30,12 @@ public partial class OrderedEqualityTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Records;
+                                namespace Generator.Equals.Tests.Records;
 
-        [Equatable]
-        public partial record OrderedEqualitySample([property: OrderedEquality] string[] Addresses);
-        """;
+                                [Equatable]
+                                public partial record OrderedEqualitySample([property: OrderedEquality] string[] Addresses);
+                                """;
 }

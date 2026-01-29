@@ -10,7 +10,7 @@ public partial class DefaultBehaviorRecordStructsWithArrayTests : SnapshotTestBa
 {
     public record struct Sample(string Name, string[] Addresses);
 
-    private static readonly string[] SharedAddresses = new[] { "10 Some Street", "11 Some Street" };
+    static readonly string[] SharedAddresses = new[] { "10 Some Street", "11 Some Street" };
 
     public static TheoryData<Sample, Sample, bool> EqualityCases => new()
     {

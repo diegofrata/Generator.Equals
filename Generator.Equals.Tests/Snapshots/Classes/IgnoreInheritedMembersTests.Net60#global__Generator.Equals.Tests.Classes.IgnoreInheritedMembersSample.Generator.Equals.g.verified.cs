@@ -1,4 +1,4 @@
-﻿//HintName: global__Generator.Equals.Tests.Classes.SkipBaseEqualsSample.Generator.Equals.g.cs
+﻿//HintName: global__Generator.Equals.Tests.Classes.IgnoreInheritedMembersSample.Generator.Equals.g.cs
 
 #nullable enable
 #pragma warning disable CS0612,CS0618
@@ -6,7 +6,7 @@
 
 namespace Generator.Equals.Tests.Classes
 {
-    partial class SkipBaseEqualsSample : global::System.IEquatable<global::Generator.Equals.Tests.Classes.SkipBaseEqualsSample>
+    partial class IgnoreInheritedMembersSample : global::System.IEquatable<global::Generator.Equals.Tests.Classes.IgnoreInheritedMembersSample>
     {
         /// <summary>
         /// Indicates whether the object on the left is equal to the object on the right.
@@ -16,9 +16,9 @@ namespace Generator.Equals.Tests.Classes
         /// <returns>true if the objects are equal; otherwise, false.</returns>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
         public static bool operator ==(
-            global::Generator.Equals.Tests.Classes.SkipBaseEqualsSample? left,
-            global::Generator.Equals.Tests.Classes.SkipBaseEqualsSample? right) =>
-            global::Generator.Equals.DefaultEqualityComparer<global::Generator.Equals.Tests.Classes.SkipBaseEqualsSample?>.Default
+            global::Generator.Equals.Tests.Classes.IgnoreInheritedMembersSample? left,
+            global::Generator.Equals.Tests.Classes.IgnoreInheritedMembersSample? right) =>
+            global::Generator.Equals.DefaultEqualityComparer<global::Generator.Equals.Tests.Classes.IgnoreInheritedMembersSample?>.Default
                 .Equals(left, right);
         
         /// <summary>
@@ -28,21 +28,21 @@ namespace Generator.Equals.Tests.Classes
         /// <param name="right">The right object</param>
         /// <returns>true if the objects are not equal; otherwise, false.</returns>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-        public static bool operator !=(global::Generator.Equals.Tests.Classes.SkipBaseEqualsSample? left, global::Generator.Equals.Tests.Classes.SkipBaseEqualsSample? right) =>
+        public static bool operator !=(global::Generator.Equals.Tests.Classes.IgnoreInheritedMembersSample? left, global::Generator.Equals.Tests.Classes.IgnoreInheritedMembersSample? right) =>
             !(left == right);
         
         /// <inheritdoc/>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
         public override bool Equals(object? obj) =>
-            Equals(obj as global::Generator.Equals.Tests.Classes.SkipBaseEqualsSample);
+            Equals(obj as global::Generator.Equals.Tests.Classes.IgnoreInheritedMembersSample);
         
         /// <inheritdoc/>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-        bool global::System.IEquatable<global::Generator.Equals.Tests.Classes.SkipBaseEqualsSample>.Equals(global::Generator.Equals.Tests.Classes.SkipBaseEqualsSample? obj) => Equals((object?) obj);
+        bool global::System.IEquatable<global::Generator.Equals.Tests.Classes.IgnoreInheritedMembersSample>.Equals(global::Generator.Equals.Tests.Classes.IgnoreInheritedMembersSample? obj) => Equals((object?) obj);
         
         /// <inheritdoc/>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-        protected bool Equals(global::Generator.Equals.Tests.Classes.SkipBaseEqualsSample? other)
+        protected bool Equals(global::Generator.Equals.Tests.Classes.IgnoreInheritedMembersSample? other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;

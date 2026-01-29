@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals.Extensions;
 
-internal static class AttributeDataExtensions
+static class AttributeDataExtensions
 {
     public static object? GetNamedArgumentValue(this AttributeData attributeData, string name)
     {

@@ -61,42 +61,42 @@ public partial class DeepEqualityTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Classes;
+                                namespace Generator.Equals.Tests.Classes;
 
-        [Equatable]
-        public partial class DeepEqualitySample
-        {
-            public DeepEqualitySample(DeepEqualityPerson person)
-            {
-                Person = person;
-            }
+                                [Equatable]
+                                public partial class DeepEqualitySample
+                                {
+                                    public DeepEqualitySample(DeepEqualityPerson person)
+                                    {
+                                        Person = person;
+                                    }
 
-            public DeepEqualityPerson Person { get; }
-        }
+                                    public DeepEqualityPerson Person { get; }
+                                }
 
-        [Equatable]
-        public partial class DeepEqualityPerson
-        {
-            public DeepEqualityPerson(int age)
-            {
-                Age = age;
-            }
+                                [Equatable]
+                                public partial class DeepEqualityPerson
+                                {
+                                    public DeepEqualityPerson(int age)
+                                    {
+                                        Age = age;
+                                    }
 
-            public int Age { get; }
-        }
+                                    public int Age { get; }
+                                }
 
-        [Equatable]
-        public partial class DeepEqualityManager : DeepEqualityPerson
-        {
-            public DeepEqualityManager(int age, string department) : base(age)
-            {
-                Department = department;
-            }
+                                [Equatable]
+                                public partial class DeepEqualityManager : DeepEqualityPerson
+                                {
+                                    public DeepEqualityManager(int age, string department) : base(age)
+                                    {
+                                        Department = department;
+                                    }
 
-            public string Department { get; }
-        }
-        """;
+                                    public string Department { get; }
+                                }
+                                """;
 }

@@ -38,16 +38,16 @@ public partial class ObsoleteMembersTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using System;
-        using Generator.Equals;
+    const string SampleSource = """
+                                using System;
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Records;
+                                namespace Generator.Equals.Tests.Records;
 
-        [Equatable]
-        public partial record ObsoleteMembersSample(
-            [property: Obsolete] string NoComment,
-            [property: Obsolete("a comment")] string Comment
-        );
-        """;
+                                [Equatable]
+                                public partial record ObsoleteMembersSample(
+                                    [property: Obsolete] string NoComment,
+                                    [property: Obsolete("a comment")] string Comment
+                                );
+                                """;
 }

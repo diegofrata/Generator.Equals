@@ -94,54 +94,54 @@ public partial class UnorderedEqualityWithComparerTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using System;
-        using System.Collections.Generic;
-        using Generator.Equals;
+    const string SampleSource = """
+                                using System;
+                                using System.Collections.Generic;
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Classes;
+                                namespace Generator.Equals.Tests.Classes;
 
-        [Equatable]
-        public partial class UnorderedEqualityWithComparerSampleWithStringComparison
-        {
-            public UnorderedEqualityWithComparerSampleWithStringComparison(List<string> tags)
-            {
-                Tags = tags;
-            }
+                                [Equatable]
+                                public partial class UnorderedEqualityWithComparerSampleWithStringComparison
+                                {
+                                    public UnorderedEqualityWithComparerSampleWithStringComparison(List<string> tags)
+                                    {
+                                        Tags = tags;
+                                    }
 
-            [UnorderedEquality(StringComparison.OrdinalIgnoreCase)]
-            public List<string> Tags { get; }
-        }
+                                    [UnorderedEquality(StringComparison.OrdinalIgnoreCase)]
+                                    public List<string> Tags { get; }
+                                }
 
-        [Equatable]
-        public partial class UnorderedEqualityWithComparerSampleWithCustomComparer
-        {
-            public UnorderedEqualityWithComparerSampleWithCustomComparer(List<string> names)
-            {
-                Names = names;
-            }
+                                [Equatable]
+                                public partial class UnorderedEqualityWithComparerSampleWithCustomComparer
+                                {
+                                    public UnorderedEqualityWithComparerSampleWithCustomComparer(List<string> names)
+                                    {
+                                        Names = names;
+                                    }
 
-            [UnorderedEquality(typeof(StringComparer), nameof(StringComparer.OrdinalIgnoreCase))]
-            public List<string> Names { get; }
-        }
+                                    [UnorderedEquality(typeof(StringComparer), nameof(StringComparer.OrdinalIgnoreCase))]
+                                    public List<string> Names { get; }
+                                }
 
-        [Equatable]
-        public partial class UnorderedEqualityWithComparerSampleWithLengthComparer
-        {
-            public UnorderedEqualityWithComparerSampleWithLengthComparer(List<string> values)
-            {
-                Values = values;
-            }
+                                [Equatable]
+                                public partial class UnorderedEqualityWithComparerSampleWithLengthComparer
+                                {
+                                    public UnorderedEqualityWithComparerSampleWithLengthComparer(List<string> values)
+                                    {
+                                        Values = values;
+                                    }
 
-            [UnorderedEquality(typeof(UnorderedLengthEqualityComparer))]
-            public List<string> Values { get; }
-        }
+                                    [UnorderedEquality(typeof(UnorderedLengthEqualityComparer))]
+                                    public List<string> Values { get; }
+                                }
 
-        class UnorderedLengthEqualityComparer : IEqualityComparer<string>
-        {
-            public static readonly UnorderedLengthEqualityComparer Default = new();
-            public bool Equals(string? x, string? y) => x?.Length == y?.Length;
-            public int GetHashCode(string obj) => obj.Length.GetHashCode();
-        }
-        """;
+                                class UnorderedLengthEqualityComparer : IEqualityComparer<string>
+                                {
+                                    public static readonly UnorderedLengthEqualityComparer Default = new();
+                                    public bool Equals(string? x, string? y) => x?.Length == y?.Length;
+                                    public int GetHashCode(string obj) => obj.Length.GetHashCode();
+                                }
+                                """;
 }

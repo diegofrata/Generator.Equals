@@ -40,24 +40,24 @@ public partial class NonSupportedMembersTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Classes;
+                                namespace Generator.Equals.Tests.Classes;
 
-        [Equatable]
-        public partial class NonSupportedMembersSample
-        {
-            public NonSupportedMembersSample(string name)
-            {
-                Name = name;
-            }
+                                [Equatable]
+                                public partial class NonSupportedMembersSample
+                                {
+                                    public NonSupportedMembersSample(string name)
+                                    {
+                                        Name = name;
+                                    }
 
-            public string Name { get; }
+                                    public string Name { get; }
 
-            public static int StaticProperty { get; }
+                                    public static int StaticProperty { get; }
 
-            public int this[int index] => index;
-        }
-        """;
+                                    public int this[int index] => index;
+                                }
+                                """;
 }

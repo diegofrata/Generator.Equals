@@ -32,14 +32,14 @@ public partial class ObsoleteRecordTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using System;
-        using Generator.Equals;
+    const string SampleSource = """
+                                using System;
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.RecordStructs;
+                                namespace Generator.Equals.Tests.RecordStructs;
 
-        [Equatable]
-        [Obsolete("Make sure the obsolete on the object model does not add warnings")]
-        public partial record struct ObsoleteRecordSample(string Name);
-        """;
+                                [Equatable]
+                                [Obsolete("Make sure the obsolete on the object model does not add warnings")]
+                                public partial record struct ObsoleteRecordSample(string Name);
+                                """;
 }

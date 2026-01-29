@@ -9,7 +9,7 @@ namespace Generator.Equals.Tests.Classes;
 public partial class InheritedEqualityAttributesTests : SnapshotTestBase
 {
     // Base class with OrderedEquality on a virtual property
-    [Equatable(SkipBaseEquals = true)]
+    [Equatable(IgnoreInheritedMembers = true)]
     public abstract partial class Parent
     {
         [OrderedEquality]
@@ -17,14 +17,14 @@ public partial class InheritedEqualityAttributesTests : SnapshotTestBase
     }
 
     // Child class that overrides the property - should inherit [OrderedEquality]
-    [Equatable(SkipBaseEquals = true)]
+    [Equatable(IgnoreInheritedMembers = true)]
     public partial class Child : Parent
     {
         public override int[] Ints { get; set; } = null!;
     }
 
     // Child that overrides with its own attribute (should use child's attribute)
-    [Equatable(SkipBaseEquals = true)]
+    [Equatable(IgnoreInheritedMembers = true)]
     public partial class ChildWithOwnAttribute : Parent
     {
         [UnorderedEquality]
@@ -66,29 +66,29 @@ public partial class InheritedEqualityAttributesTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Classes;
+                                namespace Generator.Equals.Tests.Classes;
 
-        [Equatable(SkipBaseEquals = true)]
-        public abstract partial class InheritedEqualityAttributesParent
-        {
-            [OrderedEquality]
-            public virtual int[] Ints { get; set; } = null!;
-        }
+                                [Equatable(IgnoreInheritedMembers = true)]
+                                public abstract partial class InheritedEqualityAttributesParent
+                                {
+                                    [OrderedEquality]
+                                    public virtual int[] Ints { get; set; } = null!;
+                                }
 
-        [Equatable(SkipBaseEquals = true)]
-        public partial class InheritedEqualityAttributesChild : InheritedEqualityAttributesParent
-        {
-            public override int[] Ints { get; set; } = null!;
-        }
+                                [Equatable(IgnoreInheritedMembers = true)]
+                                public partial class InheritedEqualityAttributesChild : InheritedEqualityAttributesParent
+                                {
+                                    public override int[] Ints { get; set; } = null!;
+                                }
 
-        [Equatable(SkipBaseEquals = true)]
-        public partial class InheritedEqualityAttributesChildWithOwnAttribute : InheritedEqualityAttributesParent
-        {
-            [UnorderedEquality]
-            public override int[] Ints { get; set; } = null!;
-        }
-        """;
+                                [Equatable(IgnoreInheritedMembers = true)]
+                                public partial class InheritedEqualityAttributesChildWithOwnAttribute : InheritedEqualityAttributesParent
+                                {
+                                    [UnorderedEquality]
+                                    public override int[] Ints { get; set; } = null!;
+                                }
+                                """;
 }

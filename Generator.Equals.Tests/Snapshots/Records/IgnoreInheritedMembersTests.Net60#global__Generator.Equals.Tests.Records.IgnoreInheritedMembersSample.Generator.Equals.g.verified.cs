@@ -1,4 +1,4 @@
-﻿//HintName: global__Generator.Equals.Tests.Records.SkipBaseEqualsSample.Generator.Equals.g.cs
+﻿//HintName: global__Generator.Equals.Tests.Records.IgnoreInheritedMembersSample.Generator.Equals.g.cs
 
 #nullable enable
 #pragma warning disable CS0612,CS0618
@@ -6,11 +6,11 @@
 
 namespace Generator.Equals.Tests.Records
 {
-    partial record SkipBaseEqualsSample
+    partial record IgnoreInheritedMembersSample
     {
         /// <inheritdoc/>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-        public virtual bool Equals(global::Generator.Equals.Tests.Records.SkipBaseEqualsSample? other)
+        public virtual bool Equals(global::Generator.Equals.Tests.Records.IgnoreInheritedMembersSample? other)
         {
             return
                 !ReferenceEquals(other, null) && EqualityContract == other.EqualityContract

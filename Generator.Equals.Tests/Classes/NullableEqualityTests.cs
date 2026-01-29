@@ -37,15 +37,15 @@ public partial class NullableEqualityTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Classes;
+                                namespace Generator.Equals.Tests.Classes;
 
-        [Equatable]
-        public partial class NullableEqualitySample
-        {
-            [OrderedEquality] public string[]? Addresses { get; set; }
-        }
-        """;
+                                [Equatable]
+                                public partial class NullableEqualitySample
+                                {
+                                    [OrderedEquality] public string[]? Addresses { get; set; }
+                                }
+                                """;
 }

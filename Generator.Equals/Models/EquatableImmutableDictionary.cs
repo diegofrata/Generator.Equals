@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Generator.Equals.Models;
 
-internal class EquatableImmutableDictionary<TKey, TValue>(ImmutableDictionary<TKey, TValue> Items)
+class EquatableImmutableDictionary<TKey, TValue>(ImmutableDictionary<TKey, TValue> Items)
     : IEquatable<EquatableImmutableDictionary<TKey, TValue>>
     where TKey : notnull
 {

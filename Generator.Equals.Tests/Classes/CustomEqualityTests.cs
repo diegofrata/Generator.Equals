@@ -60,41 +60,41 @@ public partial class CustomEqualityTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using System.Collections.Generic;
-        using Generator.Equals;
+    const string SampleSource = """
+                                using System.Collections.Generic;
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Classes;
+                                namespace Generator.Equals.Tests.Classes;
 
-        [Equatable]
-        public partial class CustomEqualitySample
-        {
-            public CustomEqualitySample(string name1, string name2, string name3)
-            {
-                Name1 = name1;
-                Name2 = name2;
-                Name3 = name3;
-            }
+                                [Equatable]
+                                public partial class CustomEqualitySample
+                                {
+                                    public CustomEqualitySample(string name1, string name2, string name3)
+                                    {
+                                        Name1 = name1;
+                                        Name2 = name2;
+                                        Name3 = name3;
+                                    }
 
-            [CustomEquality(typeof(Comparer1))] public string Name1 { get; }
-            [CustomEquality(typeof(Comparer2), nameof(Comparer2.Instance))] public string Name2 { get; }
-            [CustomEquality(typeof(CustomLengthEqualityComparer))] public string Name3 { get; }
-        }
+                                    [CustomEquality(typeof(Comparer1))] public string Name1 { get; }
+                                    [CustomEquality(typeof(Comparer2), nameof(Comparer2.Instance))] public string Name2 { get; }
+                                    [CustomEquality(typeof(CustomLengthEqualityComparer))] public string Name3 { get; }
+                                }
 
-        class Comparer1
-        {
-            public static readonly CustomLengthEqualityComparer Default = new();
-        }
+                                class Comparer1
+                                {
+                                    public static readonly CustomLengthEqualityComparer Default = new();
+                                }
 
-        class Comparer2
-        {
-            public static readonly CustomLengthEqualityComparer Instance = new();
-        }
+                                class Comparer2
+                                {
+                                    public static readonly CustomLengthEqualityComparer Instance = new();
+                                }
 
-        class CustomLengthEqualityComparer : IEqualityComparer<string>
-        {
-            public bool Equals(string? x, string? y) => x?.Length == y?.Length;
-            public int GetHashCode(string obj) => obj.Length.GetHashCode();
-        }
-        """;
+                                class CustomLengthEqualityComparer : IEqualityComparer<string>
+                                {
+                                    public bool Equals(string? x, string? y) => x?.Length == y?.Length;
+                                    public int GetHashCode(string obj) => obj.Length.GetHashCode();
+                                }
+                                """;
 }

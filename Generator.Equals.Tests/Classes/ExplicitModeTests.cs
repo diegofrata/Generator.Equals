@@ -45,27 +45,27 @@ public partial class ExplicitModeTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Classes;
+                                namespace Generator.Equals.Tests.Classes;
 
-        [Equatable(Explicit = true)]
-        public partial class ExplicitModeSample
-        {
-            bool _flag;
+                                [Equatable(Explicit = true)]
+                                public partial class ExplicitModeSample
+                                {
+                                    bool _flag;
 
-            public ExplicitModeSample(string name, int age, bool flag)
-            {
-                _flag = flag;
-                Name = name;
-                Age = age;
-            }
+                                    public ExplicitModeSample(string name, int age, bool flag)
+                                    {
+                                        _flag = flag;
+                                        Name = name;
+                                        Age = age;
+                                    }
 
-            public string Name { get; }
+                                    public string Name { get; }
 
-            [DefaultEquality]
-            public int Age { get; }
-        }
-        """;
+                                    [DefaultEquality]
+                                    public int Age { get; }
+                                }
+                                """;
 }

@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals
 {
-    internal class EqualityGeneratorBase
+    class EqualityGeneratorBase
     {
         protected const string GeneratedCodeAttributeDeclaration =
             "[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"Generator.Equals\", \"1.0.0.0\")]";
@@ -38,7 +38,7 @@ namespace Generator.Equals
 
         protected const string InheritDocComment = "/// <inheritdoc/>";
 
-        private static string GetCollectionComparerExpression(
+        static string GetCollectionComparerExpression(
             string comparerClassName,
             string elementTypeName,
             EqualityMemberModel memberModel)
@@ -63,7 +63,7 @@ namespace Generator.Equals
             return $"global::Generator.Equals.{comparerClassName}<{elementTypeName}>.Default";
         }
 
-        private static void BuildEquality(EqualityMemberModel memberModel, IndentedTextWriter writer)
+        static void BuildEquality(EqualityMemberModel memberModel, IndentedTextWriter writer)
         {
             if (memberModel.Ignored)
             {
@@ -144,7 +144,7 @@ namespace Generator.Equals
             }
         }
 
-        private static void BuildHashCode(
+        static void BuildHashCode(
             ISymbol memberSymbol,
             ITypeSymbol typeSymbol,
             AttributesMetadata attributesMetadata,
@@ -158,7 +158,7 @@ namespace Generator.Equals
             BuildHashCode(model, writer);
         }
 
-        private static void BuildHashCode(EqualityMemberModel memberModel, IndentedTextWriter writer)
+        static void BuildHashCode(EqualityMemberModel memberModel, IndentedTextWriter writer)
         {
             if (memberModel.Ignored)
             {

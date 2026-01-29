@@ -75,21 +75,18 @@ Only `School` was compared, ignoring `Name`.
 **After (v4):** `Child.Equals()` calls `base.Equals()` because `GrandParent` has `[Equatable]`.
 Both `School` and `Name` are compared correctly.
 
-### Skip Base Equals (Breaking Change)
+### Ignore Inherited Members
 
-The `IgnoreInheritedMembers` property has been renamed to `SkipBaseEquals` to better reflect its purpose.
+The `IgnoreInheritedMembers` property controls how inherited members are handled:
 
-| v3 | v4 |
-|----|-----|
-| `[Equatable(IgnoreInheritedMembers = true)]` | `[Equatable(SkipBaseEquals = true)]` |
-
-The property controls whether `base.Equals()` is called:
-
-- `SkipBaseEquals = false` (default): Calls `base.Equals()` when any ancestor has meaningful equality
-- `SkipBaseEquals = true`: Never calls `base.Equals()`, treating the class as an equality root
+| IgnoreInheritedMembers | Any Ancestor has [Equatable] | Behavior |
+|------------------------|------------------------------|----------|
+| `true`  | N/A | Compare only declared members, type check, no `base.Equals()` |
+| `false` | Yes | Call `base.Equals()`, let ancestor handle its members |
+| `false` | No  | Type check + compare ALL inherited properties from entire chain |
 
 ```c#
-[Equatable(SkipBaseEquals = true)]
+[Equatable(IgnoreInheritedMembers = true)]
 public partial class Child : Parent
 {
     // Will NOT call base.Equals() even if Parent has [Equatable]
@@ -328,14 +325,15 @@ partial class MyClass
 ```
 
 
-### Skip Base Equals
+### Ignore Inherited Members
 
-By default, when any ancestor class has `[Equatable]` or a custom `Equals` override, the generated code
-calls `base.Equals()` to include ancestor equality in the comparison.
+By default (`IgnoreInheritedMembers = false`), the generated code handles inherited members as follows:
+- If any ancestor has `[Equatable]` or a custom `Equals` override, `base.Equals()` is called to delegate equality
+- If NO ancestor has `[Equatable]`, all inherited properties from the entire chain are explicitly compared
 
-Set `SkipBaseEquals = true` to skip calling `base.Equals()` and treat the class as an equality root.
+Set `IgnoreInheritedMembers = true` to skip calling `base.Equals()` and ignore all inherited properties.
 This is useful when you want to completely redefine equality for a derived class without considering
-the base class's equality logic.
+the base class's properties.
 
 ```cs
 using Generator.Equals;
@@ -346,7 +344,7 @@ partial class Person
     public string Name { get; set; }
 }
 
-[Equatable(SkipBaseEquals = true)]
+[Equatable(IgnoreInheritedMembers = true)]
 partial class Doctor : Person
 {
     // Will NOT call base.Equals(), so Person.Name is not compared.

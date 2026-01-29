@@ -60,41 +60,41 @@ public partial class CustomEqualityTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using System.Collections.Generic;
-        using Generator.Equals;
+    const string SampleSource = """
+                                using System.Collections.Generic;
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Records;
+                                namespace Generator.Equals.Tests.Records;
 
-        [Equatable]
-        public partial record CustomEqualitySample
-        {
-            public CustomEqualitySample(string name1, string name2, string name3)
-            {
-                Name1 = name1;
-                Name2 = name2;
-                Name3 = name3;
-            }
+                                [Equatable]
+                                public partial record CustomEqualitySample
+                                {
+                                    public CustomEqualitySample(string name1, string name2, string name3)
+                                    {
+                                        Name1 = name1;
+                                        Name2 = name2;
+                                        Name3 = name3;
+                                    }
 
-            [CustomEquality(typeof(CustomEqualityComparer1))] public string Name1 { get; }
-            [CustomEquality(typeof(CustomEqualityComparer2), nameof(CustomEqualityComparer2.Instance))] public string Name2 { get; }
-            [CustomEquality(typeof(CustomEqualityLengthEqualityComparer))] public string Name3 { get; }
-        }
+                                    [CustomEquality(typeof(CustomEqualityComparer1))] public string Name1 { get; }
+                                    [CustomEquality(typeof(CustomEqualityComparer2), nameof(CustomEqualityComparer2.Instance))] public string Name2 { get; }
+                                    [CustomEquality(typeof(CustomEqualityLengthEqualityComparer))] public string Name3 { get; }
+                                }
 
-        class CustomEqualityComparer1
-        {
-            public static readonly CustomEqualityLengthEqualityComparer Default = new();
-        }
+                                class CustomEqualityComparer1
+                                {
+                                    public static readonly CustomEqualityLengthEqualityComparer Default = new();
+                                }
 
-        class CustomEqualityComparer2
-        {
-            public static readonly CustomEqualityLengthEqualityComparer Instance = new();
-        }
+                                class CustomEqualityComparer2
+                                {
+                                    public static readonly CustomEqualityLengthEqualityComparer Instance = new();
+                                }
 
-        class CustomEqualityLengthEqualityComparer : IEqualityComparer<string>
-        {
-            public bool Equals(string? x, string? y) => x?.Length == y?.Length;
-            public int GetHashCode(string obj) => obj.Length.GetHashCode();
-        }
-        """;
+                                class CustomEqualityLengthEqualityComparer : IEqualityComparer<string>
+                                {
+                                    public bool Equals(string? x, string? y) => x?.Length == y?.Length;
+                                    public int GetHashCode(string obj) => obj.Length.GetHashCode();
+                                }
+                                """;
 }

@@ -4,9 +4,9 @@ using Generator.Equals.Models;
 
 namespace Generator.Equals.Generators
 {
-    internal sealed class StructEqualityGenerator : EqualityGeneratorBase
+    sealed class StructEqualityGenerator : EqualityGeneratorBase
     {
-        private static void BuildEquals(EqualityTypeModel model, IndentedTextWriter writer)
+        static void BuildEquals(EqualityTypeModel model, IndentedTextWriter writer)
         {
             var symbolName = model.Fullname;
 
@@ -47,7 +47,7 @@ namespace Generator.Equals.Generators
             writer.AppendCloseBracket();
         }
 
-        private static void BuildGetHashCode(EqualityTypeModel model, IndentedTextWriter writer)
+        static void BuildGetHashCode(EqualityTypeModel model, IndentedTextWriter writer)
         {
             writer.WriteLine(InheritDocComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);

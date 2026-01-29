@@ -2,7 +2,7 @@
 
 namespace Generator.Equals.Models;
 
-internal sealed record EqualityTypeModel
+sealed record EqualityTypeModel
 {
     public required SyntaxKind SyntaxKind { get; init; }
 
@@ -12,8 +12,14 @@ internal sealed record EqualityTypeModel
     public required EquatableImmutableArray<ContainingSymbol> ContainingSymbols { get; init; }
     public required AttributesMetadata AttributesMetadata { get; init; }
     public required bool ExplicitMode { get; init; }
-    public required bool SkipBaseEquals { get; init; }
+    public required bool IgnoreInheritedMembers { get; init; }
     public required EquatableImmutableArray<EqualityMemberModel> BuildEqualityModels { get; init; }
+
+    /// <summary>
+    /// Properties collected from ancestor types that don't have [Equatable].
+    /// These are only populated when IgnoreInheritedMembers=false and BaseHasEquatable=false.
+    /// </summary>
+    public EquatableImmutableArray<EqualityMemberModel> InheritedEqualityModels { get; init; }
     public required string Fullname { get; init; }
 
     /// <summary>

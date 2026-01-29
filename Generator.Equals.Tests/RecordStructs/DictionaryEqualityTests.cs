@@ -37,16 +37,16 @@ public partial class DictionaryEqualityTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using System.Collections.Generic;
-        using Generator.Equals;
+    const string SampleSource = """
+                                using System.Collections.Generic;
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.RecordStructs;
+                                namespace Generator.Equals.Tests.RecordStructs;
 
-        [Equatable]
-        public partial record struct DictionaryEqualitySample
-        {
-            [UnorderedEquality] public Dictionary<string, int>? Properties { get; init; }
-        }
-        """;
+                                [Equatable]
+                                public partial record struct DictionaryEqualitySample
+                                {
+                                    [UnorderedEquality] public Dictionary<string, int>? Properties { get; init; }
+                                }
+                                """;
 }

@@ -77,31 +77,31 @@ public static class EqualityAssert
         }
     }
 
-    private static bool InvokeEqualityOperator<T>(T? a, T? b) where T : class
+    static bool InvokeEqualityOperator<T>(T? a, T? b) where T : class
     {
         var func = GetOrCreateEqualityOperator<T>();
         return func(a, b);
     }
 
-    private static bool InvokeInequalityOperator<T>(T? a, T? b) where T : class
+    static bool InvokeInequalityOperator<T>(T? a, T? b) where T : class
     {
         var func = GetOrCreateInequalityOperator<T>();
         return func(a, b);
     }
 
-    private static bool InvokeStructEqualityOperator<T>(T a, T b) where T : struct
+    static bool InvokeStructEqualityOperator<T>(T a, T b) where T : struct
     {
         var func = GetOrCreateStructEqualityOperator<T>();
         return func(a, b);
     }
 
-    private static bool InvokeStructInequalityOperator<T>(T a, T b) where T : struct
+    static bool InvokeStructInequalityOperator<T>(T a, T b) where T : struct
     {
         var func = GetOrCreateStructInequalityOperator<T>();
         return func(a, b);
     }
 
-    private static Func<T?, T?, bool> GetOrCreateEqualityOperator<T>() where T : class
+    static Func<T?, T?, bool> GetOrCreateEqualityOperator<T>() where T : class
     {
         var paramA = Expression.Parameter(typeof(T), "a");
         var paramB = Expression.Parameter(typeof(T), "b");
@@ -117,7 +117,7 @@ public static class EqualityAssert
         return lambda.Compile();
     }
 
-    private static Func<T?, T?, bool> GetOrCreateInequalityOperator<T>() where T : class
+    static Func<T?, T?, bool> GetOrCreateInequalityOperator<T>() where T : class
     {
         var paramA = Expression.Parameter(typeof(T), "a");
         var paramB = Expression.Parameter(typeof(T), "b");
@@ -133,7 +133,7 @@ public static class EqualityAssert
         return lambda.Compile();
     }
 
-    private static Func<T, T, bool> GetOrCreateStructEqualityOperator<T>() where T : struct
+    static Func<T, T, bool> GetOrCreateStructEqualityOperator<T>() where T : struct
     {
         var paramA = Expression.Parameter(typeof(T), "a");
         var paramB = Expression.Parameter(typeof(T), "b");
@@ -149,7 +149,7 @@ public static class EqualityAssert
         return lambda.Compile();
     }
 
-    private static Func<T, T, bool> GetOrCreateStructInequalityOperator<T>() where T : struct
+    static Func<T, T, bool> GetOrCreateStructInequalityOperator<T>() where T : struct
     {
         var paramA = Expression.Parameter(typeof(T), "a");
         var paramB = Expression.Parameter(typeof(T), "b");

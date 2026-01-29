@@ -66,34 +66,34 @@ public partial class StringEqualityTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using System;
-        using Generator.Equals;
+    const string SampleSource = """
+                                using System;
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Classes;
+                                namespace Generator.Equals.Tests.Classes;
 
-        [Equatable]
-        public partial class StringEqualityCaseInsensitiveSample
-        {
-            public StringEqualityCaseInsensitiveSample(string name)
-            {
-                Name = name;
-            }
+                                [Equatable]
+                                public partial class StringEqualityCaseInsensitiveSample
+                                {
+                                    public StringEqualityCaseInsensitiveSample(string name)
+                                    {
+                                        Name = name;
+                                    }
 
-            [StringEquality(StringComparison.CurrentCultureIgnoreCase)]
-            public string Name { get; }
-        }
+                                    [StringEquality(StringComparison.CurrentCultureIgnoreCase)]
+                                    public string Name { get; }
+                                }
 
-        [Equatable]
-        public partial class StringEqualityCaseSensitiveSample
-        {
-            public StringEqualityCaseSensitiveSample(string name)
-            {
-                Name = name;
-            }
+                                [Equatable]
+                                public partial class StringEqualityCaseSensitiveSample
+                                {
+                                    public StringEqualityCaseSensitiveSample(string name)
+                                    {
+                                        Name = name;
+                                    }
 
-            [StringEquality(StringComparison.CurrentCulture)]
-            public string Name { get; }
-        }
-        """;
+                                    [StringEquality(StringComparison.CurrentCulture)]
+                                    public string Name { get; }
+                                }
+                                """;
 }

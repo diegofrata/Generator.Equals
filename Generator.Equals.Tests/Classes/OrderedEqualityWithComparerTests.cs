@@ -94,54 +94,54 @@ public partial class OrderedEqualityWithComparerTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using System;
-        using System.Collections.Generic;
-        using Generator.Equals;
+    const string SampleSource = """
+                                using System;
+                                using System.Collections.Generic;
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Classes;
+                                namespace Generator.Equals.Tests.Classes;
 
-        [Equatable]
-        public partial class OrderedEqualityWithComparerSampleWithStringComparison
-        {
-            public OrderedEqualityWithComparerSampleWithStringComparison(string[] tags)
-            {
-                Tags = tags;
-            }
+                                [Equatable]
+                                public partial class OrderedEqualityWithComparerSampleWithStringComparison
+                                {
+                                    public OrderedEqualityWithComparerSampleWithStringComparison(string[] tags)
+                                    {
+                                        Tags = tags;
+                                    }
 
-            [OrderedEquality(StringComparison.OrdinalIgnoreCase)]
-            public string[] Tags { get; }
-        }
+                                    [OrderedEquality(StringComparison.OrdinalIgnoreCase)]
+                                    public string[] Tags { get; }
+                                }
 
-        [Equatable]
-        public partial class OrderedEqualityWithComparerSampleWithCustomComparer
-        {
-            public OrderedEqualityWithComparerSampleWithCustomComparer(string[] names)
-            {
-                Names = names;
-            }
+                                [Equatable]
+                                public partial class OrderedEqualityWithComparerSampleWithCustomComparer
+                                {
+                                    public OrderedEqualityWithComparerSampleWithCustomComparer(string[] names)
+                                    {
+                                        Names = names;
+                                    }
 
-            [OrderedEquality(typeof(StringComparer), nameof(StringComparer.OrdinalIgnoreCase))]
-            public string[] Names { get; }
-        }
+                                    [OrderedEquality(typeof(StringComparer), nameof(StringComparer.OrdinalIgnoreCase))]
+                                    public string[] Names { get; }
+                                }
 
-        [Equatable]
-        public partial class OrderedEqualityWithComparerSampleWithLengthComparer
-        {
-            public OrderedEqualityWithComparerSampleWithLengthComparer(string[] values)
-            {
-                Values = values;
-            }
+                                [Equatable]
+                                public partial class OrderedEqualityWithComparerSampleWithLengthComparer
+                                {
+                                    public OrderedEqualityWithComparerSampleWithLengthComparer(string[] values)
+                                    {
+                                        Values = values;
+                                    }
 
-            [OrderedEquality(typeof(OrderedLengthEqualityComparer))]
-            public string[] Values { get; }
-        }
+                                    [OrderedEquality(typeof(OrderedLengthEqualityComparer))]
+                                    public string[] Values { get; }
+                                }
 
-        class OrderedLengthEqualityComparer : IEqualityComparer<string>
-        {
-            public static readonly OrderedLengthEqualityComparer Default = new();
-            public bool Equals(string? x, string? y) => x?.Length == y?.Length;
-            public int GetHashCode(string obj) => obj.Length.GetHashCode();
-        }
-        """;
+                                class OrderedLengthEqualityComparer : IEqualityComparer<string>
+                                {
+                                    public static readonly OrderedLengthEqualityComparer Default = new();
+                                    public bool Equals(string? x, string? y) => x?.Length == y?.Length;
+                                    public int GetHashCode(string obj) => obj.Length.GetHashCode();
+                                }
+                                """;
 }

@@ -7,15 +7,15 @@ using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals.Models;
 
-internal record ElementComparerInfo(
+record ElementComparerInfo(
     string? ComparerType,
     string? MemberName,
     bool HasStaticInstance
 );
 
-internal static class EqualityMemberModelTransformer
+static class EqualityMemberModelTransformer
 {
-    private static ElementComparerInfo? ExtractElementComparerInfo(
+    static ElementComparerInfo? ExtractElementComparerInfo(
         AttributeData attribute,
         AttributesMetadata attributesMetadata
     )

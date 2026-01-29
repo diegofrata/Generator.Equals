@@ -42,22 +42,22 @@ public partial class GenericParameterEqualityTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Classes;
+                                namespace Generator.Equals.Tests.Classes;
 
-        [Equatable]
-        public partial class GenericSample<TName, TAge>
-        {
-            public GenericSample(TName name, TAge age)
-            {
-                Name = name;
-                Age = age;
-            }
+                                [Equatable]
+                                public partial class GenericSample<TName, TAge>
+                                {
+                                    public GenericSample(TName name, TAge age)
+                                    {
+                                        Name = name;
+                                        Age = age;
+                                    }
 
-            public TName Name { get; }
-            public TAge Age { get; }
-        }
-        """;
+                                    public TName Name { get; }
+                                    public TAge Age { get; }
+                                }
+                                """;
 }

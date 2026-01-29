@@ -43,21 +43,21 @@ public partial class InheritedFromNonEquatableTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Records;
+                                namespace Generator.Equals.Tests.Records;
 
-        public abstract record InheritedFromNonEquatableParent
-        {
-            [OrderedEquality]
-            public virtual int[] Ints { get; init; } = null!;
-        }
+                                public abstract record InheritedFromNonEquatableParent
+                                {
+                                    [OrderedEquality]
+                                    public virtual int[] Ints { get; init; } = null!;
+                                }
 
-        [Equatable]
-        public partial record InheritedFromNonEquatableChild : InheritedFromNonEquatableParent
-        {
-            public override int[] Ints { get; init; } = null!;
-        }
-        """;
+                                [Equatable]
+                                public partial record InheritedFromNonEquatableChild : InheritedFromNonEquatableParent
+                                {
+                                    public override int[] Ints { get; init; } = null!;
+                                }
+                                """;
 }

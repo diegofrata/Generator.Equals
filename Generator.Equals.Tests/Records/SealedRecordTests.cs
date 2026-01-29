@@ -30,12 +30,12 @@ public partial class SealedRecordTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Records;
+                                namespace Generator.Equals.Tests.Records;
 
-        [Equatable]
-        public sealed partial record SealedRecordSample([property: OrderedEquality] string[] Addresses);
-        """;
+                                [Equatable]
+                                public sealed partial record SealedRecordSample([property: OrderedEquality] string[] Addresses);
+                                """;
 }

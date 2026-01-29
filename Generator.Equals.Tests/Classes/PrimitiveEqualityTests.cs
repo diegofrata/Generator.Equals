@@ -42,22 +42,22 @@ public partial class PrimitiveEqualityTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Classes;
+                                namespace Generator.Equals.Tests.Classes;
 
-        [Equatable]
-        public partial class PrimitiveEqualitySample
-        {
-            public PrimitiveEqualitySample(string name, int age)
-            {
-                Name = name;
-                Age = age;
-            }
+                                [Equatable]
+                                public partial class PrimitiveEqualitySample
+                                {
+                                    public PrimitiveEqualitySample(string name, int age)
+                                    {
+                                        Name = name;
+                                        Age = age;
+                                    }
 
-            public string Name { get; }
-            public int Age { get; }
-        }
-        """;
+                                    public string Name { get; }
+                                    public int Age { get; }
+                                }
+                                """;
 }

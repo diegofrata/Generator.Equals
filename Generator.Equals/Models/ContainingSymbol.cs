@@ -2,16 +2,16 @@
 
 namespace Generator.Equals.Models;
 
-internal record ContainingSymbol
+record ContainingSymbol
 {
     public required string Name { get; init; }
 }
 
-internal sealed record NamespaceContainingSymbol : ContainingSymbol
+sealed record NamespaceContainingSymbol : ContainingSymbol
 {
 }
 
-internal sealed record TypeContainingSymbol : ContainingSymbol
+sealed record TypeContainingSymbol : ContainingSymbol
 {
     public SyntaxKind? Kind { get; init; }
 }

@@ -77,16 +77,16 @@ public partial class DictionaryEqualityTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using System.Collections.Generic;
-        using Generator.Equals;
+    const string SampleSource = """
+                                using System.Collections.Generic;
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Classes;
+                                namespace Generator.Equals.Tests.Classes;
 
-        [Equatable]
-        public partial class DictionaryEqualitySample
-        {
-            [UnorderedEquality] public Dictionary<string, int>? Properties { get; set; }
-        }
-        """;
+                                [Equatable]
+                                public partial class DictionaryEqualitySample
+                                {
+                                    [UnorderedEquality] public Dictionary<string, int>? Properties { get; set; }
+                                }
+                                """;
 }

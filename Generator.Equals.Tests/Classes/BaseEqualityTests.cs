@@ -65,31 +65,31 @@ public partial class BaseEqualityTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Classes;
+                                namespace Generator.Equals.Tests.Classes;
 
-        [Equatable]
-        public partial class BaseEqualityPerson
-        {
-            public BaseEqualityPerson(int age)
-            {
-                Age = age;
-            }
+                                [Equatable]
+                                public partial class BaseEqualityPerson
+                                {
+                                    public BaseEqualityPerson(int age)
+                                    {
+                                        Age = age;
+                                    }
 
-            public int Age { get; }
-        }
+                                    public int Age { get; }
+                                }
 
-        [Equatable]
-        public partial class BaseEqualityManager : BaseEqualityPerson
-        {
-            public BaseEqualityManager(int age, string department) : base(age)
-            {
-                Department = department;
-            }
+                                [Equatable]
+                                public partial class BaseEqualityManager : BaseEqualityPerson
+                                {
+                                    public BaseEqualityManager(int age, string department) : base(age)
+                                    {
+                                        Department = department;
+                                    }
 
-            public string Department { get; }
-        }
-        """;
+                                    public string Department { get; }
+                                }
+                                """;
 }

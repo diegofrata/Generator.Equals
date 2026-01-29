@@ -62,24 +62,24 @@ public partial class PrimaryConstructorTests : SnapshotTestBase
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw);
 
-    private const string SampleSource = """
-        using Generator.Equals;
+    const string SampleSource = """
+                                using Generator.Equals;
 
-        namespace Generator.Equals.Tests.Classes;
+                                namespace Generator.Equals.Tests.Classes;
 
-        [Equatable]
-        public partial class PrimaryCtorSample(string name, int age)
-        {
-            public string GetName() => name;
-            public int GetAge() => age;
-            public string Title { get; set; } = "";
-        }
+                                [Equatable]
+                                public partial class PrimaryCtorSample(string name, int age)
+                                {
+                                    public string GetName() => name;
+                                    public int GetAge() => age;
+                                    public string Title { get; set; } = "";
+                                }
 
-        [Equatable]
-        public partial class PrimaryCtorSampleWithProperties(string name, int age)
-        {
-            public string Name { get; } = name;
-            public int Age { get; } = age;
-        }
-        """;
+                                [Equatable]
+                                public partial class PrimaryCtorSampleWithProperties(string name, int age)
+                                {
+                                    public string Name { get; } = name;
+                                    public int Age { get; } = age;
+                                }
+                                """;
 }
