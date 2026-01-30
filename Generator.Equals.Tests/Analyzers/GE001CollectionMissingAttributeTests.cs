@@ -235,4 +235,47 @@ public sealed class GE001CollectionMissingAttributeTests : AnalyzerTestBase<Equa
                 .WithSpan(7, 12, 7, 28)
                 .WithArguments("Items"));
     }
+
+    [Fact]
+    public async Task CollectionProperty_WithDefaultEquality_ReportsDiagnostic()
+    {
+        const string source = """
+            using System.Collections.Generic;
+            using Generator.Equals;
+
+            [Equatable]
+            public partial class Sample
+            {
+                [DefaultEquality]
+                public List<int> Items { get; set; }
+            }
+            """;
+
+        // [DefaultEquality] alone does not suppress GE001 - collection still needs a collection attribute
+        // List<int> is 9 chars, starts at col 12, ends at col 21
+        await VerifyDiagnosticAsync(source,
+            Diagnostic(DiagnosticDescriptors.CollectionMissingAttribute)
+                .WithSpan(8, 12, 8, 21)
+                .WithArguments("Items"));
+    }
+
+    [Fact]
+    public async Task CollectionProperty_WithDefaultAndOrderedEquality_NoDiagnostic()
+    {
+        const string source = """
+            using System.Collections.Generic;
+            using Generator.Equals;
+
+            [Equatable]
+            public partial class Sample
+            {
+                [DefaultEquality]
+                [OrderedEquality]
+                public List<int> Items { get; set; }
+            }
+            """;
+
+        // [DefaultEquality] + [OrderedEquality] satisfies the requirement
+        await VerifyNoDiagnosticAsync(source);
+    }
 }

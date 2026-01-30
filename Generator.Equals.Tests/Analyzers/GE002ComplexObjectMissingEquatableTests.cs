@@ -350,4 +350,31 @@ public sealed class GE002ComplexObjectMissingEquatableTests : AnalyzerTestBase<E
                 .WithSpan(18, 12, 18, 26)
                 .WithArguments("Center", "PointWithLabel"));
     }
+
+    [Fact]
+    public async Task ComplexProperty_WithDefaultEquality_NoDiagnostic()
+    {
+        const string source = """
+            using Generator.Equals;
+
+            public class ProtobufMessage
+            {
+                public string Value { get; set; }
+                public override bool Equals(object obj) => obj is ProtobufMessage other && Value == other.Value;
+                public override int GetHashCode() => Value?.GetHashCode() ?? 0;
+            }
+
+            [Equatable]
+            public partial class Container
+            {
+                public string Name { get; set; }
+
+                [DefaultEquality]
+                public ProtobufMessage Message { get; set; }
+            }
+            """;
+
+        // [DefaultEquality] explicitly says "use default equality" - no warning needed
+        await VerifyNoDiagnosticAsync(source);
+    }
 }

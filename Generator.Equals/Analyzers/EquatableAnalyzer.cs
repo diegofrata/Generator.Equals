@@ -144,7 +144,7 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
         // Get equality attributes on this member
         var memberAttributes = GetEqualityAttributesOnMember(member);
 
-        // Skip if member has [IgnoreEquality] or [ReferenceEquality]
+        // Skip all checks if member has [IgnoreEquality] or [ReferenceEquality]
         if (memberAttributes.Any(x => x.Metadata.Equals(Metadata.IgnoreEquality) ||
                                        x.Metadata.Equals(Metadata.ReferenceEquality)))
             return;
@@ -152,6 +152,11 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
         // In explicit mode, only check members with [DefaultEquality]
         if (explicitMode && !memberAttributes.Any(x => x.Metadata.Equals(Metadata.DefaultEquality)))
             return;
+
+        // Check if member has [DefaultEquality] - suppresses GE002/GE003 but not GE001
+        // DefaultEquality explicitly indicates the user wants default equality behavior (e.g., for types
+        // like protobuf-generated classes that implement their own Equals/GetHashCode)
+        var hasDefaultEquality = memberAttributes.Any(x => x.Metadata.Equals(Metadata.DefaultEquality));
 
         // Check if member has a collection equality attribute
         var hasCollectionAttribute = memberAttributes.Any(x =>
@@ -166,6 +171,10 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
                 location,
                 member.Name));
         }
+
+        // Skip GE002/GE003 if [DefaultEquality] is present - user explicitly chose default behavior
+        if (hasDefaultEquality)
+            return;
 
         // GE002: Complex type without [Equatable]
         if (memberType.IsComplexType() && !HasEquatableAttribute(memberType))

@@ -228,4 +228,61 @@ public sealed class GE003CollectionElementMissingEquatableTests : AnalyzerTestBa
                 .WithSpan(12, 12, 12, 25)
                 .WithArguments("Addresses", "Address"));
     }
+
+    [Fact]
+    public async Task CollectionOfComplexType_WithDefaultEquality_NoGE003Diagnostic()
+    {
+        const string source = """
+            using System.Collections.Generic;
+            using Generator.Equals;
+
+            public class ProtobufMessage
+            {
+                public string Value { get; set; }
+                public override bool Equals(object obj) => obj is ProtobufMessage other && Value == other.Value;
+                public override int GetHashCode() => Value?.GetHashCode() ?? 0;
+            }
+
+            [Equatable]
+            public partial class Container
+            {
+                [DefaultEquality]
+                public List<ProtobufMessage> Messages { get; set; }
+            }
+            """;
+
+        // [DefaultEquality] suppresses GE003 but not GE001 (collection still needs a collection attribute)
+        // "List<ProtobufMessage>" = 21 chars, starts at col 12, ends at col 33
+        await VerifyDiagnosticAsync(source,
+            Diagnostic(DiagnosticDescriptors.CollectionMissingAttribute)
+                .WithSpan(15, 12, 15, 33)
+                .WithArguments("Messages"));
+    }
+
+    [Fact]
+    public async Task CollectionOfComplexType_WithOrderedAndDefaultEquality_NoDiagnostic()
+    {
+        const string source = """
+            using System.Collections.Generic;
+            using Generator.Equals;
+
+            public class ProtobufMessage
+            {
+                public string Value { get; set; }
+                public override bool Equals(object obj) => obj is ProtobufMessage other && Value == other.Value;
+                public override int GetHashCode() => Value?.GetHashCode() ?? 0;
+            }
+
+            [Equatable]
+            public partial class Container
+            {
+                [DefaultEquality]
+                [OrderedEquality]
+                public List<ProtobufMessage> Messages { get; set; }
+            }
+            """;
+
+        // [DefaultEquality] suppresses GE003, [OrderedEquality] satisfies GE001
+        await VerifyNoDiagnosticAsync(source);
+    }
 }

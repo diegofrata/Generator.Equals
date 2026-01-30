@@ -79,11 +79,15 @@ internal static class TypeSymbolExtensions
         if (typeSymbol.TypeKind == TypeKind.Interface)
             return false;
 
+        // Not complex if it has [Equatable] attribute (including from other assemblies)
+        if (typeSymbol is INamedTypeSymbol namedTypeSymbol && HasEquatableAttribute(namedTypeSymbol))
+            return false;
+
         // Records and structs with only value-equatable members are not complex
-        if (typeSymbol is INamedTypeSymbol namedTypeSymbol &&
-            (namedTypeSymbol.IsRecord || typeSymbol.TypeKind == TypeKind.Struct))
+        if (typeSymbol is INamedTypeSymbol nts &&
+            (nts.IsRecord || typeSymbol.TypeKind == TypeKind.Struct))
         {
-            if (HasDeepValueEquality(namedTypeSymbol, new HashSet<ITypeSymbol>(SymbolEqualityComparer.Default)))
+            if (HasDeepValueEquality(nts, new HashSet<ITypeSymbol>(SymbolEqualityComparer.Default)))
                 return false;
         }
 
@@ -175,17 +179,15 @@ internal static class TypeSymbolExtensions
         if (IsWellKnownSystemType(typeSymbol))
             return true;
 
-        // Records and structs - recursively check their members
-        if (typeSymbol is INamedTypeSymbol namedType &&
-            (namedType.IsRecord || typeSymbol.TypeKind == TypeKind.Struct))
-        {
-            // Types with [Equatable] are value-equatable
-            if (namedType.GetAttributes().Any(a =>
-                a.AttributeClass?.Name is "EquatableAttribute" or "Equatable" &&
-                a.AttributeClass.ContainingNamespace?.ToDisplayString() == "Generator.Equals"))
-                return true;
+        // Types with [Equatable] are value-equatable (works across assemblies)
+        if (typeSymbol is INamedTypeSymbol namedType && HasEquatableAttribute(namedType))
+            return true;
 
-            return HasDeepValueEquality(namedType, visited);
+        // Records and structs - recursively check their members
+        if (typeSymbol is INamedTypeSymbol nts &&
+            (nts.IsRecord || typeSymbol.TypeKind == TypeKind.Struct))
+        {
+            return HasDeepValueEquality(nts, visited);
         }
 
         // Classes without [Equatable] are not value-equatable (they use reference equality)
@@ -205,6 +207,16 @@ internal static class TypeSymbolExtensions
             .Replace("global::", "");
 
         return PrimitiveTypeNames.Contains(fullName);
+    }
+
+    /// <summary>
+    /// Checks if a type has the [Equatable] attribute (works across assemblies).
+    /// </summary>
+    private static bool HasEquatableAttribute(INamedTypeSymbol typeSymbol)
+    {
+        return typeSymbol.GetAttributes().Any(a =>
+            a.AttributeClass?.Name is "EquatableAttribute" or "Equatable" &&
+            a.AttributeClass.ContainingNamespace?.ToDisplayString() == "Generator.Equals");
     }
 
     private static bool IsWellKnownSystemType(ITypeSymbol typeSymbol)

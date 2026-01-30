@@ -8,7 +8,6 @@ namespace Generator.Equals.Analyzers;
 public static class DiagnosticDescriptors
 {
     private const string Category = "Generator.Equals";
-    private const string HelpLinkBase = "https://github.com/diegofrata/Generator.Equals";
 
     /// <summary>
     /// GE001: Collection property missing equality attribute.
@@ -20,8 +19,7 @@ public static class DiagnosticDescriptors
         category: Category,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        description: "Collection properties in an [Equatable] type should specify how elements are compared using [OrderedEquality], [UnorderedEquality], or [SetEquality] attributes.",
-        helpLinkUri: HelpLinkBase);
+        description: "Collection properties in an [Equatable] type should specify how elements are compared using [OrderedEquality], [UnorderedEquality], or [SetEquality] attributes.");
 
     /// <summary>
     /// GE002: Complex object property type lacks [Equatable].
@@ -33,8 +31,7 @@ public static class DiagnosticDescriptors
         category: Category,
         defaultSeverity: DiagnosticSeverity.Info,
         isEnabledByDefault: true,
-        description: "User-defined classes and structs used in [Equatable] types should also have the [Equatable] attribute for proper deep equality comparison.",
-        helpLinkUri: HelpLinkBase);
+        description: "User-defined classes and structs used in [Equatable] types should also have the [Equatable] attribute for proper deep equality comparison.");
 
     /// <summary>
     /// GE003: Collection element type lacks [Equatable].
@@ -46,8 +43,7 @@ public static class DiagnosticDescriptors
         category: Category,
         defaultSeverity: DiagnosticSeverity.Info,
         isEnabledByDefault: true,
-        description: "Complex types used as collection elements in [Equatable] types should also have the [Equatable] attribute for proper deep equality comparison.",
-        helpLinkUri: HelpLinkBase);
+        description: "Complex types used as collection elements in [Equatable] types should also have the [Equatable] attribute for proper deep equality comparison.");
 
     /// <summary>
     /// GE004: Equality attribute used but containing type lacks [Equatable].
@@ -59,8 +55,7 @@ public static class DiagnosticDescriptors
         category: Category,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        description: "Equality attributes like [OrderedEquality], [IgnoreEquality], etc. have no effect unless the containing type is marked with [Equatable].",
-        helpLinkUri: HelpLinkBase);
+        description: "Equality attributes like [OrderedEquality], [IgnoreEquality], etc. have no effect unless the containing type is marked with [Equatable].");
 
     /// <summary>
     /// GE005: Type with [Equatable] has manual Equals/GetHashCode implementation.
@@ -72,8 +67,7 @@ public static class DiagnosticDescriptors
         category: Category,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        description: "Types with [Equatable] attribute have Equals and GetHashCode generated automatically. Manual implementations may conflict or be overwritten.",
-        helpLinkUri: HelpLinkBase);
+        description: "Types with [Equatable] attribute have Equals and GetHashCode generated automatically. Manual implementations may conflict or be overwritten.");
 
     /// <summary>
     /// GE006: [Equatable] on non-partial type.
@@ -85,8 +79,7 @@ public static class DiagnosticDescriptors
         category: Category,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
-        description: "Types with [Equatable] attribute must be declared as partial so that the generator can add the Equals and GetHashCode methods.",
-        helpLinkUri: HelpLinkBase);
+        description: "Types with [Equatable] attribute must be declared as partial so that the generator can add the Equals and GetHashCode methods.");
 
     /// <summary>
     /// GE007: Conflicting attributes on same property.
@@ -98,8 +91,7 @@ public static class DiagnosticDescriptors
         category: Category,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
-        description: "A property can only have one equality attribute. Remove duplicate or conflicting attributes.",
-        helpLinkUri: HelpLinkBase);
+        description: "A property can only have one equality attribute. Remove duplicate or conflicting attributes.");
 
     /// <summary>
     /// GE008: [StringEquality] on non-string type.
@@ -111,8 +103,7 @@ public static class DiagnosticDescriptors
         category: Category,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
-        description: "[StringEquality] attribute can only be used on properties of type string.",
-        helpLinkUri: HelpLinkBase);
+        description: "[StringEquality] attribute can only be used on properties of type string.");
 
     /// <summary>
     /// GE009: Collection equality attribute on non-collection type.
@@ -124,6 +115,5 @@ public static class DiagnosticDescriptors
         category: Category,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
-        description: "Collection equality attributes like [OrderedEquality], [UnorderedEquality], and [SetEquality] can only be used on collection types (IEnumerable<T>).",
-        helpLinkUri: HelpLinkBase);
+        description: "Collection equality attributes like [OrderedEquality], [UnorderedEquality], and [SetEquality] can only be used on collection types (IEnumerable<T>).");
 }
