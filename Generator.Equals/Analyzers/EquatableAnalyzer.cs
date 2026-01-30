@@ -177,7 +177,7 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
             return;
 
         // GE002: Complex type without [Equatable]
-        if (memberType.IsComplexType() && !HasEquatableAttribute(memberType))
+        if (memberType.IsComplexType() && !memberType.HasEquatableAttribute())
         {
             var location = GetMemberTypeLocation(member) ?? member.Locations.FirstOrDefault() ?? Location.None;
             context.ReportDiagnostic(Diagnostic.Create(
@@ -191,7 +191,7 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
         if (memberType.IsCollection())
         {
             var elementType = memberType.GetCollectionElementType();
-            if (elementType != null && elementType.IsComplexType() && !HasEquatableAttribute(elementType))
+            if (elementType != null && elementType.IsComplexType() && !elementType.HasEquatableAttribute())
             {
                 var location = GetMemberTypeLocation(member) ?? member.Locations.FirstOrDefault() ?? Location.None;
                 context.ReportDiagnostic(Diagnostic.Create(
@@ -458,11 +458,4 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
         return false;
     }
 
-    private static bool HasEquatableAttribute(ITypeSymbol typeSymbol)
-    {
-        if (typeSymbol is not INamedTypeSymbol namedType)
-            return false;
-
-        return namedType.HasAttribute(Metadata.Equatable);
-    }
 }

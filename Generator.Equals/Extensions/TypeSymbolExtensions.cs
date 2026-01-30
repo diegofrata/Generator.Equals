@@ -80,7 +80,7 @@ internal static class TypeSymbolExtensions
             return false;
 
         // Not complex if it has [Equatable] attribute (including from other assemblies)
-        if (typeSymbol is INamedTypeSymbol namedTypeSymbol && HasEquatableAttribute(namedTypeSymbol))
+        if (typeSymbol.HasEquatableAttribute())
             return false;
 
         // Records and structs with only value-equatable members are not complex
@@ -180,7 +180,7 @@ internal static class TypeSymbolExtensions
             return true;
 
         // Types with [Equatable] are value-equatable (works across assemblies)
-        if (typeSymbol is INamedTypeSymbol namedType && HasEquatableAttribute(namedType))
+        if (typeSymbol.HasEquatableAttribute())
             return true;
 
         // Records and structs - recursively check their members
@@ -212,11 +212,38 @@ internal static class TypeSymbolExtensions
     /// <summary>
     /// Checks if a type has the [Equatable] attribute (works across assemblies).
     /// </summary>
-    private static bool HasEquatableAttribute(INamedTypeSymbol typeSymbol)
+    public static bool HasEquatableAttribute(this ITypeSymbol typeSymbol)
     {
-        return typeSymbol.GetAttributes().Any(a =>
-            a.AttributeClass?.Name is "EquatableAttribute" or "Equatable" &&
-            a.AttributeClass.ContainingNamespace?.ToDisplayString() == "Generator.Equals");
+        if (typeSymbol is not INamedTypeSymbol namedType)
+            return false;
+
+        foreach (var attribute in namedType.GetAttributes())
+        {
+            var attrClass = attribute.AttributeClass;
+            if (attrClass == null)
+                continue;
+
+            // Check by name - attribute class is typically "EquatableAttribute"
+            if (attrClass.Name is not ("EquatableAttribute" or "Equatable"))
+                continue;
+
+            // Check namespace - could be via ToDisplayString or by walking the namespace chain
+            var ns = attrClass.ContainingNamespace;
+            if (ns == null || ns.IsGlobalNamespace)
+                continue;
+
+            // Check the full namespace path
+            var nsName = ns.ToDisplayString();
+            if (nsName == "Generator.Equals")
+                return true;
+
+            // Also try the fully qualified format in case ToDisplayString differs
+            var fullName = attrClass.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            if (fullName is "global::Generator.Equals.EquatableAttribute" or "global::Generator.Equals.Equatable")
+                return true;
+        }
+
+        return false;
     }
 
     private static bool IsWellKnownSystemType(ITypeSymbol typeSymbol)
