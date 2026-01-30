@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals.Extensions;
@@ -55,21 +56,16 @@ internal static class TypeSymbolExtensions
     /// </summary>
     public static bool IsComplexType(this ITypeSymbol typeSymbol)
     {
-        // Not a complex type if it's a primitive
+        // Not a complex type if it's a primitive (includes enums)
         if (IsPrimitiveType(typeSymbol))
             return false;
 
         // Not a complex type if it's nullable of a primitive
         if (typeSymbol is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T } namedType)
         {
-            var underlyingType = namedType.TypeArguments[0];
-            if (IsPrimitiveType(underlyingType))
+            if (IsPrimitiveType(namedType.TypeArguments[0]))
                 return false;
         }
-
-        // Not complex if it's an enum
-        if (typeSymbol.TypeKind == TypeKind.Enum)
-            return false;
 
         // Not complex if it's a collection
         if (typeSymbol.IsCollection())
@@ -82,6 +78,14 @@ internal static class TypeSymbolExtensions
         // Not complex if it's an interface or abstract type
         if (typeSymbol.TypeKind == TypeKind.Interface)
             return false;
+
+        // Records and structs with only value-equatable members are not complex
+        if (typeSymbol is INamedTypeSymbol namedTypeSymbol &&
+            (namedTypeSymbol.IsRecord || typeSymbol.TypeKind == TypeKind.Struct))
+        {
+            if (HasDeepValueEquality(namedTypeSymbol, new HashSet<ITypeSymbol>(SymbolEqualityComparer.Default)))
+                return false;
+        }
 
         // It's a complex type if it's a user-defined class, struct, or record
         return typeSymbol.TypeKind is TypeKind.Class or TypeKind.Struct;
@@ -116,8 +120,84 @@ internal static class TypeSymbolExtensions
         return typeSymbol.GetInterface("global::System.Collections.Generic.ISet<T>") != null;
     }
 
+    /// <summary>
+    /// Determines if a record or struct has deep value equality by checking all its members recursively.
+    /// A type has deep value equality if all its properties/fields are primitives, enums, strings,
+    /// or other types that themselves have deep value equality.
+    /// </summary>
+    private static bool HasDeepValueEquality(INamedTypeSymbol typeSymbol, HashSet<ITypeSymbol> visited)
+    {
+        // Prevent infinite recursion for circular references
+        if (!visited.Add(typeSymbol))
+            return true; // Already being checked, assume OK to break cycle
+
+        // Check all instance properties and fields
+        foreach (var member in typeSymbol.GetMembers())
+        {
+            ITypeSymbol? memberType = member switch
+            {
+                IPropertySymbol { IsStatic: false, IsIndexer: false } prop => prop.Type,
+                IFieldSymbol { IsStatic: false, IsImplicitlyDeclared: false } field => field.Type,
+                _ => null
+            };
+
+            if (memberType == null)
+                continue;
+
+            if (!IsDeepValueEquatable(memberType, visited))
+                return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Checks if a type is inherently value-equatable (doesn't need [Equatable] for correct equality).
+    /// </summary>
+    private static bool IsDeepValueEquatable(ITypeSymbol typeSymbol, HashSet<ITypeSymbol> visited)
+    {
+        // Primitives (including enums) are value-equatable
+        if (IsPrimitiveType(typeSymbol))
+            return true;
+
+        // Handle nullable types
+        if (typeSymbol is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T } nullableType)
+        {
+            var underlyingType = nullableType.TypeArguments[0];
+            return IsDeepValueEquatable(underlyingType, visited);
+        }
+
+        // Collections are NOT value-equatable (they use reference equality by default)
+        if (typeSymbol.IsCollection())
+            return false;
+
+        // Well-known System types that we consider value-equatable
+        if (IsWellKnownSystemType(typeSymbol))
+            return true;
+
+        // Records and structs - recursively check their members
+        if (typeSymbol is INamedTypeSymbol namedType &&
+            (namedType.IsRecord || typeSymbol.TypeKind == TypeKind.Struct))
+        {
+            // Types with [Equatable] are value-equatable
+            if (namedType.GetAttributes().Any(a =>
+                a.AttributeClass?.Name is "EquatableAttribute" or "Equatable" &&
+                a.AttributeClass.ContainingNamespace?.ToDisplayString() == "Generator.Equals"))
+                return true;
+
+            return HasDeepValueEquality(namedType, visited);
+        }
+
+        // Classes without [Equatable] are not value-equatable (they use reference equality)
+        return false;
+    }
+
     private static bool IsPrimitiveType(ITypeSymbol typeSymbol)
     {
+        // Enums are value types with built-in equality
+        if (typeSymbol.TypeKind == TypeKind.Enum)
+            return true;
+
         if (typeSymbol.SpecialType != SpecialType.None)
             return true;
 
