@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 [assembly: InternalsVisibleTo("Generator.Equals.SnapshotTests")]
 [assembly: InternalsVisibleTo("Generator.Equals.Tests.DynamicGeneration")]
+[assembly: InternalsVisibleTo("Generator.Equals.Tests")]
 
 namespace Generator.Equals;
 

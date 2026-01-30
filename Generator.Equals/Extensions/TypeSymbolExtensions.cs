@@ -79,8 +79,8 @@ internal static class TypeSymbolExtensions
         if (typeSymbol.TypeKind == TypeKind.Interface)
             return false;
 
-        // Not complex if it has [Equatable] attribute (including from other assemblies)
-        if (typeSymbol.HasEquatableAttribute())
+        // Not complex if it has proper equality (attribute or IEquatable<T>)
+        if (typeSymbol.HasProperEquality())
             return false;
 
         // Records and structs with only value-equatable members are not complex
@@ -179,8 +179,8 @@ internal static class TypeSymbolExtensions
         if (IsWellKnownSystemType(typeSymbol))
             return true;
 
-        // Types with [Equatable] are value-equatable (works across assemblies)
-        if (typeSymbol.HasEquatableAttribute())
+        // Types with proper equality (attribute or IEquatable<T>) are value-equatable
+        if (typeSymbol.HasProperEquality())
             return true;
 
         // Records and structs - recursively check their members
@@ -190,7 +190,7 @@ internal static class TypeSymbolExtensions
             return HasDeepValueEquality(nts, visited);
         }
 
-        // Classes without [Equatable] are not value-equatable (they use reference equality)
+        // Classes without IEquatable<T> are not value-equatable (they use reference equality)
         return false;
     }
 
@@ -210,7 +210,57 @@ internal static class TypeSymbolExtensions
     }
 
     /// <summary>
+    /// Checks if a type implements IEquatable&lt;T&gt; for itself.
+    /// Used as a fallback for cross-assembly detection when [Equatable] attribute is not visible.
+    /// </summary>
+    public static bool ImplementsIEquatable(this ITypeSymbol typeSymbol)
+    {
+        if (typeSymbol is not INamedTypeSymbol namedType)
+            return false;
+
+        // Check if the type implements IEquatable<T> where T is the type itself
+        foreach (var iface in namedType.AllInterfaces)
+        {
+            // Check if this is IEquatable<T>
+            if (iface is not { Name: "IEquatable", TypeArguments.Length: 1, ContainingNamespace: { } ns })
+                continue;
+
+            // Check namespace is System
+            if (ns.ToDisplayString() != "System")
+                continue;
+
+            // Check the type argument is the type itself
+            if (SymbolEqualityComparer.Default.Equals(iface.TypeArguments[0], namedType))
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if a type has proper equality (either via [Equatable] attribute or IEquatable&lt;T&gt;).
+    /// First checks for [Equatable] attribute (works for same-assembly types).
+    /// For cross-assembly types (from metadata), falls back to IEquatable&lt;T&gt; check.
+    /// </summary>
+    public static bool HasProperEquality(this ITypeSymbol typeSymbol)
+    {
+        // First try to detect via attribute (works for same-assembly)
+        if (typeSymbol.HasEquatableAttribute())
+            return true;
+
+        // Only fall back to IEquatable<T> check for types from other assemblies (metadata)
+        // For same-assembly types, we can see the attribute, so no need for fallback
+        var isFromMetadata = typeSymbol.Locations.All(l => l.Kind == LocationKind.MetadataFile);
+        if (isFromMetadata && typeSymbol.ImplementsIEquatable())
+            return true;
+
+        return false;
+    }
+
+    /// <summary>
     /// Checks if a type has the [Equatable] attribute (works across assemblies).
+    /// Note: Due to [Conditional] on the attribute, this may not work for types from
+    /// referenced assemblies. Prefer <see cref="ImplementsIEquatable"/> for cross-assembly checks.
     /// </summary>
     public static bool HasEquatableAttribute(this ITypeSymbol typeSymbol)
     {
