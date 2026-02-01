@@ -60,7 +60,7 @@ public partial class PrimaryConstructorTests : SnapshotTestBase
     [Theory]
     [MemberData(nameof(TargetFrameworks))]
     public Task VerifyGeneratedCode(TargetFramework fw) =>
-        VerifyGeneratedSource(SampleSource, fw);
+        VerifyGeneratedSource(SampleSource, fw, ct: TestContext.Current.CancellationToken);
 
     const string SampleSource = """
                                 using Generator.Equals;

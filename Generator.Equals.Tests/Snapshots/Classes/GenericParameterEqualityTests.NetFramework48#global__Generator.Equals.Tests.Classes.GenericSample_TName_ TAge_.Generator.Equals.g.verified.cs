@@ -15,11 +15,8 @@ namespace Generator.Equals.Tests.Classes
         /// <param name="right">The right object</param>
         /// <returns>true if the objects are equal; otherwise, false.</returns>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-        public static bool operator ==(
-            global::Generator.Equals.Tests.Classes.GenericSample<TName, TAge>? left,
-            global::Generator.Equals.Tests.Classes.GenericSample<TName, TAge>? right) =>
-            global::Generator.Equals.DefaultEqualityComparer<global::Generator.Equals.Tests.Classes.GenericSample<TName, TAge>?>.Default
-                .Equals(left, right);
+        public static bool operator ==(global::Generator.Equals.Tests.Classes.GenericSample<TName, TAge>? left, global::Generator.Equals.Tests.Classes.GenericSample<TName, TAge>? right) =>
+            EqualityComparer.Default.Equals(left, right);
         
         /// <summary>
         /// Indicates whether the object on the left is not equal to the object on the right.
@@ -29,7 +26,7 @@ namespace Generator.Equals.Tests.Classes
         /// <returns>true if the objects are not equal; otherwise, false.</returns>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
         public static bool operator !=(global::Generator.Equals.Tests.Classes.GenericSample<TName, TAge>? left, global::Generator.Equals.Tests.Classes.GenericSample<TName, TAge>? right) =>
-            !(left == right);
+            !EqualityComparer.Default.Equals(left, right);
         
         /// <inheritdoc/>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
@@ -70,6 +67,27 @@ namespace Generator.Equals.Tests.Classes
             );
             
             return hashCode.ToHashCode();
+        }
+        
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
+        public sealed class EqualityComparer : global::System.Collections.Generic.IEqualityComparer<global::Generator.Equals.Tests.Classes.GenericSample<TName, TAge>>
+        {
+            public static EqualityComparer Default { get; } = new EqualityComparer();
+            
+            /// <inheritdoc/>
+            public bool Equals(global::Generator.Equals.Tests.Classes.GenericSample<TName, TAge>? x, global::Generator.Equals.Tests.Classes.GenericSample<TName, TAge>? y)
+            {
+                if (ReferenceEquals(x, y)) return true;
+                if (x is null || y is null) return false;
+                
+                return x.Equals(y);
+            }
+            
+            /// <inheritdoc/>
+            public int GetHashCode(global::Generator.Equals.Tests.Classes.GenericSample<TName, TAge> obj)
+            {
+                return obj.GetHashCode();
+            }
         }
     }
 }

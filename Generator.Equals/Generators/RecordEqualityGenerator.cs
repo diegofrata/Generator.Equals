@@ -1,4 +1,4 @@
-﻿using System.CodeDom.Compiler;
+using System.CodeDom.Compiler;
 
 using Generator.Equals.Models;
 
@@ -14,6 +14,7 @@ namespace Generator.Equals.Generators
             bool ignoreInheritedMembers = model.IgnoreInheritedMembers;
             var symbolName = model.Fullname;
             var baseTypeName = model.BaseTypeName;
+            var baseTypeFullname = model.BaseTypeFullname;
 
             writer.WriteLine(InheritDocComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
@@ -26,13 +27,20 @@ namespace Generator.Equals.Generators
 
             writer.Indent++;
 
-            writer.WriteLine(baseTypeName == "object" || ignoreInheritedMembers
-                ? "!ReferenceEquals(other, null) && EqualityContract == other.EqualityContract"
-                : $"base.Equals(({baseTypeName}?)other)");
+            // For records, use base.Equals() to properly chain through the inheritance hierarchy
+            // This ensures that intermediate types with manual Equals overrides are called
+            if (baseTypeName == "object" || ignoreInheritedMembers)
+            {
+                writer.WriteLine("!ReferenceEquals(other, null) && EqualityContract == other.EqualityContract");
+            }
+            else
+            {
+                writer.WriteLine($"base.Equals(({baseTypeFullname}?)other)");
+            }
 
             // Include inherited members (when no ancestor has [Equatable])
-            BuildMembersEquality(model.InheritedEqualityModels, writer);
-            BuildMembersEquality(model.BuildEqualityModels, writer);
+            BuildMembersEquality(model.InheritedEqualityModels, writer, "this", "other");
+            BuildMembersEquality(model.BuildEqualityModels, writer, "this", "other");
 
             writer.WriteLine(";");
             writer.Indent--;
@@ -56,16 +64,66 @@ namespace Generator.Equals.Generators
             writer.WriteLine(@"var hashCode = new global::System.HashCode();");
             writer.WriteLine();
 
-            writer.WriteLine(baseTypeName == "object" || ignoreInheritedMembers
-                ? "hashCode.Add(this.EqualityContract);"
-                : "hashCode.Add(base.GetHashCode());");
+            // For records, use base.GetHashCode() to properly chain through the inheritance hierarchy
+            if (baseTypeName == "object" || ignoreInheritedMembers)
+            {
+                writer.WriteLine("hashCode.Add(this.EqualityContract);");
+            }
+            else
+            {
+                writer.WriteLine("hashCode.Add(base.GetHashCode());");
+            }
 
             // Include inherited members (when no ancestor has [Equatable])
-            BuildMembersHashCode(model.InheritedEqualityModels, writer);
-            BuildMembersHashCode(model.BuildEqualityModels, writer);
+            BuildMembersHashCode(model.InheritedEqualityModels, writer, "this");
+            BuildMembersHashCode(model.BuildEqualityModels, writer, "this");
 
             writer.WriteLine();
             writer.WriteLine("return hashCode.ToHashCode();");
+
+            writer.AppendCloseBracket();
+        }
+
+        static void BuildNestedEqualityComparer(
+            EqualityTypeModel model,
+            IndentedTextWriter writer
+        )
+        {
+            var symbolName = model.Fullname;
+            // Use 'new' to suppress CS0108 warning when hiding base class's EqualityComparer
+            var newKeyword = model.BaseHasEquatable ? "new " : "";
+
+            writer.WriteLine();
+            writer.WriteLine(GeneratedCodeAttributeDeclaration);
+            writer.WriteLine($"public {newKeyword}sealed class EqualityComparer : global::System.Collections.Generic.IEqualityComparer<{symbolName}>");
+            writer.AppendOpenBracket();
+
+            // Default instance
+            writer.WriteLine("public static EqualityComparer Default { get; } = new EqualityComparer();");
+            writer.WriteLine();
+
+            // Equals(T?, T?) - delegates to the type's Equals method
+            writer.WriteLine(InheritDocComment);
+            writer.WriteLine($"public bool Equals({symbolName}? x, {symbolName}? y)");
+            writer.AppendOpenBracket();
+
+            writer.WriteLine("if (ReferenceEquals(x, y)) return true;");
+            writer.WriteLine("if (x is null || y is null) return false;");
+            writer.WriteLine();
+            writer.WriteLine("return x.Equals(y);");
+
+            writer.AppendCloseBracket();
+
+            writer.WriteLine();
+
+            // GetHashCode(T) - delegates to the type's GetHashCode method
+            writer.WriteLine(InheritDocComment);
+            writer.WriteLine($"public int GetHashCode({symbolName} obj)");
+            writer.AppendOpenBracket();
+
+            writer.WriteLine("return obj.GetHashCode();");
+
+            writer.AppendCloseBracket();
 
             writer.AppendCloseBracket();
         }
@@ -79,6 +137,8 @@ namespace Generator.Equals.Generators
                 writer.WriteLine();
 
                 BuildGetHashCode(model, writer);
+
+                BuildNestedEqualityComparer(model, writer);
             });
 
             return code;

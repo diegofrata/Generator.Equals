@@ -92,7 +92,7 @@ public partial class UnorderedEqualityWithComparerTests : SnapshotTestBase
     [Theory]
     [MemberData(nameof(TargetFrameworks))]
     public Task VerifyGeneratedCode(TargetFramework fw) =>
-        VerifyGeneratedSource(SampleSource, fw);
+        VerifyGeneratedSource(SampleSource, fw, ct: TestContext.Current.CancellationToken);
 
     const string SampleSource = """
                                 using System;

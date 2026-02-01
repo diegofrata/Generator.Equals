@@ -63,7 +63,7 @@ namespace Generator.Equals
             return $"global::Generator.Equals.{comparerClassName}<{elementTypeName}>.Default";
         }
 
-        static void BuildEquality(EqualityMemberModel memberModel, IndentedTextWriter writer)
+        static void BuildEquality(EqualityMemberModel memberModel, IndentedTextWriter writer, string left, string right)
         {
             if (memberModel.Ignored)
             {
@@ -79,68 +79,70 @@ namespace Generator.Equals
                 {
                     var comparer = GetCollectionComparerExpression("UnorderedEqualityComparer", memberModel.TypeName, memberModel);
                     writer.WriteLine(
-                        $"&& {comparer}.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
+                        $"&& {comparer}.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)");
                     break;
                 }
 
                 case EqualityType.UnorderedEquality when memberModel.IsDictionary:
                     writer.WriteLine(
-                        $"&& global::Generator.Equals.DictionaryEqualityComparer<{memberModel.TypeName}>.Default.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
+                        $"&& global::Generator.Equals.DictionaryEqualityComparer<{memberModel.TypeName}>.Default.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)");
                     break;
 
                 case EqualityType.OrderedEquality:
                 {
                     var comparer = GetCollectionComparerExpression("OrderedEqualityComparer", memberModel.TypeName, memberModel);
                     writer.WriteLine(
-                        $"&& {comparer}.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
+                        $"&& {comparer}.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)");
                     break;
                 }
 
                 case EqualityType.ReferenceEquality:
                     writer.WriteLine(
-                        $"&& global::Generator.Equals.ReferenceEqualityComparer<{memberModel.TypeName}>.Default.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
+                        $"&& global::Generator.Equals.ReferenceEqualityComparer<{memberModel.TypeName}>.Default.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)");
                     break;
 
                 case EqualityType.SetEquality:
                 {
                     var comparer = GetCollectionComparerExpression("SetEqualityComparer", memberModel.TypeName, memberModel);
                     writer.WriteLine(
-                        $"&& {comparer}.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
+                        $"&& {comparer}.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)");
                     break;
                 }
 
                 case EqualityType.StringEquality:
                     writer.WriteLine(
-                        $"&& global::System.StringComparer.{memberModel.StringComparer}.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
+                        $"&& global::System.StringComparer.{memberModel.StringComparer}.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)");
                     break;
 
                 case EqualityType.CustomEquality when memberModel.ComparerHasStaticInstance:
                     writer.WriteLine(
-                        $"&& {memberModel.ComparerType}.{memberModel.ComparerMemberName}.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
+                        $"&& {memberModel.ComparerType}.{memberModel.ComparerMemberName}.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)");
 
                     break;
 
                 case EqualityType.CustomEquality when !memberModel.ComparerHasStaticInstance:
                     writer.WriteLine(
-                        $"&& new {memberModel.ComparerType}().Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
+                        $"&& new {memberModel.ComparerType}().Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)");
 
                     break;
 
                 case EqualityType.DefaultEquality:
                     writer.WriteLine(
-                        $"&& global::Generator.Equals.DefaultEqualityComparer<{memberModel.TypeName}>.Default.Equals(this.{memberModel.PropertyName}!, other.{memberModel.PropertyName}!)");
+                        $"&& global::Generator.Equals.DefaultEqualityComparer<{memberModel.TypeName}>.Default.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)");
                     break;
             }
         }
 
         internal static void BuildMembersEquality(
             ImmutableArray<EqualityMemberModel> models,
-            IndentedTextWriter writer
+            IndentedTextWriter writer,
+            string left = "x",
+            string right = "y"
         )
         {
             foreach (var model in models)
             {
-                BuildEquality(model, writer);
+                BuildEquality(model, writer, left, right);
             }
         }
 
@@ -149,16 +151,17 @@ namespace Generator.Equals
             ITypeSymbol typeSymbol,
             AttributesMetadata attributesMetadata,
             IndentedTextWriter writer,
-            bool explicitMode
+            bool explicitMode,
+            string obj = "obj"
         )
         {
             var model = EqualityMemberModelTransformer
                 .BuildEqualityModel(memberSymbol, typeSymbol, attributesMetadata, explicitMode);
 
-            BuildHashCode(model, writer);
+            BuildHashCode(model, writer, obj);
         }
 
-        static void BuildHashCode(EqualityMemberModel memberModel, IndentedTextWriter writer)
+        static void BuildHashCode(EqualityMemberModel memberModel, IndentedTextWriter writer, string obj)
         {
             if (memberModel.Ignored)
             {
@@ -211,18 +214,18 @@ namespace Generator.Equals
             {
                 writer.WriteLine("hashCode.Add(");
                 writer.Indent++;
-                writer.WriteLine($"this.{memberModel.PropertyName}!,");
+                writer.WriteLine($"{obj}.{memberModel.PropertyName}!,");
                 writer.WriteLine(comparer);
                 writer.Indent--;
                 writer.WriteLine(");");
             }
         }
 
-        public static void BuildMembersHashCode(ImmutableArray<EqualityMemberModel> models, IndentedTextWriter writer)
+        public static void BuildMembersHashCode(ImmutableArray<EqualityMemberModel> models, IndentedTextWriter writer, string obj = "obj")
         {
             foreach (var model in models)
             {
-                BuildHashCode(model, writer);
+                BuildHashCode(model, writer, obj);
             }
         }
     }

@@ -1,4 +1,4 @@
-﻿using System.CodeDom.Compiler;
+using System.CodeDom.Compiler;
 
 using Generator.Equals.Models;
 
@@ -6,58 +6,95 @@ namespace Generator.Equals.Generators
 {
     sealed class StructEqualityGenerator : EqualityGeneratorBase
     {
-        static void BuildEquals(EqualityTypeModel model, IndentedTextWriter writer)
+        static void BuildDelegatingMethods(EqualityTypeModel model, IndentedTextWriter writer)
         {
             var symbolName = model.Fullname;
 
+            // == operator
             writer.WriteLines(EqualsOperatorCodeComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
-            writer.WriteLine("public static bool operator ==(");
-            writer.WriteLine(1, $"{symbolName} left,");
-            writer.WriteLine(1, $"{symbolName} right) =>");
-            writer.WriteLine(1, $"global::Generator.Equals.DefaultEqualityComparer<{symbolName}>.Default");
-            writer.WriteLine(2, $".Equals(left, right);");
+            writer.WriteLine($"public static bool operator ==({symbolName} left, {symbolName} right) =>");
+            writer.WriteLine(1, "EqualityComparer.Default.Equals(left, right);");
             writer.WriteLine();
 
+            // != operator
             writer.WriteLines(NotEqualsOperatorCodeComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
             writer.WriteLine($"public static bool operator !=({symbolName} left, {symbolName} right) =>");
-            writer.WriteLine(1, "!(left == right);");
+            writer.WriteLine(1, "!EqualityComparer.Default.Equals(left, right);");
             writer.WriteLine();
 
+            // Equals(object?)
             writer.WriteLine(InheritDocComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
             writer.WriteLine("public override bool Equals(object? obj) =>");
-            writer.WriteLine(1, $"obj is {symbolName} o && Equals(o);");
+            writer.WriteLine(1, $"obj is {symbolName} o && EqualityComparer.Default.Equals(this, o);");
             writer.WriteLine();
 
+            // Equals(T)
             writer.WriteLine(InheritDocComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
-            writer.WriteLine($"public bool Equals({symbolName} other)");
+            writer.WriteLine($"public bool Equals({symbolName} other) =>");
+            writer.WriteLine(1, "EqualityComparer.Default.Equals(this, other);");
+            writer.WriteLine();
+
+            // GetHashCode()
+            writer.WriteLine(InheritDocComment);
+            writer.WriteLine(GeneratedCodeAttributeDeclaration);
+            writer.WriteLine("public override int GetHashCode() =>");
+            writer.WriteLine(1, "EqualityComparer.Default.GetHashCode(this);");
+        }
+
+        static void BuildNestedEqualityComparer(EqualityTypeModel model, IndentedTextWriter writer)
+        {
+            var symbolName = model.Fullname;
+
+            writer.WriteLine();
+            writer.WriteLine(GeneratedCodeAttributeDeclaration);
+            writer.WriteLine($"public sealed class EqualityComparer : global::System.Collections.Generic.IEqualityComparer<{symbolName}>");
+            writer.AppendOpenBracket();
+
+            // Default instance
+            writer.WriteLine("public static EqualityComparer Default { get; } = new EqualityComparer();");
+            writer.WriteLine();
+
+            // Equals(T, T)
+            BuildComparerEquals(model, writer, symbolName);
+
+            writer.WriteLine();
+
+            // GetHashCode(T)
+            BuildComparerGetHashCode(model, writer, symbolName);
+
+            writer.AppendCloseBracket();
+        }
+
+        static void BuildComparerEquals(EqualityTypeModel model, IndentedTextWriter writer, string symbolName)
+        {
+            writer.WriteLine(InheritDocComment);
+            writer.WriteLine($"public bool Equals({symbolName} x, {symbolName} y)");
             writer.AppendOpenBracket();
 
             writer.WriteLine("return true");
 
             writer.Indent++;
-            BuildMembersEquality(model.BuildEqualityModels, writer);
-
+            BuildMembersEquality(model.BuildEqualityModels, writer, "x", "y");
             writer.WriteLine(";");
             writer.Indent--;
 
             writer.AppendCloseBracket();
         }
 
-        static void BuildGetHashCode(EqualityTypeModel model, IndentedTextWriter writer)
+        static void BuildComparerGetHashCode(EqualityTypeModel model, IndentedTextWriter writer, string symbolName)
         {
             writer.WriteLine(InheritDocComment);
-            writer.WriteLine(GeneratedCodeAttributeDeclaration);
-            writer.WriteLine(@"public override int GetHashCode()");
+            writer.WriteLine($"public int GetHashCode({symbolName} obj)");
             writer.AppendOpenBracket();
 
-            writer.WriteLine(@"var hashCode = new global::System.HashCode();");
+            writer.WriteLine("var hashCode = new global::System.HashCode();");
             writer.WriteLine();
 
-            BuildMembersHashCode(model.BuildEqualityModels, writer);
+            BuildMembersHashCode(model.BuildEqualityModels, writer, "obj");
 
             writer.WriteLine();
             writer.WriteLine("return hashCode.ToHashCode();");
@@ -67,18 +104,14 @@ namespace Generator.Equals.Generators
 
         public static string Generate(EqualityTypeModel model)
         {
-            // Generate the code using the custom model instead of Roslyn types
             var code = ContainingTypesBuilder.Build(model.ContainingSymbols, content: writer =>
             {
                 writer.WriteLine($"partial struct {model.TypeName} : global::System.IEquatable<{model.Fullname}>");
                 writer.AppendOpenBracket();
 
-                // BuildEquals and BuildGetHashCode are adjusted to accept the custom model instead of Roslyn symbols
-                BuildEquals(model, writer);
+                BuildDelegatingMethods(model, writer);
 
-                writer.WriteLine();
-
-                BuildGetHashCode(model, writer);
+                BuildNestedEqualityComparer(model, writer);
 
                 writer.AppendCloseBracket();
             });

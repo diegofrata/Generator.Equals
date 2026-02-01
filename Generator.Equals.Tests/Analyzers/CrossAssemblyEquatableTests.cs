@@ -66,12 +66,12 @@ public sealed class CrossAssemblyEquatableTests
 
         var externalCompilation = CSharpCompilation.Create(
             "ExternalLib",
-            new[] { CSharpSyntaxTree.ParseText(externalSource) },
+            new[] { CSharpSyntaxTree.ParseText(externalSource, cancellationToken: TestContext.Current.CancellationToken) },
             CoreReferences,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         // Verify the external compilation has no errors
-        var externalDiagnostics = externalCompilation.GetDiagnostics();
+        var externalDiagnostics = externalCompilation.GetDiagnostics(TestContext.Current.CancellationToken);
         var errors = externalDiagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
         if (errors.Count > 0)
             throw new Exception($"External compilation had errors: {string.Join(", ", errors.Select(e => e.GetMessage()))}");
@@ -97,12 +97,12 @@ public sealed class CrossAssemblyEquatableTests
 
         var mainCompilation = CSharpCompilation.Create(
             "MainApp",
-            new[] { CSharpSyntaxTree.ParseText(mainSource) },
+            new[] { CSharpSyntaxTree.ParseText(mainSource, cancellationToken: TestContext.Current.CancellationToken) },
             mainReferences,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         // Verify the main compilation has no errors
-        var mainDiagnostics = mainCompilation.GetDiagnostics();
+        var mainDiagnostics = mainCompilation.GetDiagnostics(TestContext.Current.CancellationToken);
         var mainErrors = mainDiagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
         if (mainErrors.Count > 0)
             throw new Exception($"Main compilation had errors: {string.Join(", ", mainErrors.Select(e => e.GetMessage()))}");
@@ -153,7 +153,7 @@ public sealed class CrossAssemblyEquatableTests
 
         var externalCompilation = CSharpCompilation.Create(
             "ExternalLib",
-            new[] { CSharpSyntaxTree.ParseText(externalSource) },
+            new[] { CSharpSyntaxTree.ParseText(externalSource, cancellationToken: TestContext.Current.CancellationToken) },
             CoreReferences,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
@@ -176,7 +176,7 @@ public sealed class CrossAssemblyEquatableTests
 
         var mainCompilation = CSharpCompilation.Create(
             "MainApp",
-            new[] { CSharpSyntaxTree.ParseText(mainSource) },
+            new[] { CSharpSyntaxTree.ParseText(mainSource, cancellationToken: TestContext.Current.CancellationToken) },
             mainReferences,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
@@ -185,7 +185,7 @@ public sealed class CrossAssemblyEquatableTests
         var compilationWithAnalyzers = mainCompilation.WithAnalyzers(
             ImmutableArray.Create(analyzer));
 
-        var analyzerDiagnostics = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync();
+        var analyzerDiagnostics = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync(TestContext.Current.CancellationToken);
 
         // Filter for GE002 diagnostics
         var ge002Diagnostics = analyzerDiagnostics
@@ -214,12 +214,12 @@ public sealed class CrossAssemblyEquatableTests
 
         var externalCompilation = CSharpCompilation.Create(
             "ExternalLib",
-            new[] { CSharpSyntaxTree.ParseText(externalSource) },
+            new[] { CSharpSyntaxTree.ParseText(externalSource, cancellationToken: TestContext.Current.CancellationToken) },
             CoreReferences,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         // Verify the external compilation has no errors
-        var externalDiagnostics = externalCompilation.GetDiagnostics();
+        var externalDiagnostics = externalCompilation.GetDiagnostics(TestContext.Current.CancellationToken);
         var errors = externalDiagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
         if (errors.Count > 0)
             throw new Exception($"External compilation had errors: {string.Join(", ", errors.Select(e => e.GetMessage()))}");
@@ -244,7 +244,7 @@ public sealed class CrossAssemblyEquatableTests
 
         var mainCompilation = CSharpCompilation.Create(
             "MainApp",
-            new[] { CSharpSyntaxTree.ParseText(mainSource) },
+            new[] { CSharpSyntaxTree.ParseText(mainSource, cancellationToken: TestContext.Current.CancellationToken) },
             mainReferences,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
@@ -288,7 +288,7 @@ public sealed class CrossAssemblyEquatableTests
 
         var externalCompilation = CSharpCompilation.Create(
             "ExternalLib",
-            new[] { CSharpSyntaxTree.ParseText(externalSource) },
+            new[] { CSharpSyntaxTree.ParseText(externalSource, cancellationToken: TestContext.Current.CancellationToken) },
             CoreReferences,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
@@ -311,7 +311,7 @@ public sealed class CrossAssemblyEquatableTests
 
         var mainCompilation = CSharpCompilation.Create(
             "MainApp",
-            new[] { CSharpSyntaxTree.ParseText(mainSource) },
+            new[] { CSharpSyntaxTree.ParseText(mainSource, cancellationToken: TestContext.Current.CancellationToken) },
             mainReferences,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
@@ -320,7 +320,7 @@ public sealed class CrossAssemblyEquatableTests
         var compilationWithAnalyzers = mainCompilation.WithAnalyzers(
             ImmutableArray.Create(analyzer));
 
-        var analyzerDiagnostics = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync();
+        var analyzerDiagnostics = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync(TestContext.Current.CancellationToken);
 
         var ge002Diagnostics = analyzerDiagnostics
             .Where(d => d.Id == "GE002")
@@ -355,12 +355,12 @@ public sealed class CrossAssemblyEquatableTests
 
             var externalCompilation = CSharpCompilation.Create(
                 "ExternalLib",
-                new[] { CSharpSyntaxTree.ParseText(externalSource) },
+                new[] { CSharpSyntaxTree.ParseText(externalSource, cancellationToken: TestContext.Current.CancellationToken) },
                 CoreReferences,
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
             // Emit to actual DLL
-            var emitResult = externalCompilation.Emit(externalDllPath);
+            var emitResult = externalCompilation.Emit(externalDllPath, cancellationToken: TestContext.Current.CancellationToken);
             if (!emitResult.Success)
             {
                 var errors = emitResult.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error);
@@ -393,12 +393,12 @@ public sealed class CrossAssemblyEquatableTests
 
             var mainCompilation = CSharpCompilation.Create(
                 "MainApp",
-                new[] { CSharpSyntaxTree.ParseText(mainSource) },
+                new[] { CSharpSyntaxTree.ParseText(mainSource, cancellationToken: TestContext.Current.CancellationToken) },
                 mainReferences,
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
             // Debug: Check compilation errors first
-            var mainErrors = mainCompilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+            var mainErrors = mainCompilation.GetDiagnostics(TestContext.Current.CancellationToken).Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
             if (mainErrors.Count > 0)
                 throw new Exception($"Main compilation had errors: {string.Join(", ", mainErrors.Select(e => e.GetMessage()))}");
 
@@ -444,7 +444,7 @@ public sealed class CrossAssemblyEquatableTests
             var compilationWithAnalyzers = mainCompilation.WithAnalyzers(
                 ImmutableArray.Create(analyzer));
 
-            var analyzerDiagnostics = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync();
+            var analyzerDiagnostics = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync(TestContext.Current.CancellationToken);
 
             var ge002Diagnostics = analyzerDiagnostics
                 .Where(d => d.Id == "GE002")
@@ -485,7 +485,7 @@ public sealed class CrossAssemblyEquatableTests
 
         var mockPackageCompilation = CSharpCompilation.Create(
             "MockPackage",
-            new[] { CSharpSyntaxTree.ParseText(mockPackageSource) },
+            new[] { CSharpSyntaxTree.ParseText(mockPackageSource, cancellationToken: TestContext.Current.CancellationToken) },
             CoreReferences,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
@@ -509,11 +509,11 @@ public sealed class CrossAssemblyEquatableTests
         var externalRefs = CoreReferences.Append(mockPackageReference).ToArray();
         var externalCompilation = CSharpCompilation.Create(
             "ExternalLib",
-            new[] { CSharpSyntaxTree.ParseText(externalSource) },
+            new[] { CSharpSyntaxTree.ParseText(externalSource, cancellationToken: TestContext.Current.CancellationToken) },
             externalRefs,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        var externalErrors = externalCompilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+        var externalErrors = externalCompilation.GetDiagnostics(TestContext.Current.CancellationToken).Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
         if (externalErrors.Count > 0)
             throw new Exception($"External compilation had errors: {string.Join(", ", externalErrors.Select(e => e.GetMessage()))}");
 
@@ -537,7 +537,7 @@ public sealed class CrossAssemblyEquatableTests
 
         var mainCompilation = CSharpCompilation.Create(
             "MainApp",
-            new[] { CSharpSyntaxTree.ParseText(mainSource) },
+            new[] { CSharpSyntaxTree.ParseText(mainSource, cancellationToken: TestContext.Current.CancellationToken) },
             mainReferences,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
@@ -562,7 +562,7 @@ public sealed class CrossAssemblyEquatableTests
         var compilationWithAnalyzers = mainCompilation.WithAnalyzers(
             ImmutableArray.Create(analyzer));
 
-        var analyzerDiagnostics = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync();
+        var analyzerDiagnostics = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync(TestContext.Current.CancellationToken);
 
         var ge002Diagnostics = analyzerDiagnostics
             .Where(d => d.Id == "GE002")
@@ -592,11 +592,11 @@ public sealed class CrossAssemblyEquatableTests
 
         var externalCompilation = CSharpCompilation.Create(
             "ExternalLib",
-            new[] { CSharpSyntaxTree.ParseText(externalSource) },
+            new[] { CSharpSyntaxTree.ParseText(externalSource, cancellationToken: TestContext.Current.CancellationToken) },
             CoreReferences,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        var errors = externalCompilation.GetDiagnostics()
+        var errors = externalCompilation.GetDiagnostics(TestContext.Current.CancellationToken)
             .Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
         if (errors.Count > 0)
             throw new Exception($"Compilation errors: {string.Join(", ", errors.Select(e => e.GetMessage()))}");
@@ -605,7 +605,7 @@ public sealed class CrossAssemblyEquatableTests
 
         var mainCompilation = CSharpCompilation.Create(
             "MainApp",
-            new[] { CSharpSyntaxTree.ParseText("// empty") },
+            new[] { CSharpSyntaxTree.ParseText("// empty", cancellationToken: TestContext.Current.CancellationToken) },
             CoreReferences.Append(externalReference).ToArray(),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 

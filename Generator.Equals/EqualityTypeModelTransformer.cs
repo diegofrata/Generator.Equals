@@ -57,6 +57,7 @@ sealed class EqualityTypeModelTransformer
         }
 
         var baseTypeName = symbol.BaseType?.ToFQF();
+        var baseTypeFullname = symbol.BaseType?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
         var typeName = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
         var fullname = symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
@@ -81,11 +82,13 @@ sealed class EqualityTypeModelTransformer
             ? null
             : s => s is not IPropertySymbol prop || !ShouldSkipOverridingProperty(prop, attributesMetadata);
 
-        // For classes (not records), we need to determine if calling base.Equals() will
+        // For classes (not records), we need to determine if calling the base comparer will
         // reach a meaningful equality implementation. We walk up the inheritance chain
-        // to find if any ancestor has [Equatable]. If so, we should call base.Equals()
-        // because it will eventually reach that ancestor's generated Equals method.
-        var baseHasEquatable = AnyAncestorHasEquatable(symbol.BaseType, attributesMetadata);
+        // to find if any ancestor has a generated EqualityComparer. If so, we should call
+        // that ancestor's comparer.
+        var nearestComparerAncestor = FindNearestComparerAncestor(symbol.BaseType, attributesMetadata);
+        var baseHasEquatable = nearestComparerAncestor != null;
+        var nearestComparerAncestorFullname = nearestComparerAncestor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
         var bems = EqualityMemberModelTransformer.BuildEqualityModels(symbol, attributesMetadata, explicitMode, filter);
 
@@ -105,6 +108,8 @@ sealed class EqualityTypeModelTransformer
             BuildEqualityModels = bems,
             IsSealed = symbol.IsSealed,
             BaseTypeName = baseTypeName,
+            BaseTypeFullname = baseTypeFullname,
+            NearestComparerAncestorFullname = nearestComparerAncestorFullname,
             Fullname = fullname,
             SyntaxKind = _context.TargetNode.Kind(),
             BaseHasEquatable = baseHasEquatable,
@@ -128,11 +133,29 @@ sealed class EqualityTypeModelTransformer
     }
 
     /// <summary>
-    /// Determines if any ancestor in the inheritance chain has a meaningful Equals implementation.
-    /// This includes types with [Equatable] OR types that manually override Equals(object).
-    /// If so, calling base.Equals() will eventually reach that implementation.
+    /// Determines if a type has the generated nested EqualityComparer class.
+    /// This is used for cross-assembly detection since attributes may be erased.
     /// </summary>
-    static bool AnyAncestorHasEquatable(INamedTypeSymbol? baseType, AttributesMetadata attributesMetadata)
+    static bool HasGeneratedEqualityComparer(INamedTypeSymbol type)
+    {
+        var comparerType = type.GetTypeMembers("EqualityComparer").FirstOrDefault();
+        if (comparerType is null || !comparerType.IsSealed)
+            return false;
+
+        // Check implements IEqualityComparer<T>
+        var iEqualityComparer = comparerType.Interfaces
+            .FirstOrDefault(i => i.Name == "IEqualityComparer"
+                && i.TypeArguments.Length == 1
+                && SymbolEqualityComparer.Default.Equals(i.TypeArguments[0], type));
+
+        return iEqualityComparer != null;
+    }
+
+    /// <summary>
+    /// Finds the nearest ancestor in the inheritance chain that has a generated EqualityComparer.
+    /// Returns null if no ancestor has a comparer.
+    /// </summary>
+    static INamedTypeSymbol? FindNearestComparerAncestor(INamedTypeSymbol? baseType, AttributesMetadata attributesMetadata)
     {
         var current = baseType;
         while (current != null && current.SpecialType != SpecialType.System_Object)
@@ -140,41 +163,33 @@ sealed class EqualityTypeModelTransformer
             // Check for [Equatable] attribute
             if (current.HasAttribute(attributesMetadata.Equatable))
             {
-                return true;
+                return current;
             }
 
-            // Check for manually overridden Equals(object) method
-            if (HasOverriddenEquals(current))
+            // Check for generated EqualityComparer (cross-assembly support)
+            if (HasGeneratedEqualityComparer(current))
             {
-                return true;
+                return current;
             }
 
             current = current.BaseType;
         }
-        return false;
+        return null;
     }
 
     /// <summary>
-    /// Checks if the type has overridden Equals(object) method (not inherited from a base).
+    /// Determines if any ancestor in the inheritance chain has a generated EqualityComparer.
+    /// This includes types with [Equatable] attribute or types with a generated EqualityComparer (for cross-assembly).
+    /// If so, calling the base comparer will reach that implementation.
     /// </summary>
-    static bool HasOverriddenEquals(INamedTypeSymbol type)
+    static bool AnyAncestorHasEquatable(INamedTypeSymbol? baseType, AttributesMetadata attributesMetadata)
     {
-        foreach (var member in type.GetMembers("Equals"))
-        {
-            if (member is IMethodSymbol method
-                && method.IsOverride
-                && method.Parameters.Length == 1
-                && method.Parameters[0].Type.SpecialType == SpecialType.System_Object)
-            {
-                return true;
-            }
-        }
-        return false;
+        return FindNearestComparerAncestor(baseType, attributesMetadata) != null;
     }
 
     /// <summary>
-    /// Collects all properties from ancestor types that don't have [Equatable].
-    /// Stops when reaching System.Object, a type with [Equatable], or a type that overrides Equals(object).
+    /// Collects all properties from ancestor types that don't have [Equatable] or a generated EqualityComparer.
+    /// Stops when reaching System.Object, a type with [Equatable], or a type with the generated EqualityComparer.
     /// Excludes properties that are overridden by the current type (they'll be handled by BuildEqualityModels).
     /// </summary>
     static EquatableImmutableArray<EqualityMemberModel> CollectInheritedProperties(
@@ -196,14 +211,14 @@ sealed class EqualityTypeModelTransformer
 
         while (current != null && current.SpecialType != SpecialType.System_Object)
         {
-            // Stop if this ancestor has [Equatable] - it will handle its own equality
+            // Stop if this ancestor has [Equatable] - it will handle its own equality via its EqualityComparer
             if (current.HasAttribute(attributesMetadata.Equatable))
             {
                 break;
             }
 
-            // Stop if this ancestor overrides Equals(object) - it has custom equality logic
-            if (HasOverriddenEquals(current))
+            // Stop if this ancestor has a generated EqualityComparer (cross-assembly detection)
+            if (HasGeneratedEqualityComparer(current))
             {
                 break;
             }
@@ -225,14 +240,14 @@ sealed class EqualityTypeModelTransformer
 
     /// <summary>
     /// Determines if an overriding property should be skipped because a parent type
-    /// in the override chain has [Equatable] and will handle it via base.Equals().
+    /// in the override chain has [Equatable] or a generated EqualityComparer.
     /// </summary>
     static bool ShouldSkipOverridingProperty(IPropertySymbol property, AttributesMetadata attributesMetadata)
     {
         if (!property.IsOverride)
             return false;
 
-        // Walk up the override chain and check each type for [Equatable]
+        // Walk up the override chain and check each type for [Equatable] or generated EqualityComparer
         var overridden = property.OverriddenProperty;
         while (overridden != null)
         {
@@ -241,10 +256,17 @@ sealed class EqualityTypeModelTransformer
             {
                 return true;
             }
+
+            // If any parent type has a generated EqualityComparer (cross-assembly), skip this property
+            if (overridden.ContainingType is INamedTypeSymbol namedType && HasGeneratedEqualityComparer(namedType))
+            {
+                return true;
+            }
+
             overridden = overridden.OverriddenProperty;
         }
 
-        // No parent type has [Equatable], so we need to include this property
+        // No parent type has [Equatable] or generated comparer, so we need to include this property
         return false;
     }
 

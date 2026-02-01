@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -303,7 +304,7 @@ internal static class TypeSymbolExtensions
             return false;
 
         // Allow user types in non-System namespaces
-        if (!containingNamespace.StartsWith("System"))
+        if (!containingNamespace.StartsWith("System", StringComparison.Ordinal))
             return false;
 
         // System types are typically in System, System.Collections, etc.
@@ -313,13 +314,13 @@ internal static class TypeSymbolExtensions
             .Replace("global::", "");
 
         // Common well-known BCL types that are not "complex" for our purposes
-        return fullName.StartsWith("System.Collections.") ||
-               fullName.StartsWith("System.Threading.") ||
-               fullName.StartsWith("System.IO.") ||
-               fullName.StartsWith("System.Net.") ||
-               fullName.StartsWith("System.Text.") ||
-               fullName.StartsWith("System.Tuple") ||
-               fullName.StartsWith("System.ValueTuple") ||
+        return fullName.StartsWith("System.Collections.", StringComparison.Ordinal) ||
+               fullName.StartsWith("System.Threading.", StringComparison.Ordinal) ||
+               fullName.StartsWith("System.IO.", StringComparison.Ordinal) ||
+               fullName.StartsWith("System.Net.", StringComparison.Ordinal) ||
+               fullName.StartsWith("System.Text.", StringComparison.Ordinal) ||
+               fullName.StartsWith("System.Tuple", StringComparison.Ordinal) ||
+               fullName.StartsWith("System.ValueTuple", StringComparison.Ordinal) ||
                fullName == "System.Type" ||
                fullName == "System.Version" ||
                fullName == "System.Exception";

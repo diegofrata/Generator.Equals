@@ -15,11 +15,8 @@ namespace Generator.Equals.Tests.Structs
         /// <param name="right">The right object</param>
         /// <returns>true if the objects are equal; otherwise, false.</returns>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-        public static bool operator ==(
-            global::Generator.Equals.Tests.Structs.PrimaryCtorSample left,
-            global::Generator.Equals.Tests.Structs.PrimaryCtorSample right) =>
-            global::Generator.Equals.DefaultEqualityComparer<global::Generator.Equals.Tests.Structs.PrimaryCtorSample>.Default
-                .Equals(left, right);
+        public static bool operator ==(global::Generator.Equals.Tests.Structs.PrimaryCtorSample left, global::Generator.Equals.Tests.Structs.PrimaryCtorSample right) =>
+            EqualityComparer.Default.Equals(left, right);
         
         /// <summary>
         /// Indicates whether the object on the left is not equal to the object on the right.
@@ -29,39 +26,53 @@ namespace Generator.Equals.Tests.Structs
         /// <returns>true if the objects are not equal; otherwise, false.</returns>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
         public static bool operator !=(global::Generator.Equals.Tests.Structs.PrimaryCtorSample left, global::Generator.Equals.Tests.Structs.PrimaryCtorSample right) =>
-            !(left == right);
+            !EqualityComparer.Default.Equals(left, right);
         
         /// <inheritdoc/>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
         public override bool Equals(object? obj) =>
-            obj is global::Generator.Equals.Tests.Structs.PrimaryCtorSample o && Equals(o);
+            obj is global::Generator.Equals.Tests.Structs.PrimaryCtorSample o && EqualityComparer.Default.Equals(this, o);
         
         /// <inheritdoc/>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-        public bool Equals(global::Generator.Equals.Tests.Structs.PrimaryCtorSample other)
-        {
-            return true
-                && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.Name!, other.Name!)
-                && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.Age!, other.Age!)
-                ;
-        }
+        public bool Equals(global::Generator.Equals.Tests.Structs.PrimaryCtorSample other) =>
+            EqualityComparer.Default.Equals(this, other);
         
         /// <inheritdoc/>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-        public override int GetHashCode()
+        public override int GetHashCode() =>
+            EqualityComparer.Default.GetHashCode(this);
+        
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
+        public sealed class EqualityComparer : global::System.Collections.Generic.IEqualityComparer<global::Generator.Equals.Tests.Structs.PrimaryCtorSample>
         {
-            var hashCode = new global::System.HashCode();
+            public static EqualityComparer Default { get; } = new EqualityComparer();
             
-            hashCode.Add(
-                this.Name!,
-                global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default
-            );
-            hashCode.Add(
-                this.Age!,
-                global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default
-            );
+            /// <inheritdoc/>
+            public bool Equals(global::Generator.Equals.Tests.Structs.PrimaryCtorSample x, global::Generator.Equals.Tests.Structs.PrimaryCtorSample y)
+            {
+                return true
+                    && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(x.Name!, y.Name!)
+                    && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(x.Age!, y.Age!)
+                    ;
+            }
             
-            return hashCode.ToHashCode();
+            /// <inheritdoc/>
+            public int GetHashCode(global::Generator.Equals.Tests.Structs.PrimaryCtorSample obj)
+            {
+                var hashCode = new global::System.HashCode();
+                
+                hashCode.Add(
+                    obj.Name!,
+                    global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default
+                );
+                hashCode.Add(
+                    obj.Age!,
+                    global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default
+                );
+                
+                return hashCode.ToHashCode();
+            }
         }
     }
 }

@@ -32,5 +32,26 @@ namespace Generator.Equals.Tests.Records
             
             return hashCode.ToHashCode();
         }
+        
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
+        public sealed class EqualityComparer : global::System.Collections.Generic.IEqualityComparer<global::Generator.Equals.Tests.Records.IgnoreEqualitySample>
+        {
+            public static EqualityComparer Default { get; } = new EqualityComparer();
+            
+            /// <inheritdoc/>
+            public bool Equals(global::Generator.Equals.Tests.Records.IgnoreEqualitySample? x, global::Generator.Equals.Tests.Records.IgnoreEqualitySample? y)
+            {
+                if (ReferenceEquals(x, y)) return true;
+                if (x is null || y is null) return false;
+                
+                return x.Equals(y);
+            }
+            
+            /// <inheritdoc/>
+            public int GetHashCode(global::Generator.Equals.Tests.Records.IgnoreEqualitySample obj)
+            {
+                return obj.GetHashCode();
+            }
+        }
     }
 }

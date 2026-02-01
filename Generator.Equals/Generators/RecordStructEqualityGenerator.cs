@@ -1,4 +1,4 @@
-﻿using System.CodeDom.Compiler;
+using System.CodeDom.Compiler;
 
 using Generator.Equals.Models;
 
@@ -20,7 +20,7 @@ namespace Generator.Equals.Generators
             writer.WriteLine("return true");
 
             writer.Indent++;
-            BuildMembersEquality(model.BuildEqualityModels, writer);
+            BuildMembersEquality(model.BuildEqualityModels, writer, "this", "other");
             writer.WriteLine(";");
             writer.Indent--;
 
@@ -39,10 +39,48 @@ namespace Generator.Equals.Generators
             writer.WriteLine(@"var hashCode = new global::System.HashCode();");
             writer.WriteLine();
 
-            BuildMembersHashCode(model.BuildEqualityModels, writer);
+            BuildMembersHashCode(model.BuildEqualityModels, writer, "this");
 
             writer.WriteLine();
             writer.WriteLine("return hashCode.ToHashCode();");
+            writer.AppendCloseBracket();
+        }
+
+        static void BuildNestedEqualityComparer(
+            EqualityTypeModel model,
+            IndentedTextWriter writer)
+        {
+            var symbolName = model.Fullname;
+
+            writer.WriteLine();
+            writer.WriteLine(GeneratedCodeAttributeDeclaration);
+            writer.WriteLine($"public sealed class EqualityComparer : global::System.Collections.Generic.IEqualityComparer<{symbolName}>");
+            writer.AppendOpenBracket();
+
+            // Default instance
+            writer.WriteLine("public static EqualityComparer Default { get; } = new EqualityComparer();");
+            writer.WriteLine();
+
+            // Equals(T, T) - delegates to the type's Equals method
+            writer.WriteLine(InheritDocComment);
+            writer.WriteLine($"public bool Equals({symbolName} x, {symbolName} y)");
+            writer.AppendOpenBracket();
+
+            writer.WriteLine("return x.Equals(y);");
+
+            writer.AppendCloseBracket();
+
+            writer.WriteLine();
+
+            // GetHashCode(T) - delegates to the type's GetHashCode method
+            writer.WriteLine(InheritDocComment);
+            writer.WriteLine($"public int GetHashCode({symbolName} obj)");
+            writer.AppendOpenBracket();
+
+            writer.WriteLine("return obj.GetHashCode();");
+
+            writer.AppendCloseBracket();
+
             writer.AppendCloseBracket();
         }
 
@@ -55,6 +93,7 @@ namespace Generator.Equals.Generators
                     BuildEquals(model, writer);
                     writer.WriteLine();
                     BuildGetHashCode(model, writer);
+                    BuildNestedEqualityComparer(model, writer);
                 });
 
             return code;

@@ -8,6 +8,19 @@ sealed record EqualityTypeModel
 
     public required string TypeName { get; init; }
     public required string? BaseTypeName { get; init; }
+
+    /// <summary>
+    /// Fully qualified name of the base type (e.g., global::Namespace.BaseClass).
+    /// Used for generating base comparer calls like BaseClass.EqualityComparer.Default.
+    /// </summary>
+    public string? BaseTypeFullname { get; init; }
+
+    /// <summary>
+    /// Fully qualified name of the nearest ancestor that has a generated EqualityComparer.
+    /// This is used when the immediate base doesn't have a comparer but an ancestor does.
+    /// </summary>
+    public string? NearestComparerAncestorFullname { get; init; }
+
     public required bool IsSealed { get; init; }
     public required EquatableImmutableArray<ContainingSymbol> ContainingSymbols { get; init; }
     public required AttributesMetadata AttributesMetadata { get; init; }
@@ -23,7 +36,7 @@ sealed record EqualityTypeModel
     public required string Fullname { get; init; }
 
     /// <summary>
-    /// For classes, indicates whether the base type has [Equatable].
+    /// For classes, indicates whether the base type has [Equatable] or a generated EqualityComparer.
     /// If false, base.Equals() would use object reference equality,
     /// so the class should be treated as a "root class" for equality purposes.
     /// </summary>
