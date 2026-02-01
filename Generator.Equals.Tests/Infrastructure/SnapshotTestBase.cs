@@ -22,11 +22,11 @@ public abstract class SnapshotTestBase
     /// <summary>
     /// Provides TargetFramework values for use with [Theory, MemberData].
     /// </summary>
-    public static TheoryData<TargetFramework> TargetFrameworks => new()
-    {
+    public static TheoryData<TargetFramework> TargetFrameworks =>
+    [
         TargetFramework.Net60,
         TargetFramework.NetFramework48
-    };
+    ];
 
     /// <summary>
     /// Gets the source code from the nested sample type in the test class.
@@ -71,18 +71,18 @@ public abstract class SnapshotTestBase
 
         var compilation = (Compilation)CSharpCompilation.Create(
             assemblyName: "TestAssembly",
-            syntaxTrees: new[]
-            {
+            syntaxTrees:
+            [
                 CSharpSyntaxTree.ParseText(
                     source,
                     options: parseOptions,
-                    cancellationToken: ct),
-            },
+                    cancellationToken: ct)
+            ],
             references: references.Add(RuntimeReference),
             options: new CSharpCompilationOptions(outputKind, nullableContextOptions: NullableContextOptions.Enable));
 
         var driver = CSharpGeneratorDriver
-            .Create(new[] { new GeneratorEquals::Generator.Equals.EqualsGenerator().AsSourceGenerator() }, parseOptions: parseOptions)
+            .Create([new GeneratorEquals::Generator.Equals.EqualsGenerator().AsSourceGenerator()], parseOptions: parseOptions)
             .RunGeneratorsAndUpdateCompilation(compilation, out _, out var diagnostics, ct);
 
         var runResult = driver.GetRunResult();

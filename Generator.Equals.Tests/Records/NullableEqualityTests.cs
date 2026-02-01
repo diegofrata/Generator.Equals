@@ -18,11 +18,11 @@ public partial class NullableEqualityTests : SnapshotTestBase
         // Both null
         { new Sample { Addresses = null }, new Sample { Addresses = null }, true },
         // Same content
-        { new Sample { Addresses = new[] { "10 Some Street" } }, new Sample { Addresses = new[] { "10 Some Street" } }, true },
+        { new Sample { Addresses = ["10 Some Street"] }, new Sample { Addresses = ["10 Some Street"] }, true },
         // One null, one not
-        { new Sample { Addresses = null }, new Sample { Addresses = new[] { "10 Some Street" } }, false },
+        { new Sample { Addresses = null }, new Sample { Addresses = ["10 Some Street"] }, false },
         // Different content
-        { new Sample { Addresses = new[] { "10 Some Street" } }, new Sample { Addresses = new[] { "11 Some Street" } }, false },
+        { new Sample { Addresses = ["10 Some Street"] }, new Sample { Addresses = ["11 Some Street"] }, false },
     };
 
     [Theory]

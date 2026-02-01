@@ -19,15 +19,15 @@ public partial class SetEqualityTests : SnapshotTestBase
         // Both null
         { new Sample { Properties = null }, new Sample { Properties = null }, true },
         // Same content
-        { new Sample { Properties = new() { 1, 2, 3 } }, new Sample { Properties = new() { 1, 2, 3 } }, true },
+        { new Sample { Properties = [1, 2, 3] }, new Sample { Properties = [1, 2, 3] }, true },
         // Same content, different order
-        { new Sample { Properties = new() { 1, 2, 3 } }, new Sample { Properties = new() { 3, 2, 1 } }, true },
+        { new Sample { Properties = [1, 2, 3] }, new Sample { Properties = [3, 2, 1] }, true },
         // Same unique values with duplicates
-        { new Sample { Properties = new() { 1, 2, 2 } }, new Sample { Properties = new() { 1, 1, 2 } }, true },
+        { new Sample { Properties = [1, 2, 2] }, new Sample { Properties = [1, 1, 2] }, true },
         // Different content
-        { new Sample { Properties = new() { 1, 2, 3 } }, new Sample { Properties = new() { 1, 2, 4 } }, false },
+        { new Sample { Properties = [1, 2, 3] }, new Sample { Properties = [1, 2, 4] }, false },
         // One null, one not
-        { new Sample { Properties = null }, new Sample { Properties = new() { 1 } }, false },
+        { new Sample { Properties = null }, new Sample { Properties = [1] }, false },
     };
 
     [Theory]

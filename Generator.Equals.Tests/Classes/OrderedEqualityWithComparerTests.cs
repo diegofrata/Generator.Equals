@@ -53,9 +53,9 @@ public partial class OrderedEqualityWithComparerTests : SnapshotTestBase
     public static TheoryData<SampleWithStringComparison, SampleWithStringComparison, bool> StringComparisonCases => new()
     {
         // Same content, different case (case insensitive)
-        { new SampleWithStringComparison(new[] { "FOO", "BAR" }), new SampleWithStringComparison(new[] { "foo", "bar" }), true },
+        { new SampleWithStringComparison(["FOO", "BAR"]), new SampleWithStringComparison(["foo", "bar"]), true },
         // Different content
-        { new SampleWithStringComparison(new[] { "FOO", "BAR" }), new SampleWithStringComparison(new[] { "foo", "baz" }), false },
+        { new SampleWithStringComparison(["FOO", "BAR"]), new SampleWithStringComparison(["foo", "baz"]), false },
     };
 
     [Theory]
@@ -66,9 +66,9 @@ public partial class OrderedEqualityWithComparerTests : SnapshotTestBase
     public static TheoryData<SampleWithCustomComparer, SampleWithCustomComparer, bool> CustomComparerCases => new()
     {
         // Same content, different case (case insensitive via StringComparer)
-        { new SampleWithCustomComparer(new[] { "FOO", "BAR" }), new SampleWithCustomComparer(new[] { "foo", "bar" }), true },
+        { new SampleWithCustomComparer(["FOO", "BAR"]), new SampleWithCustomComparer(["foo", "bar"]), true },
         // Different content
-        { new SampleWithCustomComparer(new[] { "FOO", "BAR" }), new SampleWithCustomComparer(new[] { "foo", "baz" }), false },
+        { new SampleWithCustomComparer(["FOO", "BAR"]), new SampleWithCustomComparer(["foo", "baz"]), false },
     };
 
     [Theory]
@@ -79,9 +79,9 @@ public partial class OrderedEqualityWithComparerTests : SnapshotTestBase
     public static TheoryData<SampleWithLengthComparer, SampleWithLengthComparer, bool> LengthComparerCases => new()
     {
         // Same lengths, different content
-        { new SampleWithLengthComparer(new[] { "aaa", "bb" }), new SampleWithLengthComparer(new[] { "bbb", "cc" }), true },
+        { new SampleWithLengthComparer(["aaa", "bb"]), new SampleWithLengthComparer(["bbb", "cc"]), true },
         // Different lengths
-        { new SampleWithLengthComparer(new[] { "aaa", "bb" }), new SampleWithLengthComparer(new[] { "aaaa", "bb" }), false },
+        { new SampleWithLengthComparer(["aaa", "bb"]), new SampleWithLengthComparer(["aaaa", "bb"]), false },
     };
 
     [Theory]

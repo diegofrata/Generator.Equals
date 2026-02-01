@@ -28,26 +28,26 @@ public partial class MultiplePartialsEqualityTests : SnapshotTestBase
     {
         // Same values
         {
-            new Sample { Addresses = new[] { "A" }, FirstName = "John", LastName = "Doe", Age = 30 },
-            new Sample { Addresses = new[] { "A" }, FirstName = "John", LastName = "Doe", Age = 30 },
+            new Sample { Addresses = ["A"], FirstName = "John", LastName = "Doe", Age = 30 },
+            new Sample { Addresses = ["A"], FirstName = "John", LastName = "Doe", Age = 30 },
             true
         },
         // Same values, different Age (ignored)
         {
-            new Sample { Addresses = new[] { "A" }, FirstName = "John", LastName = "Doe", Age = 30 },
-            new Sample { Addresses = new[] { "A" }, FirstName = "John", LastName = "Doe", Age = 40 },
+            new Sample { Addresses = ["A"], FirstName = "John", LastName = "Doe", Age = 30 },
+            new Sample { Addresses = ["A"], FirstName = "John", LastName = "Doe", Age = 40 },
             true
         },
         // Different FirstName
         {
-            new Sample { Addresses = new[] { "A" }, FirstName = "John", LastName = "Doe", Age = 30 },
-            new Sample { Addresses = new[] { "A" }, FirstName = "Jane", LastName = "Doe", Age = 30 },
+            new Sample { Addresses = ["A"], FirstName = "John", LastName = "Doe", Age = 30 },
+            new Sample { Addresses = ["A"], FirstName = "Jane", LastName = "Doe", Age = 30 },
             false
         },
         // Different Addresses
         {
-            new Sample { Addresses = new[] { "A" }, FirstName = "John", LastName = "Doe", Age = 30 },
-            new Sample { Addresses = new[] { "B" }, FirstName = "John", LastName = "Doe", Age = 30 },
+            new Sample { Addresses = ["A"], FirstName = "John", LastName = "Doe", Age = 30 },
+            new Sample { Addresses = ["B"], FirstName = "John", LastName = "Doe", Age = 30 },
             false
         },
     };

@@ -27,11 +27,11 @@ public partial class InheritedOverrideSkippedTests : SnapshotTestBase
     public static TheoryData<Child, Child, bool> EqualityCases => new()
     {
         // Same array content
-        { new Child { Ints = new[] { 1, 2, 3 } }, new Child { Ints = new[] { 1, 2, 3 } }, true },
+        { new Child { Ints = [1, 2, 3] }, new Child { Ints = [1, 2, 3] }, true },
         // Same content, different order (ordered equality - order matters!)
-        { new Child { Ints = new[] { 1, 2, 3 } }, new Child { Ints = new[] { 3, 2, 1 } }, false },
+        { new Child { Ints = [1, 2, 3] }, new Child { Ints = [3, 2, 1] }, false },
         // Different content
-        { new Child { Ints = new[] { 1, 2, 3 } }, new Child { Ints = new[] { 1, 2, 4 } }, false },
+        { new Child { Ints = [1, 2, 3] }, new Child { Ints = [1, 2, 4] }, false },
     };
 
     [Theory]

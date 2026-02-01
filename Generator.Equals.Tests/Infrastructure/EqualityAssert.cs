@@ -106,7 +106,8 @@ public static class EqualityAssert
         var paramA = Expression.Parameter(typeof(T), "a");
         var paramB = Expression.Parameter(typeof(T), "b");
 
-        var method = typeof(T).GetMethod("op_Equality", BindingFlags.Static | BindingFlags.Public, null, new[] { typeof(T), typeof(T) }, null);
+        var method = typeof(T).GetMethod("op_Equality", BindingFlags.Static | BindingFlags.Public, null, [typeof(T), typeof(T)
+        ], null);
         if (method == null)
         {
             throw new InvalidOperationException($"Type {typeof(T).Name} does not define operator ==");
@@ -122,7 +123,8 @@ public static class EqualityAssert
         var paramA = Expression.Parameter(typeof(T), "a");
         var paramB = Expression.Parameter(typeof(T), "b");
 
-        var method = typeof(T).GetMethod("op_Inequality", BindingFlags.Static | BindingFlags.Public, null, new[] { typeof(T), typeof(T) }, null);
+        var method = typeof(T).GetMethod("op_Inequality", BindingFlags.Static | BindingFlags.Public, null, [typeof(T), typeof(T)
+        ], null);
         if (method == null)
         {
             throw new InvalidOperationException($"Type {typeof(T).Name} does not define operator !=");
@@ -138,7 +140,8 @@ public static class EqualityAssert
         var paramA = Expression.Parameter(typeof(T), "a");
         var paramB = Expression.Parameter(typeof(T), "b");
 
-        var method = typeof(T).GetMethod("op_Equality", BindingFlags.Static | BindingFlags.Public, null, new[] { typeof(T), typeof(T) }, null);
+        var method = typeof(T).GetMethod("op_Equality", BindingFlags.Static | BindingFlags.Public, null, [typeof(T), typeof(T)
+        ], null);
         if (method == null)
         {
             throw new InvalidOperationException($"Type {typeof(T).Name} does not define operator ==");
@@ -154,7 +157,8 @@ public static class EqualityAssert
         var paramA = Expression.Parameter(typeof(T), "a");
         var paramB = Expression.Parameter(typeof(T), "b");
 
-        var method = typeof(T).GetMethod("op_Inequality", BindingFlags.Static | BindingFlags.Public, null, new[] { typeof(T), typeof(T) }, null);
+        var method = typeof(T).GetMethod("op_Inequality", BindingFlags.Static | BindingFlags.Public, null, [typeof(T), typeof(T)
+        ], null);
         if (method == null)
         {
             throw new InvalidOperationException($"Type {typeof(T).Name} does not define operator !=");

@@ -53,9 +53,9 @@ public partial class UnorderedEqualityWithComparerTests : SnapshotTestBase
     public static TheoryData<SampleWithStringComparison, SampleWithStringComparison, bool> StringComparisonCases => new()
     {
         // Same content, different case and order (case insensitive + unordered)
-        { new SampleWithStringComparison(new List<string> { "FOO", "BAR" }), new SampleWithStringComparison(new List<string> { "bar", "foo" }), true },
+        { new SampleWithStringComparison(["FOO", "BAR"]), new SampleWithStringComparison(["bar", "foo"]), true },
         // Different content
-        { new SampleWithStringComparison(new List<string> { "FOO", "BAR" }), new SampleWithStringComparison(new List<string> { "foo", "baz" }), false },
+        { new SampleWithStringComparison(["FOO", "BAR"]), new SampleWithStringComparison(["foo", "baz"]), false },
     };
 
     [Theory]
@@ -66,9 +66,9 @@ public partial class UnorderedEqualityWithComparerTests : SnapshotTestBase
     public static TheoryData<SampleWithCustomComparer, SampleWithCustomComparer, bool> CustomComparerCases => new()
     {
         // Same content, different case and order (case insensitive + unordered)
-        { new SampleWithCustomComparer(new List<string> { "FOO", "BAR" }), new SampleWithCustomComparer(new List<string> { "bar", "foo" }), true },
+        { new SampleWithCustomComparer(["FOO", "BAR"]), new SampleWithCustomComparer(["bar", "foo"]), true },
         // Different content
-        { new SampleWithCustomComparer(new List<string> { "FOO", "BAR" }), new SampleWithCustomComparer(new List<string> { "foo", "baz" }), false },
+        { new SampleWithCustomComparer(["FOO", "BAR"]), new SampleWithCustomComparer(["foo", "baz"]), false },
     };
 
     [Theory]
@@ -79,9 +79,9 @@ public partial class UnorderedEqualityWithComparerTests : SnapshotTestBase
     public static TheoryData<SampleWithLengthComparer, SampleWithLengthComparer, bool> LengthComparerCases => new()
     {
         // Same lengths, different content and order (length comparison + unordered)
-        { new SampleWithLengthComparer(new List<string> { "aaa", "bb" }), new SampleWithLengthComparer(new List<string> { "cc", "bbb" }), true },
+        { new SampleWithLengthComparer(["aaa", "bb"]), new SampleWithLengthComparer(["cc", "bbb"]), true },
         // Different lengths
-        { new SampleWithLengthComparer(new List<string> { "aaa", "bb" }), new SampleWithLengthComparer(new List<string> { "bb", "aaaa" }), false },
+        { new SampleWithLengthComparer(["aaa", "bb"]), new SampleWithLengthComparer(["bb", "aaaa"]), false },
     };
 
     [Theory]

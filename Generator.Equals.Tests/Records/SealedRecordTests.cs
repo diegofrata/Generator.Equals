@@ -13,11 +13,11 @@ public partial class SealedRecordTests : SnapshotTestBase
     public static TheoryData<Sample, Sample, bool> EqualityCases => new()
     {
         // Same content
-        { new Sample(new[] { "10 Some Street" }), new Sample(new[] { "10 Some Street" }), true },
+        { new Sample(["10 Some Street"]), new Sample(["10 Some Street"]), true },
         // Different content
-        { new Sample(new[] { "10 Some Street" }), new Sample(new[] { "11 Some Street" }), false },
+        { new Sample(["10 Some Street"]), new Sample(["11 Some Street"]), false },
         // Same content, different order
-        { new Sample(new[] { "A", "B" }), new Sample(new[] { "B", "A" }), false },
+        { new Sample(["A", "B"]), new Sample(["B", "A"]), false },
     };
 
     [Theory]

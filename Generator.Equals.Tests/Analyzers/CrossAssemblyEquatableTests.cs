@@ -66,7 +66,7 @@ public sealed class CrossAssemblyEquatableTests
 
         var externalCompilation = CSharpCompilation.Create(
             "ExternalLib",
-            new[] { CSharpSyntaxTree.ParseText(externalSource, cancellationToken: TestContext.Current.CancellationToken) },
+            [CSharpSyntaxTree.ParseText(externalSource, cancellationToken: TestContext.Current.CancellationToken)],
             CoreReferences,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
@@ -97,7 +97,7 @@ public sealed class CrossAssemblyEquatableTests
 
         var mainCompilation = CSharpCompilation.Create(
             "MainApp",
-            new[] { CSharpSyntaxTree.ParseText(mainSource, cancellationToken: TestContext.Current.CancellationToken) },
+            [CSharpSyntaxTree.ParseText(mainSource, cancellationToken: TestContext.Current.CancellationToken)],
             mainReferences,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
@@ -153,7 +153,7 @@ public sealed class CrossAssemblyEquatableTests
 
         var externalCompilation = CSharpCompilation.Create(
             "ExternalLib",
-            new[] { CSharpSyntaxTree.ParseText(externalSource, cancellationToken: TestContext.Current.CancellationToken) },
+            [CSharpSyntaxTree.ParseText(externalSource, cancellationToken: TestContext.Current.CancellationToken)],
             CoreReferences,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
@@ -176,14 +176,14 @@ public sealed class CrossAssemblyEquatableTests
 
         var mainCompilation = CSharpCompilation.Create(
             "MainApp",
-            new[] { CSharpSyntaxTree.ParseText(mainSource, cancellationToken: TestContext.Current.CancellationToken) },
+            [CSharpSyntaxTree.ParseText(mainSource, cancellationToken: TestContext.Current.CancellationToken)],
             mainReferences,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         // Run the analyzer
         DiagnosticAnalyzer analyzer = new EquatableAnalyzer();
         var compilationWithAnalyzers = mainCompilation.WithAnalyzers(
-            ImmutableArray.Create(analyzer));
+            [analyzer]);
 
         var analyzerDiagnostics = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync(TestContext.Current.CancellationToken);
 
@@ -214,7 +214,7 @@ public sealed class CrossAssemblyEquatableTests
 
         var externalCompilation = CSharpCompilation.Create(
             "ExternalLib",
-            new[] { CSharpSyntaxTree.ParseText(externalSource, cancellationToken: TestContext.Current.CancellationToken) },
+            [CSharpSyntaxTree.ParseText(externalSource, cancellationToken: TestContext.Current.CancellationToken)],
             CoreReferences,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
@@ -244,7 +244,7 @@ public sealed class CrossAssemblyEquatableTests
 
         var mainCompilation = CSharpCompilation.Create(
             "MainApp",
-            new[] { CSharpSyntaxTree.ParseText(mainSource, cancellationToken: TestContext.Current.CancellationToken) },
+            [CSharpSyntaxTree.ParseText(mainSource, cancellationToken: TestContext.Current.CancellationToken)],
             mainReferences,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
@@ -288,7 +288,7 @@ public sealed class CrossAssemblyEquatableTests
 
         var externalCompilation = CSharpCompilation.Create(
             "ExternalLib",
-            new[] { CSharpSyntaxTree.ParseText(externalSource, cancellationToken: TestContext.Current.CancellationToken) },
+            [CSharpSyntaxTree.ParseText(externalSource, cancellationToken: TestContext.Current.CancellationToken)],
             CoreReferences,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
@@ -311,14 +311,14 @@ public sealed class CrossAssemblyEquatableTests
 
         var mainCompilation = CSharpCompilation.Create(
             "MainApp",
-            new[] { CSharpSyntaxTree.ParseText(mainSource, cancellationToken: TestContext.Current.CancellationToken) },
+            [CSharpSyntaxTree.ParseText(mainSource, cancellationToken: TestContext.Current.CancellationToken)],
             mainReferences,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         // Run the analyzer
         DiagnosticAnalyzer analyzer = new EquatableAnalyzer();
         var compilationWithAnalyzers = mainCompilation.WithAnalyzers(
-            ImmutableArray.Create(analyzer));
+            [analyzer]);
 
         var analyzerDiagnostics = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync(TestContext.Current.CancellationToken);
 
@@ -355,7 +355,7 @@ public sealed class CrossAssemblyEquatableTests
 
             var externalCompilation = CSharpCompilation.Create(
                 "ExternalLib",
-                new[] { CSharpSyntaxTree.ParseText(externalSource, cancellationToken: TestContext.Current.CancellationToken) },
+                [CSharpSyntaxTree.ParseText(externalSource, cancellationToken: TestContext.Current.CancellationToken)],
                 CoreReferences,
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
@@ -371,7 +371,7 @@ public sealed class CrossAssemblyEquatableTests
             var reflectionAssembly = System.Reflection.Assembly.LoadFrom(externalDllPath);
             var reflectionType = reflectionAssembly.GetType("ExternalLib.ExternalSettings");
             var reflectionAttrs = reflectionType?.GetCustomAttributes(false);
-            var reflectionAttrNames = reflectionAttrs?.Select(a => a.GetType().FullName).ToList() ?? new List<string>();
+            var reflectionAttrNames = reflectionAttrs?.Select(a => a.GetType().FullName).ToList() ?? [];
 
             // Reference the emitted DLL (not the in-memory compilation)
             var externalReference = MetadataReference.CreateFromFile(externalDllPath);
@@ -393,7 +393,7 @@ public sealed class CrossAssemblyEquatableTests
 
             var mainCompilation = CSharpCompilation.Create(
                 "MainApp",
-                new[] { CSharpSyntaxTree.ParseText(mainSource, cancellationToken: TestContext.Current.CancellationToken) },
+                [CSharpSyntaxTree.ParseText(mainSource, cancellationToken: TestContext.Current.CancellationToken)],
                 mainReferences,
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
@@ -442,7 +442,7 @@ public sealed class CrossAssemblyEquatableTests
             // Run the analyzer
             DiagnosticAnalyzer analyzer = new EquatableAnalyzer();
             var compilationWithAnalyzers = mainCompilation.WithAnalyzers(
-                ImmutableArray.Create(analyzer));
+                [analyzer]);
 
             var analyzerDiagnostics = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync(TestContext.Current.CancellationToken);
 
@@ -485,7 +485,7 @@ public sealed class CrossAssemblyEquatableTests
 
         var mockPackageCompilation = CSharpCompilation.Create(
             "MockPackage",
-            new[] { CSharpSyntaxTree.ParseText(mockPackageSource, cancellationToken: TestContext.Current.CancellationToken) },
+            [CSharpSyntaxTree.ParseText(mockPackageSource, cancellationToken: TestContext.Current.CancellationToken)],
             CoreReferences,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
@@ -509,7 +509,7 @@ public sealed class CrossAssemblyEquatableTests
         var externalRefs = CoreReferences.Append(mockPackageReference).ToArray();
         var externalCompilation = CSharpCompilation.Create(
             "ExternalLib",
-            new[] { CSharpSyntaxTree.ParseText(externalSource, cancellationToken: TestContext.Current.CancellationToken) },
+            [CSharpSyntaxTree.ParseText(externalSource, cancellationToken: TestContext.Current.CancellationToken)],
             externalRefs,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
@@ -537,7 +537,7 @@ public sealed class CrossAssemblyEquatableTests
 
         var mainCompilation = CSharpCompilation.Create(
             "MainApp",
-            new[] { CSharpSyntaxTree.ParseText(mainSource, cancellationToken: TestContext.Current.CancellationToken) },
+            [CSharpSyntaxTree.ParseText(mainSource, cancellationToken: TestContext.Current.CancellationToken)],
             mainReferences,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
@@ -560,7 +560,7 @@ public sealed class CrossAssemblyEquatableTests
         // Run the analyzer
         DiagnosticAnalyzer analyzer = new EquatableAnalyzer();
         var compilationWithAnalyzers = mainCompilation.WithAnalyzers(
-            ImmutableArray.Create(analyzer));
+            [analyzer]);
 
         var analyzerDiagnostics = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync(TestContext.Current.CancellationToken);
 
@@ -592,7 +592,7 @@ public sealed class CrossAssemblyEquatableTests
 
         var externalCompilation = CSharpCompilation.Create(
             "ExternalLib",
-            new[] { CSharpSyntaxTree.ParseText(externalSource, cancellationToken: TestContext.Current.CancellationToken) },
+            [CSharpSyntaxTree.ParseText(externalSource, cancellationToken: TestContext.Current.CancellationToken)],
             CoreReferences,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
@@ -605,7 +605,7 @@ public sealed class CrossAssemblyEquatableTests
 
         var mainCompilation = CSharpCompilation.Create(
             "MainApp",
-            new[] { CSharpSyntaxTree.ParseText("// empty", cancellationToken: TestContext.Current.CancellationToken) },
+            [CSharpSyntaxTree.ParseText("// empty", cancellationToken: TestContext.Current.CancellationToken)],
             CoreReferences.Append(externalReference).ToArray(),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 

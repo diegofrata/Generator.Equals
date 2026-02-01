@@ -34,11 +34,11 @@ public partial class InheritedEqualityAttributesTests : SnapshotTestBase
     public static TheoryData<Child, Child, bool> ChildEqualityCases => new()
     {
         // Same array content
-        { new Child { Ints = new[] { 1, 2, 3 } }, new Child { Ints = new[] { 1, 2, 3 } }, true },
+        { new Child { Ints = [1, 2, 3] }, new Child { Ints = [1, 2, 3] }, true },
         // Different content
-        { new Child { Ints = new[] { 1, 2, 3 } }, new Child { Ints = new[] { 1, 2, 4 } }, false },
+        { new Child { Ints = [1, 2, 3] }, new Child { Ints = [1, 2, 4] }, false },
         // Same content, different order (ordered equality - order matters!)
-        { new Child { Ints = new[] { 1, 2, 3 } }, new Child { Ints = new[] { 3, 2, 1 } }, false },
+        { new Child { Ints = [1, 2, 3] }, new Child { Ints = [3, 2, 1] }, false },
     };
 
     [Theory]
@@ -49,11 +49,11 @@ public partial class InheritedEqualityAttributesTests : SnapshotTestBase
     public static TheoryData<ChildWithOwnAttribute, ChildWithOwnAttribute, bool> ChildWithOwnAttributeCases => new()
     {
         // Same content, different order (unordered equality - order doesn't matter!)
-        { new ChildWithOwnAttribute { Ints = new[] { 1, 2, 3 } }, new ChildWithOwnAttribute { Ints = new[] { 3, 2, 1 } }, true },
+        { new ChildWithOwnAttribute { Ints = [1, 2, 3] }, new ChildWithOwnAttribute { Ints = [3, 2, 1] }, true },
         // Same content
-        { new ChildWithOwnAttribute { Ints = new[] { 1, 2, 3 } }, new ChildWithOwnAttribute { Ints = new[] { 1, 2, 3 } }, true },
+        { new ChildWithOwnAttribute { Ints = [1, 2, 3] }, new ChildWithOwnAttribute { Ints = [1, 2, 3] }, true },
         // Different content
-        { new ChildWithOwnAttribute { Ints = new[] { 1, 2, 3 } }, new ChildWithOwnAttribute { Ints = new[] { 1, 2, 4 } }, false },
+        { new ChildWithOwnAttribute { Ints = [1, 2, 3] }, new ChildWithOwnAttribute { Ints = [1, 2, 4] }, false },
     };
 
     [Theory]

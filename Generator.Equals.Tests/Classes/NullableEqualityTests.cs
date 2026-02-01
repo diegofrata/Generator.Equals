@@ -18,13 +18,13 @@ public partial class NullableEqualityTests : SnapshotTestBase
         // Both null should be equal
         { new Sample { Addresses = null }, new Sample { Addresses = null }, true },
         // Both empty should be equal
-        { new Sample { Addresses = Array.Empty<string>() }, new Sample { Addresses = Array.Empty<string>() }, true },
+        { new Sample { Addresses = [] }, new Sample { Addresses = [] }, true },
         // Same content should be equal
-        { new Sample { Addresses = new[] { "A" } }, new Sample { Addresses = new[] { "A" } }, true },
+        { new Sample { Addresses = ["A"] }, new Sample { Addresses = ["A"] }, true },
         // One null, one not - should not be equal
-        { new Sample { Addresses = null }, new Sample { Addresses = new[] { "A" } }, false },
+        { new Sample { Addresses = null }, new Sample { Addresses = ["A"] }, false },
         // Different content should not be equal
-        { new Sample { Addresses = new[] { "A" } }, new Sample { Addresses = new[] { "B" } }, false },
+        { new Sample { Addresses = ["A"] }, new Sample { Addresses = ["B"] }, false },
     };
 
     [Theory]

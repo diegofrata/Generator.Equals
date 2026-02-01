@@ -22,13 +22,13 @@ public partial class OrderedEqualityTests : SnapshotTestBase
     public static TheoryData<Sample, Sample, bool> EqualityCases => new()
     {
         // Same content, same order
-        { new Sample(new[] { "10 Downing St" }), new Sample(new[] { "10 Downing St" }), true },
+        { new Sample(["10 Downing St"]), new Sample(["10 Downing St"]), true },
         // Different content
-        { new Sample(new[] { "10 Downing St" }), new Sample(new[] { "Bricklane" }), false },
+        { new Sample(["10 Downing St"]), new Sample(["Bricklane"]), false },
         // Same content, different order (ordered equality - order matters!)
-        { new Sample(new[] { "A", "B" }), new Sample(new[] { "B", "A" }), false },
+        { new Sample(["A", "B"]), new Sample(["B", "A"]), false },
         // Multiple items, same order
-        { new Sample(new[] { "A", "B", "C" }), new Sample(new[] { "A", "B", "C" }), true },
+        { new Sample(["A", "B", "C"]), new Sample(["A", "B", "C"]), true },
     };
 
     [Theory]

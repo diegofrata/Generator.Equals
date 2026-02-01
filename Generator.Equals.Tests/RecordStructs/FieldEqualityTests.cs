@@ -21,9 +21,9 @@ public partial class FieldEqualityTests : SnapshotTestBase
     public static TheoryData<Sample, Sample, bool> EqualityCases => new()
     {
         // Same content
-        { new Sample(new[] { "10 Some Street" }), new Sample(new[] { "10 Some Street" }), true },
+        { new Sample(["10 Some Street"]), new Sample(["10 Some Street"]), true },
         // Different content
-        { new Sample(new[] { "10 Some Street" }), new Sample(new[] { "11 Some Street" }), false },
+        { new Sample(["10 Some Street"]), new Sample(["11 Some Street"]), false },
     };
 
     [Theory]

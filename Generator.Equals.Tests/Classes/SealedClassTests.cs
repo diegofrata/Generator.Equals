@@ -21,11 +21,11 @@ public partial class SealedClassTests : SnapshotTestBase
     public static TheoryData<Sample, Sample, bool> EqualityCases => new()
     {
         // Same content should be equal
-        { new Sample(new[] { "10 Downing St" }), new Sample(new[] { "10 Downing St" }), true },
+        { new Sample(["10 Downing St"]), new Sample(["10 Downing St"]), true },
         // Different content should not be equal
-        { new Sample(new[] { "10 Downing St" }), new Sample(new[] { "Bricklane" }), false },
+        { new Sample(["10 Downing St"]), new Sample(["Bricklane"]), false },
         // Multiple items, same order
-        { new Sample(new[] { "A", "B" }), new Sample(new[] { "A", "B" }), true },
+        { new Sample(["A", "B"]), new Sample(["A", "B"]), true },
     };
 
     [Theory]

@@ -41,11 +41,11 @@ public partial class EnumerableEqualityTests : SnapshotTestBase
         // Both null
         { new Sample { Properties = null }, new Sample { Properties = null }, true },
         // Same content
-        { new Sample { Properties = new[] { 1, 2, 3 } }, new Sample { Properties = new[] { 1, 2, 3 } }, true },
+        { new Sample { Properties = [1, 2, 3] }, new Sample { Properties = [1, 2, 3] }, true },
         // Same content, different order (unordered equality)
-        { new Sample { Properties = new[] { 1, 2, 3 } }, new Sample { Properties = new[] { 3, 2, 1 } }, true },
+        { new Sample { Properties = [1, 2, 3] }, new Sample { Properties = [3, 2, 1] }, true },
         // Different content
-        { new Sample { Properties = new[] { 1, 2, 3 } }, new Sample { Properties = new[] { 1, 2, 4 } }, false },
+        { new Sample { Properties = [1, 2, 3] }, new Sample { Properties = [1, 2, 4] }, false },
     };
 
     [Theory]

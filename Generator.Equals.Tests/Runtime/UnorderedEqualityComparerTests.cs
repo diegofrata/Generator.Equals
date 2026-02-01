@@ -14,8 +14,8 @@ public class UnorderedEqualityComparerTests
             new NegativeEqualityComparer()
         );
 
-        _a = new[] { 1, 2, 3, 4, 5 };
-        _b = new[] { 5, -4, 3, -2, 1 };
+        _a = [1, 2, 3, 4, 5];
+        _b = [5, -4, 3, -2, 1];
     }
 
     [Fact]

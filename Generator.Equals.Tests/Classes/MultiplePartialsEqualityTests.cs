@@ -28,20 +28,20 @@ public partial class MultiplePartialsEqualityTests : SnapshotTestBase
     {
         // Same values (Age is ignored)
         {
-            new Sample { FirstName = "Dave", Age = 35, Addresses = new[] { "10 Downing St", "Bricklane" } },
-            new Sample { FirstName = "Dave", Age = 42, Addresses = new[] { "10 Downing St", "Bricklane" } },
+            new Sample { FirstName = "Dave", Age = 35, Addresses = ["10 Downing St", "Bricklane"] },
+            new Sample { FirstName = "Dave", Age = 42, Addresses = ["10 Downing St", "Bricklane"] },
             true
         },
         // Different FirstName
         {
-            new Sample { FirstName = "Dave", Age = 35, Addresses = new[] { "10 Downing St" } },
-            new Sample { FirstName = "John", Age = 35, Addresses = new[] { "10 Downing St" } },
+            new Sample { FirstName = "Dave", Age = 35, Addresses = ["10 Downing St"] },
+            new Sample { FirstName = "John", Age = 35, Addresses = ["10 Downing St"] },
             false
         },
         // Different Addresses
         {
-            new Sample { FirstName = "Dave", Addresses = new[] { "A" } },
-            new Sample { FirstName = "Dave", Addresses = new[] { "B" } },
+            new Sample { FirstName = "Dave", Addresses = ["A"] },
+            new Sample { FirstName = "Dave", Addresses = ["B"] },
             false
         },
     };
