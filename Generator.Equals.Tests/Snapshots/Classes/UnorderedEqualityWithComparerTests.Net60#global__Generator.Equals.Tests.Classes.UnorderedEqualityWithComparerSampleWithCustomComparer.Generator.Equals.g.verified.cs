@@ -83,6 +83,38 @@ namespace Generator.Equals.Tests.Classes
             {
                 return obj.GetHashCode();
             }
+            
+            /// <summary>
+            /// Returns the differences between two instances.
+            /// </summary>
+            /// <param name="x">The first instance to compare.</param>
+            /// <param name="y">The second instance to compare.</param>
+            /// <param name="path">The base path for difference reporting.</param>
+            /// <returns>An enumerable of differences, where each difference contains the path, left value, and right value.</returns>
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
+            public global::System.Collections.Generic.IEnumerable<(string Path, object? Left, object? Right)> Diff(global::Generator.Equals.Tests.Classes.UnorderedEqualityWithComparerSampleWithCustomComparer? x, global::Generator.Equals.Tests.Classes.UnorderedEqualityWithComparerSampleWithCustomComparer? y, string? path = null)
+            {
+                if (ReferenceEquals(x, y)) yield break;
+                if (x is null || y is null)
+                {
+                    yield return (path ?? "", x, y);
+                    yield break;
+                }
+                
+                var __path = string.IsNullOrEmpty(path) ? "" : path + ".";
+                
+                if (!new global::Generator.Equals.UnorderedEqualityComparer<global::System.String>(global::System.StringComparer.OrdinalIgnoreCase).Equals(x.Names!, y.Names!))
+                {
+                    var __xSet = x.Names is null ? new global::System.Collections.Generic.HashSet<global::System.String>() : new global::System.Collections.Generic.HashSet<global::System.String>(x.Names);
+                    var __ySet = y.Names is null ? new global::System.Collections.Generic.HashSet<global::System.String>() : new global::System.Collections.Generic.HashSet<global::System.String>(y.Names);
+                    
+                    foreach (var __removed in global::System.Linq.Enumerable.Except(__xSet, __ySet))
+                        yield return (__path + "Names[-]", __removed, null);
+                    
+                    foreach (var __added in global::System.Linq.Enumerable.Except(__ySet, __xSet))
+                        yield return (__path + "Names[+]", null, __added);
+                }
+            }
         }
     }
 }

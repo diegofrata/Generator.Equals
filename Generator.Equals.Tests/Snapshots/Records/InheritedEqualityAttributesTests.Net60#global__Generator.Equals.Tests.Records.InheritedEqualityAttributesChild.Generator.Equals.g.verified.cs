@@ -52,6 +52,41 @@ namespace Generator.Equals.Tests.Records
             {
                 return obj.GetHashCode();
             }
+            
+            /// <summary>
+            /// Returns the differences between two instances.
+            /// </summary>
+            /// <param name="x">The first instance to compare.</param>
+            /// <param name="y">The second instance to compare.</param>
+            /// <param name="path">The base path for difference reporting.</param>
+            /// <returns>An enumerable of differences, where each difference contains the path, left value, and right value.</returns>
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
+            public global::System.Collections.Generic.IEnumerable<(string Path, object? Left, object? Right)> Diff(global::Generator.Equals.Tests.Records.InheritedEqualityAttributesChild? x, global::Generator.Equals.Tests.Records.InheritedEqualityAttributesChild? y, string? path = null)
+            {
+                if (ReferenceEquals(x, y)) yield break;
+                if (x is null || y is null)
+                {
+                    yield return (path ?? "", x, y);
+                    yield break;
+                }
+                
+                var __path = string.IsNullOrEmpty(path) ? "" : path + ".";
+                
+                if (!global::Generator.Equals.OrderedEqualityComparer<global::System.Int32>.Default.Equals(x.Ints!, y.Ints!))
+                {
+                    var __xList = x.Ints is null ? new global::System.Collections.Generic.List<global::System.Int32>() : new global::System.Collections.Generic.List<global::System.Int32>(x.Ints);
+                    var __yList = y.Ints is null ? new global::System.Collections.Generic.List<global::System.Int32>() : new global::System.Collections.Generic.List<global::System.Int32>(y.Ints);
+                    var __maxLen = global::System.Math.Max(__xList.Count, __yList.Count);
+                    
+                    for (var __i = 0; __i < __maxLen; __i++)
+                    {
+                        var __xVal = __i < __xList.Count ? (object?)__xList[__i] : null;
+                        var __yVal = __i < __yList.Count ? (object?)__yList[__i] : null;
+                        if (!global::System.Object.Equals(__xVal, __yVal))
+                            yield return (__path + $"Ints[{__i}]", __xVal, __yVal);
+                    }
+                }
+            }
         }
     }
 }
