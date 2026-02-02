@@ -1,12 +1,15 @@
 using FluentAssertions;
 
-namespace Generator.Equals.Tests.Diff.Classes;
+namespace Generator.Equals.Tests.Classes.Diff;
 
 /// <summary>
 /// Diff tests for inheritance scenarios: base classes with/without [Equatable].
 /// </summary>
 public partial class InheritanceDiffTests
 {
+    static (string Path, object? Left, object? Right) Diff(string path, object? left, object? right)
+        => (path, left, right);
+
     [Equatable]
     public partial class Person
     {
@@ -41,8 +44,7 @@ public partial class InheritanceDiffTests
 
         var diffs = Manager.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Should().Be("Name");
+        diffs.Should().BeEquivalentTo(new[] { Diff("Name", "Alice", "Bob") });
     }
 
     [Fact]
@@ -53,8 +55,7 @@ public partial class InheritanceDiffTests
 
         var diffs = Manager.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Should().Be("Department");
+        diffs.Should().BeEquivalentTo(new[] { Diff("Department", "Engineering", "Sales") });
     }
 
     [Fact]
@@ -65,9 +66,21 @@ public partial class InheritanceDiffTests
 
         var diffs = Manager.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().HaveCount(2);
-        diffs.Should().Contain(d => d.Path == "Name");
-        diffs.Should().Contain(d => d.Path == "Department");
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Diff("Name", "Alice", "Bob"),
+            Diff("Department", "Engineering", "Sales")
+        });
+    }
+
+    [Fact]
+    public void Inheritance_NullVsNonNull_ReportsEntireObject()
+    {
+        var a = new Manager { Name = "Alice", Department = "Engineering" };
+
+        var diffs = Manager.EqualityComparer.Default.Diff(a, null).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Diff("", a, null) });
     }
 
     #endregion
@@ -82,8 +95,7 @@ public partial class InheritanceDiffTests
 
         var diffs = DerivedFromNonEquatable.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Should().Be("BaseProp");
+        diffs.Should().BeEquivalentTo(new[] { Diff("BaseProp", "Base1", "Base2") });
     }
 
     [Fact]
@@ -94,8 +106,7 @@ public partial class InheritanceDiffTests
 
         var diffs = DerivedFromNonEquatable.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Should().Be("DerivedProp");
+        diffs.Should().BeEquivalentTo(new[] { Diff("DerivedProp", "Derived1", "Derived2") });
     }
 
     [Fact]
@@ -106,9 +117,11 @@ public partial class InheritanceDiffTests
 
         var diffs = DerivedFromNonEquatable.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().HaveCount(2);
-        diffs.Should().Contain(d => d.Path == "BaseProp");
-        diffs.Should().Contain(d => d.Path == "DerivedProp");
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Diff("BaseProp", "Base1", "Base2"),
+            Diff("DerivedProp", "Derived1", "Derived2")
+        });
     }
 
     #endregion

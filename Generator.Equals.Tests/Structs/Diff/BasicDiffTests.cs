@@ -1,12 +1,15 @@
 using FluentAssertions;
 
-namespace Generator.Equals.Tests.Diff.Structs;
+namespace Generator.Equals.Tests.Structs.Diff;
 
 /// <summary>
 /// Basic Diff tests for structs: simple properties, path handling, consistency.
 /// </summary>
 public partial class BasicDiffTests
 {
+    static (string Path, object? Left, object? Right) Diff(string path, object? left, object? right)
+        => (path, left, right);
+
     [Equatable]
     public partial struct Sample
     {
@@ -33,10 +36,7 @@ public partial class BasicDiffTests
 
         var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Should().Be("Name");
-        diffs[0].Left.Should().Be("Alice");
-        diffs[0].Right.Should().Be("Bob");
+        diffs.Should().BeEquivalentTo(new[] { Diff("Name", "Alice", "Bob") });
     }
 
     [Fact]
@@ -47,10 +47,7 @@ public partial class BasicDiffTests
 
         var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Should().Be("Age");
-        diffs[0].Left.Should().Be(30);
-        diffs[0].Right.Should().Be(35);
+        diffs.Should().BeEquivalentTo(new[] { Diff("Age", 30, 35) });
     }
 
     [Fact]
@@ -61,9 +58,11 @@ public partial class BasicDiffTests
 
         var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().HaveCount(2);
-        diffs.Should().Contain(d => d.Path == "Name");
-        diffs.Should().Contain(d => d.Path == "Age");
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Diff("Name", "Alice", "Bob"),
+            Diff("Age", 30, 35)
+        });
     }
 
     [Fact]
@@ -74,8 +73,7 @@ public partial class BasicDiffTests
 
         var diffs = Sample.EqualityComparer.Default.Diff(a, b, "Root").ToList();
 
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Should().Be("Root.Name");
+        diffs.Should().BeEquivalentTo(new[] { Diff("Root.Name", "Alice", "Bob") });
     }
 
     [Fact]
@@ -101,6 +99,10 @@ public partial class BasicDiffTests
         var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
 
         areEqual.Should().BeFalse();
-        diffs.Should().NotBeEmpty("Diff should return differences when Equals returns false");
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Diff("Name", "Alice", "Bob"),
+            Diff("Age", 30, 35)
+        });
     }
 }

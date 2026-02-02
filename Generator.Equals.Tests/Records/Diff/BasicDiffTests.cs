@@ -1,22 +1,53 @@
 using FluentAssertions;
 
-namespace Generator.Equals.Tests.Diff.RecordStructs;
+namespace Generator.Equals.Tests.Records.Diff;
 
 /// <summary>
-/// Basic Diff tests for record structs: simple properties, path handling, consistency.
+/// Basic Diff tests for records: null handling, simple properties, path handling, consistency.
 /// </summary>
 public partial class BasicDiffTests
 {
+    static (string Path, object? Left, object? Right) Diff(string path, object? left, object? right)
+        => (path, left, right);
+
     [Equatable]
-    public partial record struct Sample(string? Name, int Age);
+    public partial record Sample(string? Name, int Age);
 
     [Fact]
-    public void Diff_SameRecordStructs_ReturnsNoDifferences()
+    public void Diff_SameRecords_ReturnsNoDifferences()
     {
         var a = new Sample("Alice", 30);
         var b = new Sample("Alice", 30);
 
         var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
+
+        diffs.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Diff_SameReference_ReturnsNoDifferences()
+    {
+        var a = new Sample("Alice", 30);
+
+        var diffs = Sample.EqualityComparer.Default.Diff(a, a).ToList();
+
+        diffs.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Diff_OneNull_ReturnsEntireObject()
+    {
+        var a = new Sample("Alice", 30);
+
+        var diffs = Sample.EqualityComparer.Default.Diff(a, null).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Diff("", a, null) });
+    }
+
+    [Fact]
+    public void Diff_BothNull_ReturnsNoDifferences()
+    {
+        var diffs = Sample.EqualityComparer.Default.Diff(null, null).ToList();
 
         diffs.Should().BeEmpty();
     }
@@ -29,10 +60,7 @@ public partial class BasicDiffTests
 
         var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Should().Be("Name");
-        diffs[0].Left.Should().Be("Alice");
-        diffs[0].Right.Should().Be("Bob");
+        diffs.Should().BeEquivalentTo(new[] { Diff("Name", "Alice", "Bob") });
     }
 
     [Fact]
@@ -43,10 +71,7 @@ public partial class BasicDiffTests
 
         var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Should().Be("Age");
-        diffs[0].Left.Should().Be(30);
-        diffs[0].Right.Should().Be(35);
+        diffs.Should().BeEquivalentTo(new[] { Diff("Age", 30, 35) });
     }
 
     [Fact]
@@ -57,9 +82,11 @@ public partial class BasicDiffTests
 
         var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().HaveCount(2);
-        diffs.Should().Contain(d => d.Path == "Name");
-        diffs.Should().Contain(d => d.Path == "Age");
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Diff("Name", "Alice", "Bob"),
+            Diff("Age", 30, 35)
+        });
     }
 
     [Fact]
@@ -70,8 +97,7 @@ public partial class BasicDiffTests
 
         var diffs = Sample.EqualityComparer.Default.Diff(a, b, "Root").ToList();
 
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Should().Be("Root.Name");
+        diffs.Should().BeEquivalentTo(new[] { Diff("Root.Name", "Alice", "Bob") });
     }
 
     [Fact]
@@ -97,6 +123,10 @@ public partial class BasicDiffTests
         var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
 
         areEqual.Should().BeFalse();
-        diffs.Should().NotBeEmpty("Diff should return differences when Equals returns false");
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Diff("Name", "Alice", "Bob"),
+            Diff("Age", 30, 35)
+        });
     }
 }

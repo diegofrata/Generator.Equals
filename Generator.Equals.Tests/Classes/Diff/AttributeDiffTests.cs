@@ -1,12 +1,15 @@
 using FluentAssertions;
 
-namespace Generator.Equals.Tests.Diff.Classes;
+namespace Generator.Equals.Tests.Classes.Diff;
 
 /// <summary>
 /// Diff tests for equality attributes: IgnoreEquality, StringEquality, ReferenceEquality.
 /// </summary>
 public partial class AttributeDiffTests
 {
+    static (string Path, object? Left, object? Right) Diff(string path, object? left, object? right)
+        => (path, left, right);
+
     [Equatable]
     public partial class IgnoredPropertySample
     {
@@ -44,7 +47,7 @@ public partial class AttributeDiffTests
 
         var diffs = IgnoredPropertySample.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().BeEmpty("Ignored properties should not appear in diff");
+        diffs.Should().BeEmpty();
     }
 
     [Fact]
@@ -55,9 +58,7 @@ public partial class AttributeDiffTests
 
         var diffs = IgnoredPropertySample.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Should().Be("Name");
-        diffs.Should().NotContain(d => d.Path.Contains("IgnoredAge"));
+        diffs.Should().BeEquivalentTo(new[] { Diff("Name", "Alice", "Bob") });
     }
 
     #endregion
@@ -72,7 +73,7 @@ public partial class AttributeDiffTests
 
         var diffs = StringComparisonSample.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().BeEmpty("Case-insensitive comparison should treat 'Alice' and 'ALICE' as equal");
+        diffs.Should().BeEmpty();
     }
 
     [Fact]
@@ -83,8 +84,7 @@ public partial class AttributeDiffTests
 
         var diffs = StringComparisonSample.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Should().Be("CaseSensitiveName");
+        diffs.Should().BeEquivalentTo(new[] { Diff("CaseSensitiveName", "Test", "TEST") });
     }
 
     [Fact]
@@ -95,8 +95,7 @@ public partial class AttributeDiffTests
 
         var diffs = StringComparisonSample.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Should().Be("CaseInsensitiveName");
+        diffs.Should().BeEquivalentTo(new[] { Diff("CaseInsensitiveName", "Alice", "Bob") });
     }
 
     #endregion
@@ -118,13 +117,14 @@ public partial class AttributeDiffTests
     [Fact]
     public void ReferenceEquality_DifferentReference_ReportsDiff()
     {
-        var a = new ReferenceEqualitySample { Reference = new object(), Name = "Test" };
-        var b = new ReferenceEqualitySample { Reference = new object(), Name = "Test" };
+        var ref1 = new object();
+        var ref2 = new object();
+        var a = new ReferenceEqualitySample { Reference = ref1, Name = "Test" };
+        var b = new ReferenceEqualitySample { Reference = ref2, Name = "Test" };
 
         var diffs = ReferenceEqualitySample.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Should().Be("Reference");
+        diffs.Should().BeEquivalentTo(new[] { Diff("Reference", ref1, ref2) });
     }
 
     [Fact]
@@ -137,11 +137,10 @@ public partial class AttributeDiffTests
         var a = new ReferenceEqualitySample { Reference = str1, Name = "Test" };
         var b = new ReferenceEqualitySample { Reference = str2, Name = "Test" };
 
-        // Reference equality should report diff even if content is equal
         var diffs = ReferenceEqualitySample.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Should().Be("Reference");
+        // Reference equality should report diff even if content is equal
+        diffs.Should().BeEquivalentTo(new[] { Diff("Reference", str1, str2) });
     }
 
     #endregion

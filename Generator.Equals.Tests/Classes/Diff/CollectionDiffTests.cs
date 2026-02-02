@@ -1,12 +1,15 @@
 using FluentAssertions;
 
-namespace Generator.Equals.Tests.Diff.Classes;
+namespace Generator.Equals.Tests.Classes.Diff;
 
 /// <summary>
 /// Diff tests for collection properties: ordered, unordered, set, and dictionary.
 /// </summary>
 public partial class CollectionDiffTests
 {
+    static (string Path, object? Left, object? Right) Diff(string path, object? left, object? right)
+        => (path, left, right);
+
     [Equatable]
     public partial class Sample
     {
@@ -41,10 +44,7 @@ public partial class CollectionDiffTests
 
         var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Should().Be("Items[1]");
-        diffs[0].Left.Should().Be(2);
-        diffs[0].Right.Should().Be(99);
+        diffs.Should().BeEquivalentTo(new[] { Diff("Items[1]", 2, 99) });
     }
 
     [Fact]
@@ -55,10 +55,7 @@ public partial class CollectionDiffTests
 
         var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Should().Be("Items[2]");
-        diffs[0].Left.Should().BeNull();
-        diffs[0].Right.Should().Be(3);
+        diffs.Should().BeEquivalentTo(new[] { Diff("Items[2]", null, 3) });
     }
 
     [Fact]
@@ -69,10 +66,22 @@ public partial class CollectionDiffTests
 
         var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Should().Be("Items[2]");
-        diffs[0].Left.Should().Be(3);
-        diffs[0].Right.Should().BeNull();
+        diffs.Should().BeEquivalentTo(new[] { Diff("Items[2]", 3, null) });
+    }
+
+    [Fact]
+    public void OrderedCollection_MultipleDifferences_ReportsAll()
+    {
+        var a = new Sample { Items = [1, 2, 3] };
+        var b = new Sample { Items = [9, 2, 8] };
+
+        var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Diff("Items[0]", 1, 9),
+            Diff("Items[2]", 3, 8)
+        });
     }
 
     #endregion
@@ -98,10 +107,7 @@ public partial class CollectionDiffTests
 
         var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Should().Be("Tags[+]");
-        diffs[0].Left.Should().BeNull();
-        diffs[0].Right.Should().Be("c");
+        diffs.Should().BeEquivalentTo(new[] { Diff("Tags[+]", null, "c") });
     }
 
     [Fact]
@@ -112,10 +118,7 @@ public partial class CollectionDiffTests
 
         var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Should().Be("Tags[-]");
-        diffs[0].Left.Should().Be("c");
-        diffs[0].Right.Should().BeNull();
+        diffs.Should().BeEquivalentTo(new[] { Diff("Tags[-]", "c", null) });
     }
 
     [Fact]
@@ -126,9 +129,11 @@ public partial class CollectionDiffTests
 
         var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().HaveCount(2);
-        diffs.Should().Contain(d => d.Path == "Tags[-]" && (string?)d.Left == "a");
-        diffs.Should().Contain(d => d.Path == "Tags[+]" && (string?)d.Right == "c");
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Diff("Tags[-]", "a", null),
+            Diff("Tags[+]", null, "c")
+        });
     }
 
     #endregion
@@ -154,10 +159,7 @@ public partial class CollectionDiffTests
 
         var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Should().Be("Properties[y]");
-        diffs[0].Left.Should().BeNull();
-        diffs[0].Right.Should().Be(2);
+        diffs.Should().BeEquivalentTo(new[] { Diff("Properties[y]", null, 2) });
     }
 
     [Fact]
@@ -168,10 +170,7 @@ public partial class CollectionDiffTests
 
         var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Should().Be("Properties[y]");
-        diffs[0].Left.Should().Be(2);
-        diffs[0].Right.Should().BeNull();
+        diffs.Should().BeEquivalentTo(new[] { Diff("Properties[y]", 2, null) });
     }
 
     [Fact]
@@ -182,10 +181,7 @@ public partial class CollectionDiffTests
 
         var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Should().Be("Properties[x]");
-        diffs[0].Left.Should().Be(1);
-        diffs[0].Right.Should().Be(99);
+        diffs.Should().BeEquivalentTo(new[] { Diff("Properties[x]", 1, 99) });
     }
 
     [Fact]
@@ -196,9 +192,11 @@ public partial class CollectionDiffTests
 
         var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().HaveCount(2);
-        diffs.Should().Contain(d => d.Path == "Properties[x]" && d.Left == null && (int?)d.Right == 1);
-        diffs.Should().Contain(d => d.Path == "Properties[y]" && d.Left == null && (int?)d.Right == 2);
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Diff("Properties[x]", null, 1),
+            Diff("Properties[y]", null, 2)
+        });
     }
 
     [Fact]
@@ -209,9 +207,27 @@ public partial class CollectionDiffTests
 
         var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
 
-        diffs.Should().HaveCount(2);
-        diffs.Should().Contain(d => d.Path == "Properties[x]" && (int?)d.Left == 1 && d.Right == null);
-        diffs.Should().Contain(d => d.Path == "Properties[y]" && (int?)d.Left == 2 && d.Right == null);
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Diff("Properties[x]", 1, null),
+            Diff("Properties[y]", 2, null)
+        });
+    }
+
+    [Fact]
+    public void Dictionary_MultipleChanges_ReportsAll()
+    {
+        var a = new Sample { Properties = new Dictionary<string, int> { ["x"] = 1, ["y"] = 2 } };
+        var b = new Sample { Properties = new Dictionary<string, int> { ["x"] = 99, ["z"] = 3 } };
+
+        var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Diff("Properties[x]", 1, 99),
+            Diff("Properties[y]", 2, null),
+            Diff("Properties[z]", null, 3)
+        });
     }
 
     #endregion
