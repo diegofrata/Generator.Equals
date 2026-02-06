@@ -1,6 +1,18 @@
 [![Nuget](https://img.shields.io/nuget/v/Generator.Equals)](https://www.nuget.org/packages/Generator.Equals/)
 # Generator.Equals
-A source code generator for automatically implementing IEquatable&lt;T&gt; using only attributes.
+
+**A C# source generator that automatically implements `IEquatable<T>`, `Equals`, and `GetHashCode` — using just attributes.**
+
+Writing correct equality logic in C# is tedious, error-prone, and easy to forget when adding new properties. Generator.Equals eliminates that boilerplate by generating efficient, best-practice equality code at compile time.
+
+### Why use Generator.Equals?
+
+- **Zero boilerplate** — Mark your type with `[Equatable]` and the generator does the rest. No hand-written `Equals`, `GetHashCode`, or `==`/`!=` operators.
+- **Collection-aware** — Compare arrays, lists, dictionaries, and sets by value out of the box with `[OrderedEquality]`, `[UnorderedEquality]`, and `[SetEquality]`.
+- **Highly customizable** — Use `[CustomEquality]`, `[StringEquality]`, `[ReferenceEquality]`, or `[IgnoreEquality]` to control comparison per-property.
+- **Works everywhere** — Supports classes, structs, records, and record structs.
+- **Inheritance-friendly** — Correctly chains `base.Equals()` across deep inheritance hierarchies and inherits equality attributes from overridden properties.
+- **Compile-time only** — No runtime dependencies. The generator emits plain C# source code with no reflection or allocations.
 
 ----------------
 ## Requirements
@@ -12,97 +24,6 @@ In order to use this library, you must:
 ## Installation
 
 Simply add the package `Generator.Equals` to your project. Keep reading to learn how to add the attributes to your types.
-
-## Migrating from version 3
-
-### Inherited Equality Attributes
-
-Version 4 introduces support for inherited equality attributes on overridden properties, making repeating attributes
-unnecessary. When a child class overrides a virtual property from a parent class, it now automatically inherits the
-equality attribute (e.g., `[OrderedEquality]`) from the parent. You no longer need to redeclare attributes on overriding
-properties.
-
-```c#
-[Equatable]
-public partial class Parent
-{
-    [OrderedEquality]
-    public virtual int[] Values { get; set; }
-}
-
-[Equatable]
-public partial class Child : Parent
-{
-    // Automatically inherits [OrderedEquality] from Parent
-    public override int[] Values { get; set; }
-}
-```
-
-### Improved Inheritance Chain Detection
-
-Version 4 improves how `base.Equals()` is called in inheritance hierarchies. Previously, generated code would only
-call `base.Equals()` if the **immediate** base class had `[Equatable]`. Now, the generator walks the **entire**
-inheritance chain and calls `base.Equals()` if:
-
-1. **Any ancestor** has the `[Equatable]` attribute, OR
-2. **Any ancestor** has manually overridden `Equals(object)`
-
-This fixes scenarios where equality was incorrectly skipped in multi-level inheritance:
-
-```c#
-[Equatable]
-public partial class GrandParent
-{
-    public string Name { get; set; }
-}
-
-// No [Equatable] - inherits GrandParent's Equals
-public class Parent : GrandParent
-{
-    public int Age { get; set; }
-}
-
-[Equatable]
-public partial class Child : Parent
-{
-    public string School { get; set; }
-}
-```
-
-**Before (v3):** `Child.Equals()` did NOT call `base.Equals()` because `Parent` lacks `[Equatable]`.
-Only `School` was compared, ignoring `Name`.
-
-**After (v4):** `Child.Equals()` calls `base.Equals()` because `GrandParent` has `[Equatable]`.
-Both `School` and `Name` are compared correctly.
-
-### Ignore Inherited Members
-
-The `IgnoreInheritedMembers` property controls how inherited members are handled:
-
-| IgnoreInheritedMembers | Any Ancestor has [Equatable] | Behavior |
-|------------------------|------------------------------|----------|
-| `true`  | N/A | Compare only declared members, type check, no `base.Equals()` |
-| `false` | Yes | Call `base.Equals()`, let ancestor handle its members |
-| `false` | No  | Type check + compare ALL inherited properties from entire chain |
-
-```c#
-[Equatable(IgnoreInheritedMembers = true)]
-public partial class Child : Parent
-{
-    // Will NOT call base.Equals() even if Parent has [Equatable]
-    // Only properties defined in Child are compared
-    public string School { get; set; }
-}
-```
-
-## Migrating from version 2
-
-Migrating to version 3 is very straightforward.
-
-1. Ensure projects are targeting C# 9.0 or latter using the MSBuild property `LangVersion`.
-2. Be aware that `IEquatable<T>` for classes is now implemented explicitly in order to support deep equality. As a result, the method `Equals(T)` method is no longer marked as public. Most code should still work, requiring only to be recompiled as the ABI has changed.
-
-If you have an existing project using `Generator.Equals` and don't need any of the new features, you can still use version 2.x. The differences are minimal between both major versions.
 
 ## Usage
 
@@ -353,3 +274,94 @@ partial class Doctor : Person
     public string Specialization { get; set; }
 }
 ```
+
+## Migrating from version 3
+
+### Inherited Equality Attributes
+
+Version 4 introduces support for inherited equality attributes on overridden properties, making repeating attributes
+unnecessary. When a child class overrides a virtual property from a parent class, it now automatically inherits the
+equality attribute (e.g., `[OrderedEquality]`) from the parent. You no longer need to redeclare attributes on overriding
+properties.
+
+```c#
+[Equatable]
+public partial class Parent
+{
+    [OrderedEquality]
+    public virtual int[] Values { get; set; }
+}
+
+[Equatable]
+public partial class Child : Parent
+{
+    // Automatically inherits [OrderedEquality] from Parent
+    public override int[] Values { get; set; }
+}
+```
+
+### Improved Inheritance Chain Detection
+
+Version 4 improves how `base.Equals()` is called in inheritance hierarchies. Previously, generated code would only
+call `base.Equals()` if the **immediate** base class had `[Equatable]`. Now, the generator walks the **entire**
+inheritance chain and calls `base.Equals()` if:
+
+1. **Any ancestor** has the `[Equatable]` attribute, OR
+2. **Any ancestor** has manually overridden `Equals(object)`
+
+This fixes scenarios where equality was incorrectly skipped in multi-level inheritance:
+
+```c#
+[Equatable]
+public partial class GrandParent
+{
+    public string Name { get; set; }
+}
+
+// No [Equatable] - inherits GrandParent's Equals
+public class Parent : GrandParent
+{
+    public int Age { get; set; }
+}
+
+[Equatable]
+public partial class Child : Parent
+{
+    public string School { get; set; }
+}
+```
+
+**Before (v3):** `Child.Equals()` did NOT call `base.Equals()` because `Parent` lacks `[Equatable]`.
+Only `School` was compared, ignoring `Name`.
+
+**After (v4):** `Child.Equals()` calls `base.Equals()` because `GrandParent` has `[Equatable]`.
+Both `School` and `Name` are compared correctly.
+
+### Ignore Inherited Members
+
+The `IgnoreInheritedMembers` property controls how inherited members are handled:
+
+| IgnoreInheritedMembers | Any Ancestor has [Equatable] | Behavior |
+|------------------------|------------------------------|----------|
+| `true`  | N/A | Compare only declared members, type check, no `base.Equals()` |
+| `false` | Yes | Call `base.Equals()`, let ancestor handle its members |
+| `false` | No  | Type check + compare ALL inherited properties from entire chain |
+
+```c#
+[Equatable(IgnoreInheritedMembers = true)]
+public partial class Child : Parent
+{
+    // Will NOT call base.Equals() even if Parent has [Equatable]
+    // Only properties defined in Child are compared
+    public string School { get; set; }
+}
+```
+
+## Migrating from version 2
+
+Migrating to version 3 is very straightforward.
+
+1. Ensure projects are targeting C# 9.0 or latter using the MSBuild property `LangVersion`.
+2. Be aware that `IEquatable<T>` for classes is now implemented explicitly in order to support deep equality. As a result, the method `Equals(T)` method is no longer marked as public. Most code should still work, requiring only to be recompiled as the ABI has changed.
+
+If you have an existing project using `Generator.Equals` and don't need any of the new features, you can still use version 2.x. The differences are minimal between both major versions.
