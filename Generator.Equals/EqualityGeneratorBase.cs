@@ -1,5 +1,6 @@
 ﻿using System.CodeDom.Compiler;
 using System.Collections.Immutable;
+using System.Globalization;
 
 using Generator.Equals.Models;
 
@@ -63,6 +64,18 @@ namespace Generator.Equals
             return $"global::Generator.Equals.{comparerClassName}<{elementTypeName}>.Default";
         }
 
+        static string FormatPrecisionLiteral(double precision, string typeName)
+        {
+            var formatted = precision.ToString("R", CultureInfo.InvariantCulture);
+
+            return typeName switch
+            {
+                "global::System.Single" => formatted + "f",
+                "global::System.Decimal" => formatted + "m",
+                _ => formatted
+            };
+        }
+
         static void BuildEquality(EqualityMemberModel memberModel, IndentedTextWriter writer, string left, string right)
         {
             if (memberModel.Ignored)
@@ -113,6 +126,22 @@ namespace Generator.Equals
                     writer.WriteLine(
                         $"&& global::System.StringComparer.{memberModel.StringComparer}.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)");
                     break;
+
+                case EqualityType.PrecisionEquality when memberModel.IsNullable:
+                {
+                    var literal = FormatPrecisionLiteral(memberModel.Precision!.Value, memberModel.TypeName);
+                    writer.WriteLine(
+                        $"&& ({left}.{memberModel.PropertyName} == {right}.{memberModel.PropertyName} || ({left}.{memberModel.PropertyName}.HasValue && {right}.{memberModel.PropertyName}.HasValue && global::System.Math.Abs({left}.{memberModel.PropertyName}.Value - {right}.{memberModel.PropertyName}.Value) < {literal}))");
+                    break;
+                }
+
+                case EqualityType.PrecisionEquality:
+                {
+                    var literal = FormatPrecisionLiteral(memberModel.Precision!.Value, memberModel.TypeName);
+                    writer.WriteLine(
+                        $"&& global::System.Math.Abs({left}.{memberModel.PropertyName} - {right}.{memberModel.PropertyName}) < {literal}");
+                    break;
+                }
 
                 case EqualityType.CustomEquality when memberModel.ComparerHasStaticInstance:
                     writer.WriteLine(
@@ -193,6 +222,9 @@ namespace Generator.Equals
                     BuildHashCodeAdd(GetCollectionComparerExpression("SetEqualityComparer", memberModel.TypeName, memberModel));
                     break;
 
+                case EqualityType.PrecisionEquality:
+                    break; // excluded from hash — no stable bucketing under tolerance
+
                 case EqualityType.StringEquality:
                     BuildHashCodeAdd($"global::System.StringComparer.{memberModel.StringComparer}");
                     break;
@@ -258,6 +290,12 @@ namespace Generator.Equals
 
                 EqualityType.SetEquality =>
                     $"{GetCollectionComparerExpression("SetEqualityComparer", memberModel.TypeName, memberModel)}.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)",
+
+                EqualityType.PrecisionEquality when memberModel.IsNullable =>
+                    $"({left}.{memberModel.PropertyName} == {right}.{memberModel.PropertyName} || ({left}.{memberModel.PropertyName}.HasValue && {right}.{memberModel.PropertyName}.HasValue && global::System.Math.Abs({left}.{memberModel.PropertyName}.Value - {right}.{memberModel.PropertyName}.Value) < {FormatPrecisionLiteral(memberModel.Precision!.Value, memberModel.TypeName)}))",
+
+                EqualityType.PrecisionEquality =>
+                    $"(global::System.Math.Abs({left}.{memberModel.PropertyName} - {right}.{memberModel.PropertyName}) < {FormatPrecisionLiteral(memberModel.Precision!.Value, memberModel.TypeName)})",
 
                 EqualityType.StringEquality =>
                     $"global::System.StringComparer.{memberModel.StringComparer}.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)",

@@ -9,5 +9,6 @@ enum EqualityType
     SetEquality,
     StringEquality,
     CustomEquality,
+    PrecisionEquality,
     IgnoreEquality
 }

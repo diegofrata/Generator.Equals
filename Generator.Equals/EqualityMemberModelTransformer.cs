@@ -193,6 +193,37 @@ static class EqualityMemberModelTransformer
                 StringComparer = enumMemberName
             };
         }
+        else if (memberSymbol.HasAttribute(attributesMetadata.PrecisionEquality))
+        {
+            var attribute = memberSymbol.GetAttribute(attributesMetadata.PrecisionEquality)!;
+            var precision = Convert.ToDouble(attribute.ConstructorArguments[0].Value, CultureInfo.InvariantCulture);
+
+            string underlyingTypeName;
+            bool isNullable;
+
+            if (typeSymbol is INamedTypeSymbol
+                {
+                    OriginalDefinition.SpecialType: SpecialType.System_Nullable_T
+                } nullableType)
+            {
+                isNullable = true;
+                underlyingTypeName = nullableType.TypeArguments[0].ToNullableFQF();
+            }
+            else
+            {
+                isNullable = false;
+                underlyingTypeName = typeName;
+            }
+
+            return new EqualityMemberModel
+            {
+                PropertyName = propertyName,
+                TypeName = underlyingTypeName,
+                EqualityType = EqualityType.PrecisionEquality,
+                Precision = precision,
+                IsNullable = isNullable
+            };
+        }
         else if (memberSymbol.HasAttribute(attributesMetadata.CustomEquality))
         {
             var attribute = memberSymbol.GetAttribute(attributesMetadata.CustomEquality);

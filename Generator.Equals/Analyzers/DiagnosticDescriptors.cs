@@ -116,4 +116,16 @@ public static class DiagnosticDescriptors
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
         description: "Collection equality attributes like [OrderedEquality], [UnorderedEquality], and [SetEquality] can only be used on collection types (IEnumerable<T>).");
+
+    /// <summary>
+    /// GE010: [PrecisionEquality] on unsupported type.
+    /// </summary>
+    public static readonly DiagnosticDescriptor PrecisionEqualityOnUnsupportedType = new(
+        id: "GE010",
+        title: "[PrecisionEquality] on unsupported type",
+        messageFormat: "Property '{0}' has [PrecisionEquality] attribute but its type is '{1}', which is not a supported numeric type (float, double, decimal, int, long, short, sbyte, or their nullable variants)",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "[PrecisionEquality] attribute can only be used on properties of type float, double, decimal, int, long, short, sbyte, or their nullable variants.");
 }

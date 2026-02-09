@@ -9,6 +9,8 @@ sealed record EqualityMemberModel
     public string? ComparerMemberName { get; init; }
     public string? StringComparer { get; init; }
     public bool IsDictionary { get; init; }
+    public double? Precision { get; init; }
+    public bool IsNullable { get; init; }
 
     public bool Ignored { get; init; }
     public bool ComparerHasStaticInstance { get; init; }

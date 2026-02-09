@@ -29,6 +29,7 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
         Metadata.StringEquality,
         Metadata.CustomEquality,
         Metadata.ReferenceEquality,
+        Metadata.PrecisionEquality,
         Metadata.IgnoreEquality);
 
     /// <summary>
@@ -48,7 +49,8 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
         DiagnosticDescriptors.NonPartialType,                      // GE006
         DiagnosticDescriptors.ConflictingAttributes,               // GE007
         DiagnosticDescriptors.StringEqualityOnNonString,           // GE008
-        DiagnosticDescriptors.CollectionAttributeOnNonCollection); // GE009
+        DiagnosticDescriptors.CollectionAttributeOnNonCollection,    // GE009
+        DiagnosticDescriptors.PrecisionEqualityOnUnsupportedType);    // GE010
 
     public override void Initialize(AnalysisContext context)
     {
@@ -133,6 +135,9 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
 
         // GE009: Check collection attributes on non-collection
         CheckCollectionAttributeOnNonCollection(context, memberSymbol, memberAttributes);
+
+        // GE010: Check [PrecisionEquality] on unsupported type
+        CheckPrecisionEqualityOnUnsupportedType(context, memberSymbol, memberAttributes);
     }
 
     private static void AnalyzeMemberInEquatableType(
@@ -376,6 +381,46 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
                     memberType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)));
             }
         }
+    }
+
+    private static readonly ImmutableHashSet<SpecialType> SupportedPrecisionTypes = ImmutableHashSet.Create(
+        SpecialType.System_Single,
+        SpecialType.System_Double,
+        SpecialType.System_Decimal,
+        SpecialType.System_Int32,
+        SpecialType.System_Int64,
+        SpecialType.System_Int16,
+        SpecialType.System_SByte);
+
+    private static void CheckPrecisionEqualityOnUnsupportedType(
+        SymbolAnalysisContext context,
+        ISymbol memberSymbol,
+        List<(AttributeMetadata Metadata, AttributeData Data)> memberAttributes)
+    {
+        var precisionAttr = memberAttributes.FirstOrDefault(x => x.Metadata.Equals(Metadata.PrecisionEquality));
+        if (precisionAttr.Metadata == null)
+            return;
+
+        var memberType = GetMemberType(memberSymbol);
+        if (memberType == null)
+            return;
+
+        // Unwrap Nullable<T> to get the underlying type
+        var checkType = memberType;
+        if (memberType is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T } nullableType)
+            checkType = nullableType.TypeArguments[0];
+
+        if (SupportedPrecisionTypes.Contains(checkType.SpecialType))
+            return;
+
+        var location = precisionAttr.Data.ApplicationSyntaxReference?.GetSyntax().GetLocation()
+                       ?? memberSymbol.Locations.FirstOrDefault()
+                       ?? Location.None;
+        context.ReportDiagnostic(Diagnostic.Create(
+            DiagnosticDescriptors.PrecisionEqualityOnUnsupportedType,
+            location,
+            memberSymbol.Name,
+            memberType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)));
     }
 
     private static List<(AttributeMetadata Metadata, AttributeData Data)> GetEqualityAttributesOnMember(ISymbol member)

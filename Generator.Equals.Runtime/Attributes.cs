@@ -154,4 +154,17 @@ namespace Generator.Equals
             FieldOrPropertyName = fieldOrPropertyName;
         }
     }
+
+    [GeneratedCode("Generator.Equals", "1.0.0.0")]
+    [Conditional("GENERATOR_EQUALS")]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = true)]
+    public class PrecisionEqualityAttribute : Attribute
+    {
+        public double Precision { get; }
+
+        public PrecisionEqualityAttribute(double precision)
+        {
+            Precision = precision;
+        }
+    }
 }

@@ -13,6 +13,7 @@ sealed record AttributesMetadata(
     AttributeMetadata SetEquality,
     AttributeMetadata StringEquality,
     AttributeMetadata CustomEquality,
+    AttributeMetadata PrecisionEquality,
     EquatableImmutableDictionary<long, string> StringComparisonLookup)
 {
     public static AttributesMetadata Instance { get; } = CreateDefault();
@@ -29,6 +30,7 @@ sealed record AttributesMetadata(
             SetEquality: AttributeMetadata.FromFullName("Generator.Equals.SetEqualityAttribute")!,
             StringEquality: AttributeMetadata.FromFullName("Generator.Equals.StringEqualityAttribute")!,
             CustomEquality: AttributeMetadata.FromFullName("Generator.Equals.CustomEqualityAttribute")!,
+            PrecisionEquality: AttributeMetadata.FromFullName("Generator.Equals.PrecisionEqualityAttribute")!,
             StringComparisonLookup: new Dictionary<long, string>
             {
                 [0] = "CurrentCulture",

@@ -9,7 +9,7 @@ Writing correct equality logic in C# is tedious, error-prone, and easy to forget
 
 - **Zero boilerplate** — Mark your type with `[Equatable]` and the generator does the rest. No hand-written `Equals`, `GetHashCode`, or `==`/`!=` operators.
 - **Collection-aware** — Compare arrays, lists, dictionaries, and sets by value out of the box with `[OrderedEquality]`, `[UnorderedEquality]`, and `[SetEquality]`.
-- **Highly customizable** — Use `[CustomEquality]`, `[StringEquality]`, `[ReferenceEquality]`, or `[IgnoreEquality]` to control comparison per-property.
+- **Highly customizable** — Use `[CustomEquality]`, `[StringEquality]`, `[PrecisionEquality]`, `[ReferenceEquality]`, or `[IgnoreEquality]` to control comparison per-property.
 - **Works everywhere** — Supports classes, structs, records, and record structs.
 - **Inheritance-friendly** — Correctly chains `base.Equals()` across deep inheritance hierarchies and inherits equality attributes from overridden properties.
 - **Compile-time only** — No runtime dependencies. The generator emits plain C# source code with no reflection or allocations.
@@ -188,6 +188,23 @@ This will ignore whatever equality is implemented for a particular object and co
 [StringEquality(StringComparison.CurrentCulture | CurrentCultureIgnoreCase | InvariantCulture | InvariantCultureIgnoreCase | Ordinal | OrdinalIgnoreCase)]
 public string Title { get; set; } // Will use the StringComparison set in constructor when comparing strings
 ```
+
+### PrecisionEquality
+
+```c#
+[PrecisionEquality(0.001)]
+public double Temperature { get; set; } // Equal if Math.Abs(a - b) < 0.001
+
+[PrecisionEquality(5)]
+public int Score { get; set; } // Equal if Math.Abs(a - b) < 5
+
+[PrecisionEquality(0.001)]
+public double? NullableValue { get; set; } // Handles nulls: both null = equal, one null = not equal
+```
+
+This equality comparer uses a tolerance (epsilon) to compare numeric values. Two values are considered equal when their absolute difference is less than the specified precision. This is excluded from `GetHashCode` since there is no stable bucketing under tolerance.
+
+Supported types: `float`, `double`, `decimal`, `int`, `long`, `short`, `sbyte`, and their nullable variants.
 
 ### CustomEquality
 
