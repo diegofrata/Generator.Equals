@@ -12,7 +12,7 @@ Writing correct equality logic in C# is tedious, error-prone, and easy to forget
 - **Highly customizable** — Use `[CustomEquality]`, `[StringEquality]`, `[PrecisionEquality]`, `[ReferenceEquality]`, or `[IgnoreEquality]` to control comparison per-property.
 - **Works everywhere** — Supports classes, structs, records, and record structs.
 - **Inheritance-friendly** — Correctly chains `base.Equals()` across deep inheritance hierarchies and inherits equality attributes from overridden properties.
-- **Compile-time only** — No runtime dependencies. The generator emits plain C# source code with no reflection or allocations.
+- **Compile-time only** — No reflection or IL injection. The generator emits plain C# source code that you can inspect and debug.
 
 ----------------
 ## Requirements
