@@ -10,6 +10,7 @@ sealed record EqualityMemberModel
     public string? ComparerMemberName { get; init; }
     public string? StringComparer { get; init; }
     public bool IsDictionary { get; init; }
+    public bool IsNonNullableCollection { get; init; }
     public double? Precision { get; init; }
     public bool IsNullable { get; init; }
 

@@ -354,8 +354,16 @@ namespace Generator.Equals
             writer.AppendOpenBracket();
 
             writer.WriteLine($"var __propPath = {pathExpr}.Append(global::Generator.Equals.MemberPathSegment.{(memberModel.IsField ? "Field" : "Property")}(\"{memberModel.MemberName}\"));");
-            writer.WriteLine($"var __xList = {left}.{memberModel.MemberName} is null ? new global::System.Collections.Generic.List<{memberModel.TypeName}>() : new global::System.Collections.Generic.List<{memberModel.TypeName}>({left}.{memberModel.MemberName});");
-            writer.WriteLine($"var __yList = {right}.{memberModel.MemberName} is null ? new global::System.Collections.Generic.List<{memberModel.TypeName}>() : new global::System.Collections.Generic.List<{memberModel.TypeName}>({right}.{memberModel.MemberName});");
+            if (memberModel.IsNonNullableCollection)
+            {
+                writer.WriteLine($"var __xList = new global::System.Collections.Generic.List<{memberModel.TypeName}>({left}.{memberModel.MemberName});");
+                writer.WriteLine($"var __yList = new global::System.Collections.Generic.List<{memberModel.TypeName}>({right}.{memberModel.MemberName});");
+            }
+            else
+            {
+                writer.WriteLine($"var __xList = {left}.{memberModel.MemberName} is null ? new global::System.Collections.Generic.List<{memberModel.TypeName}>() : new global::System.Collections.Generic.List<{memberModel.TypeName}>({left}.{memberModel.MemberName});");
+                writer.WriteLine($"var __yList = {right}.{memberModel.MemberName} is null ? new global::System.Collections.Generic.List<{memberModel.TypeName}>() : new global::System.Collections.Generic.List<{memberModel.TypeName}>({right}.{memberModel.MemberName});");
+            }
             writer.WriteLine("var __maxLen = global::System.Math.Max(__xList.Count, __yList.Count);");
             writer.WriteLine();
             writer.WriteLine("for (var __i = 0; __i < __maxLen; __i++)");
@@ -398,8 +406,16 @@ namespace Generator.Equals
             writer.AppendOpenBracket();
 
             writer.WriteLine($"var __propPath = {pathExpr}.Append(global::Generator.Equals.MemberPathSegment.{(memberModel.IsField ? "Field" : "Property")}(\"{memberModel.MemberName}\"));");
-            writer.WriteLine($"var __xSet = {left}.{memberModel.MemberName} is null ? new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>() : new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>({left}.{memberModel.MemberName});");
-            writer.WriteLine($"var __ySet = {right}.{memberModel.MemberName} is null ? new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>() : new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>({right}.{memberModel.MemberName});");
+            if (memberModel.IsNonNullableCollection)
+            {
+                writer.WriteLine($"var __xSet = new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>({left}.{memberModel.MemberName});");
+                writer.WriteLine($"var __ySet = new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>({right}.{memberModel.MemberName});");
+            }
+            else
+            {
+                writer.WriteLine($"var __xSet = {left}.{memberModel.MemberName} is null ? new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>() : new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>({left}.{memberModel.MemberName});");
+                writer.WriteLine($"var __ySet = {right}.{memberModel.MemberName} is null ? new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>() : new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>({right}.{memberModel.MemberName});");
+            }
             writer.WriteLine();
             writer.WriteLine("foreach (var __removed in global::System.Linq.Enumerable.Except(__xSet, __ySet))");
             writer.WriteLine(1, "yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Removed()), __removed, null);");
@@ -421,18 +437,27 @@ namespace Generator.Equals
             writer.WriteLine($"var __xDict = {left}.{memberModel.MemberName};");
             writer.WriteLine($"var __yDict = {right}.{memberModel.MemberName};");
             writer.WriteLine();
-            writer.WriteLine("if (__xDict is null && __yDict is not null)");
-            writer.AppendOpenBracket();
-            writer.WriteLine("foreach (var __kvp in __yDict)");
-            writer.WriteLine(1, "yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Key(__kvp.Key)), null, __kvp.Value);");
-            writer.AppendCloseBracket();
-            writer.WriteLine("else if (__xDict is not null && __yDict is null)");
-            writer.AppendOpenBracket();
-            writer.WriteLine("foreach (var __kvp in __xDict)");
-            writer.WriteLine(1, "yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Key(__kvp.Key)), __kvp.Value, null);");
-            writer.AppendCloseBracket();
-            writer.WriteLine("else if (__xDict is not null && __yDict is not null)");
-            writer.AppendOpenBracket();
+
+            if (memberModel.IsNonNullableCollection)
+            {
+                // Value type collection (e.g., ImmutableDictionary) — no null checks needed
+                writer.AppendOpenBracket();
+            }
+            else
+            {
+                writer.WriteLine("if (__xDict is null && __yDict is not null)");
+                writer.AppendOpenBracket();
+                writer.WriteLine("foreach (var __kvp in __yDict)");
+                writer.WriteLine(1, "yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Key(__kvp.Key)), null, __kvp.Value);");
+                writer.AppendCloseBracket();
+                writer.WriteLine("else if (__xDict is not null && __yDict is null)");
+                writer.AppendOpenBracket();
+                writer.WriteLine("foreach (var __kvp in __xDict)");
+                writer.WriteLine(1, "yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Key(__kvp.Key)), __kvp.Value, null);");
+                writer.AppendCloseBracket();
+                writer.WriteLine("else if (__xDict is not null && __yDict is not null)");
+                writer.AppendOpenBracket();
+            }
 
             // Check for removed/changed keys from x
             writer.WriteLine("foreach (var __kvp in __xDict)");

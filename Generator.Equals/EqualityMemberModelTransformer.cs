@@ -137,6 +137,7 @@ static class EqualityMemberModelTransformer
                 TypeName = args.Name,
                 EqualityType = EqualityType.UnorderedEquality,
                 IsDictionary = isDictionary,
+                IsNonNullableCollection = typeSymbol.IsValueType,
                 ElementComparerType = elementComparer?.ComparerType,
                 ElementComparerMemberName = elementComparer?.MemberName,
                 ElementComparerHasStaticInstance = elementComparer?.HasStaticInstance ?? false,
@@ -160,6 +161,7 @@ static class EqualityMemberModelTransformer
                 MemberName = propertyName, IsField = isField,
                 TypeName = types.Name,
                 EqualityType = EqualityType.OrderedEquality,
+                IsNonNullableCollection = typeSymbol.IsValueType,
                 ElementComparerType = elementComparer?.ComparerType,
                 ElementComparerMemberName = elementComparer?.MemberName,
                 ElementComparerHasStaticInstance = elementComparer?.HasStaticInstance ?? false,
@@ -187,6 +189,7 @@ static class EqualityMemberModelTransformer
                 MemberName = propertyName, IsField = isField,
                 TypeName = types.Name,
                 EqualityType = EqualityType.SetEquality,
+                IsNonNullableCollection = typeSymbol.IsValueType,
                 ElementComparerType = elementComparer?.ComparerType,
                 ElementComparerMemberName = elementComparer?.MemberName,
                 ElementComparerHasStaticInstance = elementComparer?.HasStaticInstance ?? false
