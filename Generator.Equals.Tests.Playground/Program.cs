@@ -27,7 +27,7 @@ var diff = Customer.EqualityComparer.Default.Inequalities(customerA, mutatedCust
 
 foreach (var item in diff)
 {
-    Console.WriteLine(item.Path.);
+    Console.WriteLine(item);
 }
 
 readonly record struct Index(int Row, int Col);
