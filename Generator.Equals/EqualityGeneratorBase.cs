@@ -354,7 +354,7 @@ namespace Generator.Equals
             writer.AppendOpenBracket();
 
             writer.WriteLine($"var __propPath = {pathExpr}.Append(global::Generator.Equals.MemberPathSegment.{(memberModel.IsField ? "Field" : "Property")}(\"{memberModel.MemberName}\"));");
-            if (memberModel.IsNonNullableCollection)
+            if (memberModel.IsValueTypeCollection)
             {
                 writer.WriteLine($"var __xList = new global::System.Collections.Generic.List<{memberModel.TypeName}>({left}.{memberModel.MemberName});");
                 writer.WriteLine($"var __yList = new global::System.Collections.Generic.List<{memberModel.TypeName}>({right}.{memberModel.MemberName});");
@@ -406,7 +406,7 @@ namespace Generator.Equals
             writer.AppendOpenBracket();
 
             writer.WriteLine($"var __propPath = {pathExpr}.Append(global::Generator.Equals.MemberPathSegment.{(memberModel.IsField ? "Field" : "Property")}(\"{memberModel.MemberName}\"));");
-            if (memberModel.IsNonNullableCollection)
+            if (memberModel.IsValueTypeCollection)
             {
                 writer.WriteLine($"var __xSet = new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>({left}.{memberModel.MemberName});");
                 writer.WriteLine($"var __ySet = new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>({right}.{memberModel.MemberName});");
@@ -438,9 +438,10 @@ namespace Generator.Equals
             writer.WriteLine($"var __yDict = {right}.{memberModel.MemberName};");
             writer.WriteLine();
 
-            if (memberModel.IsNonNullableCollection)
+            if (memberModel.IsValueTypeCollection)
             {
-                // Value type collection (e.g., ImmutableDictionary) — no null checks needed
+                // Value type collection — null checks not needed, emit block directly
+                writer.WriteLine("// Value-type collection — null checks skipped");
                 writer.AppendOpenBracket();
             }
             else

@@ -10,7 +10,7 @@ sealed record EqualityMemberModel
     public string? ComparerMemberName { get; init; }
     public string? StringComparer { get; init; }
     public bool IsDictionary { get; init; }
-    public bool IsNonNullableCollection { get; init; }
+    public bool IsValueTypeCollection { get; init; }
     public double? Precision { get; init; }
     public bool IsNullable { get; init; }
 
@@ -23,7 +23,7 @@ sealed record EqualityMemberModel
     public bool ElementComparerHasStaticInstance { get; init; }
 
     /// <summary>
-    /// FQF of the element type when it has [Equatable], enabling Diff drill-down.
+    /// FQF of the element type when it has [Equatable], enabling Inequalities drill-down.
     /// Null when the element type is not equatable.
     /// </summary>
     public string? EquatableElementTypeName { get; init; }

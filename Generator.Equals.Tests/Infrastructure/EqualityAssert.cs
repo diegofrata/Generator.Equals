@@ -191,13 +191,14 @@ public static class EqualityAssert
 
     static bool HasCompleteInequalityCoverage(Type type)
     {
-        // Walk base types: if any non-object base lacks [Equatable] (no EqualityComparer nested type),
-        // the generated Inequalities() won't cover properties from that base, so we can't assert
-        // that unequal objects always produce non-empty inequalities.
+        // Walk base types: if a non-[Equatable] base overrides Equals, its equality logic
+        // won't be covered by the generated Inequalities() method. Non-[Equatable] bases
+        // WITHOUT their own Equals override are fine — the generator includes their members.
         var current = type.BaseType;
         while (current != null && current != typeof(object) && current != typeof(ValueType))
         {
-            if (current.GetNestedType("EqualityComparer") == null)
+            if (current.GetNestedType("EqualityComparer") == null
+                && current.GetMethod("Equals", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly, null, [current], null) != null)
                 return false;
             current = current.BaseType;
         }
@@ -224,7 +225,7 @@ public static class EqualityAssert
             var result = (System.Collections.IEnumerable)method.Invoke(comparerInstance, [a, b, defaultPath])!;
             return result.Cast<object>().ToList();
         }
-        catch
+        catch (Exception ex) when (ex is TargetInvocationException or ArgumentException or InvalidCastException or InvalidOperationException)
         {
             return null;
         }
