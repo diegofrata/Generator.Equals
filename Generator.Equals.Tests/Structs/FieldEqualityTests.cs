@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Structs;
 
@@ -35,6 +37,15 @@ public partial class FieldEqualityTests : SnapshotTestBase
     [MemberData(nameof(TargetFrameworks))]
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw, ct: TestContext.Current.CancellationToken);
+
+    [Fact]
+    public void Inequality_DifferentContent()
+    {
+        var diffs = Sample.EqualityComparer.Default.Inequalities(
+            new Sample(["10 Some Street"]), new Sample(["11 Some Street"])).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("10 Some Street", "11 Some Street", Fld("_addresses"), Idx(0)) });
+    }
 
     const string SampleSource = """
                                 using Generator.Equals;

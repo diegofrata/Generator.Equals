@@ -5,6 +5,7 @@ namespace Generator.Equals
     public enum MemberPathSegmentKind
     {
         Property,
+        Field,
         Index,
         Key,
         Added,
@@ -23,6 +24,7 @@ namespace Generator.Equals
         }
 
         public static MemberPathSegment Property(string name) => new MemberPathSegment(MemberPathSegmentKind.Property, name);
+        public static MemberPathSegment Field(string name) => new MemberPathSegment(MemberPathSegmentKind.Field, name);
         public static MemberPathSegment Index(int index) => new MemberPathSegment(MemberPathSegmentKind.Index, index);
         public static MemberPathSegment Key(object key) => new MemberPathSegment(MemberPathSegmentKind.Key, key);
         public static MemberPathSegment Added() => new MemberPathSegment(MemberPathSegmentKind.Added, null);
@@ -33,6 +35,7 @@ namespace Generator.Equals
             switch (Kind)
             {
                 case MemberPathSegmentKind.Property:
+                case MemberPathSegmentKind.Field:
                     return (string)Value!;
                 case MemberPathSegmentKind.Index:
                     return "[" + Value + "]";

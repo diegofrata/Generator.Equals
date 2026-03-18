@@ -1,16 +1,13 @@
 using FluentAssertions;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
-namespace Generator.Equals.Tests.Classes.Diff;
+namespace Generator.Equals.Tests.Classes.Inequalities;
 
 /// <summary>
-/// Diff tests for inheritance scenarios: base classes with/without [Equatable].
+/// Inequality tests for inheritance scenarios: base classes with/without [Equatable].
 /// </summary>
-public partial class InheritanceDiffTests
+public partial class InheritanceInequalityTests
 {
-    static MemberPathSegment Prop(string name) => MemberPathSegment.Property(name);
-
-    static Inequality Ineq(object? left, object? right, params MemberPathSegment[] path)
-        => new(new MemberPath(path), left, right);
 
     [Equatable]
     public partial class Person

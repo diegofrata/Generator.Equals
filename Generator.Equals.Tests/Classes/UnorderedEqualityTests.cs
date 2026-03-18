@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Classes;
 
@@ -57,6 +59,21 @@ public partial class UnorderedEqualityTests : SnapshotTestBase
     [MemberData(nameof(TargetFrameworks))]
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw, ct: TestContext.Current.CancellationToken);
+
+    [Fact]
+    public void Inequality_DifferentContent_ReportsAddedAndRemoved()
+    {
+        var a = new Sample { Properties = [1, 2, 3] };
+        var b = new Sample { Properties = [1, 2, 4] };
+
+        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Ineq(3, null, Prop("Properties"), MemberPathSegment.Removed()),
+            Ineq(null, 4, Prop("Properties"), MemberPathSegment.Added())
+        });
+    }
 
     const string SampleSource = """
                                 using System.Collections.Generic;

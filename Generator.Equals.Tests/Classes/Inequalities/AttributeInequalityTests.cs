@@ -1,17 +1,13 @@
 using FluentAssertions;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
-namespace Generator.Equals.Tests.Classes.Diff;
+namespace Generator.Equals.Tests.Classes.Inequalities;
 
 /// <summary>
-/// Diff tests for equality attributes: IgnoreEquality, StringEquality, ReferenceEquality.
+/// Inequality tests for equality attributes: IgnoreEquality, StringEquality, ReferenceEquality.
 /// </summary>
-public partial class AttributeDiffTests
+public partial class AttributeInequalityTests
 {
-    static MemberPathSegment Prop(string name) => MemberPathSegment.Property(name);
-    static MemberPathSegment Idx(int i) => MemberPathSegment.Index(i);
-
-    static Inequality Ineq(object? left, object? right, params MemberPathSegment[] path)
-        => new(new MemberPath(path), left, right);
 
     [Equatable]
     public partial class IgnoredPropertySample
@@ -184,8 +180,8 @@ public partial class AttributeDiffTests
 
         diffs.Should().BeEquivalentTo(new[]
         {
-            Ineq("Alice", "Bob", Prop("_name")),
-            Ineq(30, 35, Prop("_age"))
+            Ineq("Alice", "Bob", Fld("_name")),
+            Ineq(30, 35, Fld("_age"))
         });
     }
 
@@ -197,7 +193,7 @@ public partial class AttributeDiffTests
 
         var diffs = FieldSample.EqualityComparer.Default.Inequalities(a, b).ToList();
 
-        diffs.Should().BeEquivalentTo(new[] { Ineq(30, 35, Prop("_age")) });
+        diffs.Should().BeEquivalentTo(new[] { Ineq(30, 35, Fld("_age")) });
     }
 
     [Equatable]
@@ -219,7 +215,7 @@ public partial class AttributeDiffTests
 
         var diffs = CollectionFieldSample.EqualityComparer.Default.Inequalities(a, b).ToList();
 
-        diffs.Should().BeEquivalentTo(new[] { Ineq("b", "c", Prop("_items"), Idx(1)) });
+        diffs.Should().BeEquivalentTo(new[] { Ineq("b", "c", Fld("_items"), Idx(1)) });
     }
 
     [Fact]
@@ -265,7 +261,7 @@ public partial class AttributeDiffTests
 
         var diffs = IgnoredFieldSample.EqualityComparer.Default.Inequalities(a, b).ToList();
 
-        diffs.Should().BeEquivalentTo(new[] { Ineq("Alice", "Bob", Prop("_name")) });
+        diffs.Should().BeEquivalentTo(new[] { Ineq("Alice", "Bob", Fld("_name")) });
     }
 
     #endregion

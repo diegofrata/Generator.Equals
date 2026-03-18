@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Records;
 
@@ -29,6 +31,28 @@ public partial class SealedRecordTests : SnapshotTestBase
     [MemberData(nameof(TargetFrameworks))]
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw, ct: TestContext.Current.CancellationToken);
+
+    [Fact]
+    public void Inequality_DifferentContent()
+    {
+        var diffs = Sample.EqualityComparer.Default.Inequalities(
+            new Sample(["10 Some Street"]), new Sample(["11 Some Street"])).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("10 Some Street", "11 Some Street", Prop("Addresses"), Idx(0)) });
+    }
+
+    [Fact]
+    public void Inequality_DifferentOrder()
+    {
+        var diffs = Sample.EqualityComparer.Default.Inequalities(
+            new Sample(["A", "B"]), new Sample(["B", "A"])).ToList();
+
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Ineq("A", "B", Prop("Addresses"), Idx(0)),
+            Ineq("B", "A", Prop("Addresses"), Idx(1))
+        });
+    }
 
     const string SampleSource = """
                                 using Generator.Equals;

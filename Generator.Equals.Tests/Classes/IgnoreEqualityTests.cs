@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Classes;
 
@@ -36,6 +38,28 @@ public partial class IgnoreEqualityTests : SnapshotTestBase
     [MemberData(nameof(EqualityCases))]
     public void Equality(Sample a, Sample b, bool expected) =>
         EqualityAssert.Verify(a, b, expected);
+
+    [Fact]
+    public void DifferentName_ReportsNameInequality_IgnoresAge()
+    {
+        var a = new Sample("Dave", 35);
+        var b = new Sample("John", 35);
+
+        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("Dave", "John", Prop("Name")) });
+    }
+
+    [Fact]
+    public void DifferentAge_SameName_NoInequalities()
+    {
+        var a = new Sample("Dave", 35);
+        var b = new Sample("Dave", 85);
+
+        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEmpty();
+    }
 
     [Theory]
     [MemberData(nameof(TargetFrameworks))]

@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Classes;
 
@@ -37,6 +39,15 @@ public partial class SealedClassTests : SnapshotTestBase
     [MemberData(nameof(TargetFrameworks))]
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw, ct: TestContext.Current.CancellationToken);
+
+    [Fact]
+    public void Inequality_DifferentContent()
+    {
+        var diffs = Sample.EqualityComparer.Default.Inequalities(
+            new Sample(["10 Downing St"]), new Sample(["Bricklane"])).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("10 Downing St", "Bricklane", Prop("Addresses"), Idx(0)) });
+    }
 
     const string SampleSource = """
                                 using Generator.Equals;

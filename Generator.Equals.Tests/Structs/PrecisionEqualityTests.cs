@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Structs;
 
@@ -174,6 +176,116 @@ public partial class PrecisionEqualityTests : SnapshotTestBase
     [MemberData(nameof(NullableIntCases))]
     public void NullableIntEquality(SampleNullableInt a, SampleNullableInt b, bool expected) =>
         EqualityAssert.VerifyStruct(a, b, expected);
+
+    [Fact]
+    public void Double_OutsideTolerance_ReportsInequality()
+    {
+        var a = new SampleDouble(1.0);
+        var b = new SampleDouble(1.002);
+
+        var diffs = SampleDouble.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq(1.0, 1.002, Prop("Value")) });
+    }
+
+    [Fact]
+    public void Float_OutsideTolerance_ReportsInequality()
+    {
+        var a = new SampleFloat(1.0f);
+        var b = new SampleFloat(1.02f);
+
+        var diffs = SampleFloat.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq(1.0f, 1.02f, Prop("Value")) });
+    }
+
+    [Fact]
+    public void Decimal_OutsideTolerance_ReportsInequality()
+    {
+        var a = new SampleDecimal(1.0m);
+        var b = new SampleDecimal(1.0002m);
+
+        var diffs = SampleDecimal.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq(1.0m, 1.0002m, Prop("Value")) });
+    }
+
+    [Fact]
+    public void NullableDouble_OneNull_ReportsInequality()
+    {
+        var a = new SampleNullableDouble(1.0);
+        var b = new SampleNullableDouble(null);
+
+        var diffs = SampleNullableDouble.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq((double?)1.0, (double?)null, Prop("Value")) });
+    }
+
+    [Fact]
+    public void NullableDouble_NullVsValue_ReportsInequality()
+    {
+        var a = new SampleNullableDouble(null);
+        var b = new SampleNullableDouble(1.0);
+
+        var diffs = SampleNullableDouble.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq((double?)null, (double?)1.0, Prop("Value")) });
+    }
+
+    [Fact]
+    public void NullableDouble_OutsideTolerance_ReportsInequality()
+    {
+        var a = new SampleNullableDouble(1.0);
+        var b = new SampleNullableDouble(1.002);
+
+        var diffs = SampleNullableDouble.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq((double?)1.0, (double?)1.002, Prop("Value")) });
+    }
+
+    [Fact]
+    public void Int_OutsideTolerance_ReportsInequality()
+    {
+        var a = new SampleInt(10);
+        var b = new SampleInt(16);
+
+        var diffs = SampleInt.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq(10, 16, Prop("Value")) });
+    }
+
+    [Fact]
+    public void NullableInt_OneNull_ReportsInequality()
+    {
+        var a = new SampleNullableInt(10);
+        var b = new SampleNullableInt(null);
+
+        var diffs = SampleNullableInt.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq((int?)10, (int?)null, Prop("Value")) });
+    }
+
+    [Fact]
+    public void NullableInt_NullVsValue_ReportsInequality()
+    {
+        var a = new SampleNullableInt(null);
+        var b = new SampleNullableInt(10);
+
+        var diffs = SampleNullableInt.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq((int?)null, (int?)10, Prop("Value")) });
+    }
+
+    [Fact]
+    public void NullableInt_OutsideTolerance_ReportsInequality()
+    {
+        var a = new SampleNullableInt(10);
+        var b = new SampleNullableInt(16);
+
+        var diffs = SampleNullableInt.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq((int?)10, (int?)16, Prop("Value")) });
+    }
 
     [Theory]
     [MemberData(nameof(TargetFrameworks))]

@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Classes;
 
@@ -55,6 +57,34 @@ public partial class DeepEqualityTests : SnapshotTestBase
     [MemberData(nameof(EqualityCases))]
     public void Equality(Sample a, Sample b, bool expected) =>
         EqualityAssert.Verify(a, b, expected);
+
+    [Fact]
+    public void SampleInequality_DifferentNestedDepartment()
+    {
+        var a = new Sample(new Manager(25, "IT"));
+        var b = new Sample(new Manager(25, "Sales"));
+
+        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Ineq(a.Person, b.Person, Prop("Person"))
+        });
+    }
+
+    [Fact]
+    public void SampleInequality_DifferentNestedAge()
+    {
+        var a = new Sample(new Manager(25, "IT"));
+        var b = new Sample(new Manager(30, "IT"));
+
+        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Ineq(a.Person, b.Person, Prop("Person"))
+        });
+    }
 
     [Theory]
     [MemberData(nameof(TargetFrameworks))]

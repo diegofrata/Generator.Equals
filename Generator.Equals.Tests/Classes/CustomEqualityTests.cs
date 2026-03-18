@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Classes;
 
@@ -54,6 +56,22 @@ public partial class CustomEqualityTests : SnapshotTestBase
     [MemberData(nameof(EqualityCases))]
     public void Equality(Sample a, Sample b, bool expected) =>
         EqualityAssert.Verify(a, b, expected);
+
+    [Fact]
+    public void DifferentLengthStrings_ReportsAllInequalities()
+    {
+        var a = new Sample("My String", "My String", "My String");
+        var b = new Sample("My String ", "My String ", "My String ");
+
+        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Ineq("My String", "My String ", Prop("Name1")),
+            Ineq("My String", "My String ", Prop("Name2")),
+            Ineq("My String", "My String ", Prop("Name3")),
+        });
+    }
 
     [Theory]
     [MemberData(nameof(TargetFrameworks))]

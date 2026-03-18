@@ -1,16 +1,13 @@
 using FluentAssertions;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
-namespace Generator.Equals.Tests.Records.Diff;
+namespace Generator.Equals.Tests.Records.Inequalities;
 
 /// <summary>
-/// Diff tests for record inheritance scenarios.
+/// Inequality tests for record inheritance scenarios.
 /// </summary>
-public partial class InheritanceDiffTests
+public partial class InheritanceInequalityTests
 {
-    static MemberPathSegment Prop(string name) => MemberPathSegment.Property(name);
-
-    static Inequality Ineq(object? left, object? right, params MemberPathSegment[] path)
-        => new(new MemberPath(path), left, right);
 
     [Equatable]
     public partial record BasePerson(string? Name);

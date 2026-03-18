@@ -44,7 +44,7 @@ namespace Generator.Equals
             for (var i = 0; i < segments.Length; i++)
             {
                 var seg = segments[i];
-                if (seg.Kind == MemberPathSegmentKind.Property)
+                if (seg.Kind is MemberPathSegmentKind.Property or MemberPathSegmentKind.Field)
                 {
                     if (i > 0) sb.Append('.');
                     sb.Append(seg.ToString());

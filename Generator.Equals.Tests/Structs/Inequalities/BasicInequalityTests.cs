@@ -1,16 +1,13 @@
 using FluentAssertions;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
-namespace Generator.Equals.Tests.Structs.Diff;
+namespace Generator.Equals.Tests.Structs.Inequalities;
 
 /// <summary>
-/// Basic Diff tests for structs: simple properties, path handling, consistency.
+/// Basic inequality tests for structs: simple properties, path handling.
 /// </summary>
-public partial class BasicDiffTests
+public partial class BasicInequalityTests
 {
-    static MemberPathSegment Prop(string name) => MemberPathSegment.Property(name);
-
-    static Inequality Ineq(object? left, object? right, params MemberPathSegment[] path)
-        => new(new MemberPath(path), left, right);
 
     [Equatable]
     public partial struct Sample
@@ -78,33 +75,4 @@ public partial class BasicDiffTests
         diffs.Should().BeEquivalentTo(new[] { Ineq("Alice", "Bob", Prop("Root"), Prop("Name")) });
     }
 
-    [Fact]
-    public void Diff_ConsistentWithEquals_WhenEqual()
-    {
-        var a = new Sample { Name = "Alice", Age = 30 };
-        var b = new Sample { Name = "Alice", Age = 30 };
-
-        var areEqual = Sample.EqualityComparer.Default.Equals(a, b);
-        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
-
-        areEqual.Should().BeTrue();
-        diffs.Should().BeEmpty("Diff should return no differences when Equals returns true");
-    }
-
-    [Fact]
-    public void Diff_ConsistentWithEquals_WhenNotEqual()
-    {
-        var a = new Sample { Name = "Alice", Age = 30 };
-        var b = new Sample { Name = "Bob", Age = 35 };
-
-        var areEqual = Sample.EqualityComparer.Default.Equals(a, b);
-        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
-
-        areEqual.Should().BeFalse();
-        diffs.Should().BeEquivalentTo(new[]
-        {
-            Ineq("Alice", "Bob", Prop("Name")),
-            Ineq(30, 35, Prop("Age"))
-        });
-    }
 }

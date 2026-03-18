@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Structs;
 
@@ -33,6 +35,15 @@ public partial class ObsoleteStructTests : SnapshotTestBase
     [MemberData(nameof(EqualityCases))]
     public void Equality(Sample a, Sample b, bool expected) =>
         EqualityAssert.VerifyStruct(a, b, expected);
+
+    [Fact]
+    public void Inequality_DifferentName()
+    {
+        var diffs = Sample.EqualityComparer.Default.Inequalities(
+            new Sample("Dave"), new Sample("John")).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("Dave", "John", Prop("Name")) });
+    }
 #pragma warning restore CS0618
 
     [Theory]

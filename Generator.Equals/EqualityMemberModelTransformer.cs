@@ -81,8 +81,8 @@ static class EqualityMemberModelTransformer
             .Select(member => member switch
             {
                 IPropertySymbol propertySymbol
-                    => BuildEqualityModel(propertySymbol, propertySymbol.Type, attributesMetadata, explicitMode),
-                IFieldSymbol fieldSymbol => BuildEqualityModel(fieldSymbol, fieldSymbol.Type, attributesMetadata, explicitMode),
+                    => BuildEqualityModel(propertySymbol, propertySymbol.Type, attributesMetadata, explicitMode, isField: false),
+                IFieldSymbol fieldSymbol => BuildEqualityModel(fieldSymbol, fieldSymbol.Type, attributesMetadata, explicitMode, isField: true),
                 _ => throw new NotSupportedException($"Member of type {member.GetType()} not supported")
             })
             .ToImmutableArray();
@@ -94,7 +94,8 @@ static class EqualityMemberModelTransformer
         ISymbol memberSymbol,
         ITypeSymbol typeSymbol,
         AttributesMetadata attributesMetadata,
-        bool explicitMode
+        bool explicitMode,
+        bool isField = false
     )
     {
         var propertyName = memberSymbol.ToFQF();
@@ -105,7 +106,7 @@ static class EqualityMemberModelTransformer
         {
             return new EqualityMemberModel
             {
-                PropertyName = propertyName,
+                MemberName = propertyName, IsField = isField,
                 TypeName = typeName,
                 EqualityType = EqualityType.IgnoreEquality,
                 Ignored = true,
@@ -132,7 +133,7 @@ static class EqualityMemberModelTransformer
 
             return new EqualityMemberModel
             {
-                PropertyName = propertyName,
+                MemberName = propertyName, IsField = isField,
                 TypeName = args.Name,
                 EqualityType = EqualityType.UnorderedEquality,
                 IsDictionary = isDictionary,
@@ -156,7 +157,7 @@ static class EqualityMemberModelTransformer
 
             return new EqualityMemberModel
             {
-                PropertyName = propertyName,
+                MemberName = propertyName, IsField = isField,
                 TypeName = types.Name,
                 EqualityType = EqualityType.OrderedEquality,
                 ElementComparerType = elementComparer?.ComparerType,
@@ -169,7 +170,7 @@ static class EqualityMemberModelTransformer
         {
             return new EqualityMemberModel
             {
-                PropertyName = propertyName,
+                MemberName = propertyName, IsField = isField,
                 TypeName = typeName,
                 EqualityType = EqualityType.ReferenceEquality
             };
@@ -183,7 +184,7 @@ static class EqualityMemberModelTransformer
 
             return new EqualityMemberModel
             {
-                PropertyName = propertyName,
+                MemberName = propertyName, IsField = isField,
                 TypeName = types.Name,
                 EqualityType = EqualityType.SetEquality,
                 ElementComparerType = elementComparer?.ComparerType,
@@ -203,7 +204,7 @@ static class EqualityMemberModelTransformer
 
             return new EqualityMemberModel
             {
-                PropertyName = propertyName,
+                MemberName = propertyName, IsField = isField,
                 TypeName = typeName,
                 EqualityType = EqualityType.StringEquality,
                 StringComparer = enumMemberName
@@ -233,7 +234,7 @@ static class EqualityMemberModelTransformer
 
             return new EqualityMemberModel
             {
-                PropertyName = propertyName,
+                MemberName = propertyName, IsField = isField,
                 TypeName = underlyingTypeName,
                 EqualityType = EqualityType.PrecisionEquality,
                 Precision = precision,
@@ -253,7 +254,7 @@ static class EqualityMemberModelTransformer
 
             return new EqualityMemberModel
             {
-                PropertyName = propertyName,
+                MemberName = propertyName, IsField = isField,
                 TypeName = typeName,
                 EqualityType = EqualityType.CustomEquality,
                 ComparerType = comparerTypeName,
@@ -266,7 +267,7 @@ static class EqualityMemberModelTransformer
 
         return new EqualityMemberModel
         {
-            PropertyName = propertyName,
+            MemberName = propertyName, IsField = isField,
             TypeName = typeName,
             EqualityType = isIgnored ? EqualityType.IgnoreEquality : EqualityType.DefaultEquality,
             Ignored = isIgnored

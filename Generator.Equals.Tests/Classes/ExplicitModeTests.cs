@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Classes;
 
@@ -44,6 +46,15 @@ public partial class ExplicitModeTests : SnapshotTestBase
     [MemberData(nameof(TargetFrameworks))]
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw, ct: TestContext.Current.CancellationToken);
+
+    [Fact]
+    public void Inequality_DifferentAge()
+    {
+        var diffs = Sample.EqualityComparer.Default.Inequalities(
+            new Sample("Dave", 35, true), new Sample("John", 40, false)).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq(35, 40, Prop("Age")) });
+    }
 
     const string SampleSource = """
                                 using Generator.Equals;

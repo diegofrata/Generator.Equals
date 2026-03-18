@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Classes;
 
@@ -76,6 +78,39 @@ public partial class DictionaryEqualityTests : SnapshotTestBase
     [MemberData(nameof(TargetFrameworks))]
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw, ct: TestContext.Current.CancellationToken);
+
+    [Fact]
+    public void Inequality_DifferentValue_ReportsDiffAtKey()
+    {
+        var a = new Sample { Properties = new Dictionary<string, int> { ["a"] = 1 } };
+        var b = new Sample { Properties = new Dictionary<string, int> { ["a"] = 2 } };
+
+        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq(1, 2, Prop("Properties"), DKey("a")) });
+    }
+
+    [Fact]
+    public void Inequality_AddedKey_ReportsAddition()
+    {
+        var a = new Sample { Properties = new Dictionary<string, int> { ["a"] = 1 } };
+        var b = new Sample { Properties = new Dictionary<string, int> { ["a"] = 1, ["b"] = 2 } };
+
+        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq(null, 2, Prop("Properties"), DKey("b")) });
+    }
+
+    [Fact]
+    public void Inequality_RemovedKey_ReportsRemoval()
+    {
+        var a = new Sample { Properties = new Dictionary<string, int> { ["a"] = 1, ["b"] = 2 } };
+        var b = new Sample { Properties = new Dictionary<string, int> { ["a"] = 1 } };
+
+        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq(2, null, Prop("Properties"), DKey("b")) });
+    }
 
     const string SampleSource = """
                                 using System.Collections.Generic;

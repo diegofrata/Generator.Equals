@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Classes;
 
@@ -35,6 +37,19 @@ public partial class ReferenceEqualityTests : SnapshotTestBase
         var a = new Sample($"Dave{35}");
         var b = new Sample($"Dave{35}");
         EqualityAssert.Verify(a, b, false);
+    }
+
+    [Fact]
+    public void DifferentReferences_SameValue_ReportsInequality()
+    {
+        var nameA = $"Dave{35}";
+        var nameB = $"Dave{35}";
+        var a = new Sample(nameA);
+        var b = new Sample(nameB);
+
+        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq(nameA, nameB, Prop("Name")) });
     }
 
     [Theory]

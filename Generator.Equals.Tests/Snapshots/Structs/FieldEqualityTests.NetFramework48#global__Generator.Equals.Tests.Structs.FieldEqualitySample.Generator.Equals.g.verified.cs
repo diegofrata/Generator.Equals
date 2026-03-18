@@ -81,7 +81,7 @@ namespace Generator.Equals.Tests.Structs
             {
                 if (!global::Generator.Equals.OrderedEqualityComparer<global::System.String>.Default.Equals(x._addresses!, y._addresses!))
                 {
-                    var __propPath = path.Append(global::Generator.Equals.MemberPathSegment.Property("_addresses"));
+                    var __propPath = path.Append(global::Generator.Equals.MemberPathSegment.Field("_addresses"));
                     var __xList = x._addresses is null ? new global::System.Collections.Generic.List<global::System.String>() : new global::System.Collections.Generic.List<global::System.String>(x._addresses);
                     var __yList = y._addresses is null ? new global::System.Collections.Generic.List<global::System.String>() : new global::System.Collections.Generic.List<global::System.String>(y._addresses);
                     var __maxLen = global::System.Math.Max(__xList.Count, __yList.Count);

@@ -2,7 +2,8 @@ namespace Generator.Equals.Models;
 
 sealed record EqualityMemberModel
 {
-    public required string PropertyName { get; init; }
+    public required string MemberName { get; init; }
+    public bool IsField { get; init; }
     public required string TypeName { get; init; }
     public required EqualityType EqualityType { get; init; }
     public string? ComparerType { get; init; }

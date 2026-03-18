@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Classes;
 
@@ -36,6 +38,24 @@ public partial class NullableEqualityTests : SnapshotTestBase
     [MemberData(nameof(TargetFrameworks))]
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw, ct: TestContext.Current.CancellationToken);
+
+    [Fact]
+    public void Inequality_NullVsValue()
+    {
+        var diffs = Sample.EqualityComparer.Default.Inequalities(
+            new Sample { Addresses = null }, new Sample { Addresses = ["A"] }).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq(null, "A", Prop("Addresses"), Idx(0)) });
+    }
+
+    [Fact]
+    public void Inequality_DifferentContent()
+    {
+        var diffs = Sample.EqualityComparer.Default.Inequalities(
+            new Sample { Addresses = ["A"] }, new Sample { Addresses = ["B"] }).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("A", "B", Prop("Addresses"), Idx(0)) });
+    }
 
     const string SampleSource = """
                                 using Generator.Equals;

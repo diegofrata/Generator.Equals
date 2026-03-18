@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Structs;
 
@@ -48,6 +50,28 @@ public partial class StringEqualityTests : SnapshotTestBase
     [MemberData(nameof(CaseSensitiveCases))]
     public void CaseSensitiveEquality(SampleCaseSensitive a, SampleCaseSensitive b, bool expected) =>
         EqualityAssert.VerifyStruct(a, b, expected);
+
+    [Fact]
+    public void CaseInsensitive_DifferentValues_ReportsInequality()
+    {
+        var a = new SampleCaseInsensitive { Name = "Dave" };
+        var b = new SampleCaseInsensitive { Name = "John" };
+
+        var diffs = SampleCaseInsensitive.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("Dave", "John", Prop("Name")) });
+    }
+
+    [Fact]
+    public void CaseSensitive_DifferentCase_ReportsInequality()
+    {
+        var a = new SampleCaseSensitive { Name = "Dave" };
+        var b = new SampleCaseSensitive { Name = "DAVE" };
+
+        var diffs = SampleCaseSensitive.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("Dave", "DAVE", Prop("Name")) });
+    }
 
     [Theory]
     [MemberData(nameof(TargetFrameworks))]

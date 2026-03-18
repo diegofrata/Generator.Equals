@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Records;
 
@@ -52,6 +54,36 @@ public partial class RequiredMembersTests : SnapshotTestBase
     [MemberData(nameof(TargetFrameworks))]
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw, ct: TestContext.Current.CancellationToken);
+
+    [Fact]
+    public void Inequality_DifferentName()
+    {
+        var diffs = Sample.EqualityComparer.Default.Inequalities(
+            new Sample { Name = "Dave", Age = 35 },
+            new Sample { Name = "John", Age = 35 }).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("Dave", "John", Prop("Name")) });
+    }
+
+    [Fact]
+    public void Inequality_DifferentAge()
+    {
+        var diffs = Sample.EqualityComparer.Default.Inequalities(
+            new Sample { Name = "Dave", Age = 35 },
+            new Sample { Name = "Dave", Age = 40 }).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq(35, 40, Prop("Age")) });
+    }
+
+    [Fact]
+    public void Inequality_DifferentOptional()
+    {
+        var diffs = Sample.EqualityComparer.Default.Inequalities(
+            new Sample { Name = "Dave", Age = 35, Optional = "A" },
+            new Sample { Name = "Dave", Age = 35, Optional = "B" }).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("A", "B", Prop("Optional")) });
+    }
 
     const string SampleSource = """
                                 using Generator.Equals;

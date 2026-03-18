@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Records;
 
@@ -34,6 +36,48 @@ public partial class DeepEqualityTests : SnapshotTestBase
     [MemberData(nameof(EqualityCases))]
     public void Equality(Sample a, Sample b, bool expected) =>
         EqualityAssert.Verify(a, b, expected);
+
+    [Fact]
+    public void SampleInequality_DifferentAge()
+    {
+        var a = new Sample(new Person(25));
+        var b = new Sample(new Person(30));
+
+        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Ineq(a.Person, b.Person, Prop("Person"))
+        });
+    }
+
+    [Fact]
+    public void SampleInequality_DifferentManagerDepartment()
+    {
+        var a = new Sample(new Manager(25, "IT"));
+        var b = new Sample(new Manager(25, "Sales"));
+
+        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Ineq(a.Person, b.Person, Prop("Person"))
+        });
+    }
+
+    [Fact]
+    public void SampleInequality_PersonVsManager()
+    {
+        var a = new Sample(new Person(25));
+        var b = new Sample(new Manager(25, "IT"));
+
+        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Ineq(a.Person, b.Person, Prop("Person"))
+        });
+    }
 
     [Theory]
     [MemberData(nameof(TargetFrameworks))]

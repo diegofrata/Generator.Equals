@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Classes;
 
@@ -41,6 +43,37 @@ public partial class PrimitiveEqualityTests : SnapshotTestBase
     [MemberData(nameof(TargetFrameworks))]
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw, ct: TestContext.Current.CancellationToken);
+
+    [Fact]
+    public void Inequality_DifferentNameAndAge()
+    {
+        var diffs = Sample.EqualityComparer.Default.Inequalities(
+            new Sample("Dave", 35), new Sample("Joe", 77)).ToList();
+
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Ineq("Dave", "Joe", Prop("Name")),
+            Ineq(35, 77, Prop("Age"))
+        });
+    }
+
+    [Fact]
+    public void Inequality_DifferentAge()
+    {
+        var diffs = Sample.EqualityComparer.Default.Inequalities(
+            new Sample("Dave", 35), new Sample("Dave", 40)).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq(35, 40, Prop("Age")) });
+    }
+
+    [Fact]
+    public void Inequality_DifferentName()
+    {
+        var diffs = Sample.EqualityComparer.Default.Inequalities(
+            new Sample("Dave", 35), new Sample("Joe", 35)).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("Dave", "Joe", Prop("Name")) });
+    }
 
     const string SampleSource = """
                                 using Generator.Equals;

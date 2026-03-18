@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Classes;
 
@@ -59,6 +61,54 @@ public partial class BaseEqualityTests : SnapshotTestBase
     [MemberData(nameof(PersonEqualityCases))]
     public void PersonEquality(Person a, Person b, bool expected) =>
         EqualityAssert.Verify(a, b, expected);
+
+    [Fact]
+    public void PersonInequality_DifferentAge()
+    {
+        var a = new Person(25);
+        var b = new Person(30);
+
+        var diffs = Person.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq(25, 30, Prop("Age")) });
+    }
+
+    [Fact]
+    public void ManagerInequality_DifferentDepartment()
+    {
+        var a = new Manager(25, "IT");
+        var b = new Manager(25, "Sales");
+
+        var diffs = Manager.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("IT", "Sales", Prop("Department")) });
+    }
+
+    [Fact]
+    public void ManagerInequality_DifferentAge()
+    {
+        var a = new Manager(25, "IT");
+        var b = new Manager(30, "IT");
+
+        var diffs = Manager.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq(25, 30, Prop("Age")) });
+    }
+
+    [Fact]
+    public void ManagerInequality_DifferentAgeAndDepartment()
+    {
+        var a = new Manager(25, "IT");
+        var b = new Manager(30, "Sales");
+
+        var diffs = Manager.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Ineq(25, 30, Prop("Age")),
+            Ineq("IT", "Sales", Prop("Department"))
+        });
+    }
 
     [Theory]
     [MemberData(nameof(TargetFrameworks))]

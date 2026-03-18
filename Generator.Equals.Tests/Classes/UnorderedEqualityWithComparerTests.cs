@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Classes;
 
@@ -93,6 +95,55 @@ public partial class UnorderedEqualityWithComparerTests : SnapshotTestBase
     [MemberData(nameof(TargetFrameworks))]
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw, ct: TestContext.Current.CancellationToken);
+
+    [Fact]
+    public void Inequality_StringComparison_DifferentContent_ReportsAddedAndRemoved()
+    {
+        var a = new SampleWithStringComparison(["FOO", "BAR"]);
+        var b = new SampleWithStringComparison(["foo", "baz"]);
+
+        var diffs = SampleWithStringComparison.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Ineq("FOO", null, Prop("Tags"), MemberPathSegment.Removed()),
+            Ineq("BAR", null, Prop("Tags"), MemberPathSegment.Removed()),
+            Ineq(null, "foo", Prop("Tags"), MemberPathSegment.Added()),
+            Ineq(null, "baz", Prop("Tags"), MemberPathSegment.Added())
+        });
+    }
+
+    [Fact]
+    public void Inequality_CustomComparer_DifferentContent_ReportsAddedAndRemoved()
+    {
+        var a = new SampleWithCustomComparer(["FOO", "BAR"]);
+        var b = new SampleWithCustomComparer(["foo", "baz"]);
+
+        var diffs = SampleWithCustomComparer.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Ineq("FOO", null, Prop("Names"), MemberPathSegment.Removed()),
+            Ineq("BAR", null, Prop("Names"), MemberPathSegment.Removed()),
+            Ineq(null, "foo", Prop("Names"), MemberPathSegment.Added()),
+            Ineq(null, "baz", Prop("Names"), MemberPathSegment.Added())
+        });
+    }
+
+    [Fact]
+    public void Inequality_LengthComparer_DifferentLengths_ReportsAddedAndRemoved()
+    {
+        var a = new SampleWithLengthComparer(["aaa", "bb"]);
+        var b = new SampleWithLengthComparer(["bb", "aaaa"]);
+
+        var diffs = SampleWithLengthComparer.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Ineq("aaa", null, Prop("Values"), MemberPathSegment.Removed()),
+            Ineq(null, "aaaa", Prop("Values"), MemberPathSegment.Added())
+        });
+    }
 
     const string SampleSource = """
                                 using System;

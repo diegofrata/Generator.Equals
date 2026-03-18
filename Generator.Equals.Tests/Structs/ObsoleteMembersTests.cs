@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Structs;
 
@@ -38,6 +40,24 @@ public partial class ObsoleteMembersTests : SnapshotTestBase
     [MemberData(nameof(EqualityCases))]
     public void Equality(Sample a, Sample b, bool expected) =>
         EqualityAssert.VerifyStruct(a, b, expected);
+
+    [Fact]
+    public void Inequality_DifferentNoComment()
+    {
+        var diffs = Sample.EqualityComparer.Default.Inequalities(
+            new Sample("A", "B"), new Sample("X", "B")).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("A", "X", Prop("NoComment")) });
+    }
+
+    [Fact]
+    public void Inequality_DifferentComment()
+    {
+        var diffs = Sample.EqualityComparer.Default.Inequalities(
+            new Sample("A", "B"), new Sample("A", "Y")).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("B", "Y", Prop("Comment")) });
+    }
 #pragma warning restore CS0618
 
     [Theory]

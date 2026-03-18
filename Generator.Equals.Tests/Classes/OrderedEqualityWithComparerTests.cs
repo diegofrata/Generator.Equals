@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Classes;
 
@@ -93,6 +95,47 @@ public partial class OrderedEqualityWithComparerTests : SnapshotTestBase
     [MemberData(nameof(TargetFrameworks))]
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw, ct: TestContext.Current.CancellationToken);
+
+    [Fact]
+    public void Inequality_StringComparison_DifferentContent_ReportsDiffsAtIndices()
+    {
+        var a = new SampleWithStringComparison(["FOO", "BAR"]);
+        var b = new SampleWithStringComparison(["foo", "baz"]);
+
+        var diffs = SampleWithStringComparison.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Ineq("FOO", "foo", Prop("Tags"), Idx(0)),
+            Ineq("BAR", "baz", Prop("Tags"), Idx(1))
+        });
+    }
+
+    [Fact]
+    public void Inequality_CustomComparer_DifferentContent_ReportsDiffsAtIndices()
+    {
+        var a = new SampleWithCustomComparer(["FOO", "BAR"]);
+        var b = new SampleWithCustomComparer(["foo", "baz"]);
+
+        var diffs = SampleWithCustomComparer.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Ineq("FOO", "foo", Prop("Names"), Idx(0)),
+            Ineq("BAR", "baz", Prop("Names"), Idx(1))
+        });
+    }
+
+    [Fact]
+    public void Inequality_LengthComparer_DifferentLengths_ReportsDiffAtIndex()
+    {
+        var a = new SampleWithLengthComparer(["aaa", "bb"]);
+        var b = new SampleWithLengthComparer(["aaaa", "bb"]);
+
+        var diffs = SampleWithLengthComparer.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("aaa", "aaaa", Prop("Values"), Idx(0)) });
+    }
 
     const string SampleSource = """
                                 using System;

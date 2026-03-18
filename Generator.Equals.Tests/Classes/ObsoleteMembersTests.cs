@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Classes;
 
@@ -47,6 +49,19 @@ public partial class ObsoleteMembersTests : SnapshotTestBase
     [MemberData(nameof(TargetFrameworks))]
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw, ct: TestContext.Current.CancellationToken);
+
+    [Fact]
+    public void Inequality_DifferentValues()
+    {
+        var diffs = Sample.EqualityComparer.Default.Inequalities(
+            new Sample("Dave"), new Sample("John")).ToList();
+
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Ineq("Dave", "John", Prop("NoComment")),
+            Ineq("Dave", "John", Prop("Comment"))
+        });
+    }
 
     const string SampleSource = """
                                 using System;

@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.RecordStructs;
 
@@ -25,6 +27,19 @@ public partial class ReferenceEqualityTests : SnapshotTestBase
     [MemberData(nameof(EqualityCases))]
     public void Equality(Sample a, Sample b, bool expected) =>
         EqualityAssert.VerifyStruct(a, b, expected);
+
+    [Fact]
+    public void DifferentReferences_SameValue_ReportsInequality()
+    {
+        var nameA = new string("Dave".ToCharArray());
+        var nameB = new string("Dave".ToCharArray());
+        var a = new Sample(nameA);
+        var b = new Sample(nameB);
+
+        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq(nameA, nameB, Prop("Name")) });
+    }
 
     [Theory]
     [MemberData(nameof(TargetFrameworks))]

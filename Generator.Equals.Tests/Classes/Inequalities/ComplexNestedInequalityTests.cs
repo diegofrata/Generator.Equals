@@ -1,20 +1,15 @@
 using FluentAssertions;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
-namespace Generator.Equals.Tests.Classes.Diff;
+namespace Generator.Equals.Tests.Classes.Inequalities;
 
 /// <summary>
-/// Diff tests for deeply nested object graphs with multiple levels of [Equatable] types,
-/// ordered lists, unordered sets, and dictionaries — demonstrating that Diff can detect
+/// Inequality tests for deeply nested object graphs with multiple levels of [Equatable] types,
+/// ordered lists, unordered sets, and dictionaries — demonstrating that Inequalities can detect
 /// and collect changes at every level of the hierarchy.
 /// </summary>
-public partial class ComplexNestedDiffTests
+public partial class ComplexNestedInequalityTests
 {
-    static MemberPathSegment Prop(string name) => MemberPathSegment.Property(name);
-    static MemberPathSegment Idx(int i) => MemberPathSegment.Index(i);
-    static MemberPathSegment DKey(object k) => MemberPathSegment.Key(k);
-
-    static Inequality Ineq(object? left, object? right, params MemberPathSegment[] path)
-        => new(new MemberPath(path), left, right);
 
     // ── Level 3: leaf type ──────────────────────────────────────────────
     [Equatable]

@@ -92,46 +92,46 @@ namespace Generator.Equals
                 {
                     var comparer = GetCollectionComparerExpression("UnorderedEqualityComparer", memberModel.TypeName, memberModel);
                     writer.WriteLine(
-                        $"&& {comparer}.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)");
+                        $"&& {comparer}.Equals({left}.{memberModel.MemberName}!, {right}.{memberModel.MemberName}!)");
                     break;
                 }
 
                 case EqualityType.UnorderedEquality when memberModel.IsDictionary:
                     writer.WriteLine(
-                        $"&& global::Generator.Equals.DictionaryEqualityComparer<{memberModel.TypeName}>.Default.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)");
+                        $"&& global::Generator.Equals.DictionaryEqualityComparer<{memberModel.TypeName}>.Default.Equals({left}.{memberModel.MemberName}!, {right}.{memberModel.MemberName}!)");
                     break;
 
                 case EqualityType.OrderedEquality:
                 {
                     var comparer = GetCollectionComparerExpression("OrderedEqualityComparer", memberModel.TypeName, memberModel);
                     writer.WriteLine(
-                        $"&& {comparer}.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)");
+                        $"&& {comparer}.Equals({left}.{memberModel.MemberName}!, {right}.{memberModel.MemberName}!)");
                     break;
                 }
 
                 case EqualityType.ReferenceEquality:
                     writer.WriteLine(
-                        $"&& global::Generator.Equals.ReferenceEqualityComparer<{memberModel.TypeName}>.Default.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)");
+                        $"&& global::Generator.Equals.ReferenceEqualityComparer<{memberModel.TypeName}>.Default.Equals({left}.{memberModel.MemberName}!, {right}.{memberModel.MemberName}!)");
                     break;
 
                 case EqualityType.SetEquality:
                 {
                     var comparer = GetCollectionComparerExpression("SetEqualityComparer", memberModel.TypeName, memberModel);
                     writer.WriteLine(
-                        $"&& {comparer}.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)");
+                        $"&& {comparer}.Equals({left}.{memberModel.MemberName}!, {right}.{memberModel.MemberName}!)");
                     break;
                 }
 
                 case EqualityType.StringEquality:
                     writer.WriteLine(
-                        $"&& global::System.StringComparer.{memberModel.StringComparer}.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)");
+                        $"&& global::System.StringComparer.{memberModel.StringComparer}.Equals({left}.{memberModel.MemberName}!, {right}.{memberModel.MemberName}!)");
                     break;
 
                 case EqualityType.PrecisionEquality when memberModel.IsNullable:
                 {
                     var literal = FormatPrecisionLiteral(memberModel.Precision!.Value, memberModel.TypeName);
                     writer.WriteLine(
-                        $"&& ({left}.{memberModel.PropertyName} == {right}.{memberModel.PropertyName} || ({left}.{memberModel.PropertyName}.HasValue && {right}.{memberModel.PropertyName}.HasValue && global::System.Math.Abs({left}.{memberModel.PropertyName}.Value - {right}.{memberModel.PropertyName}.Value) < {literal}))");
+                        $"&& ({left}.{memberModel.MemberName} == {right}.{memberModel.MemberName} || ({left}.{memberModel.MemberName}.HasValue && {right}.{memberModel.MemberName}.HasValue && global::System.Math.Abs({left}.{memberModel.MemberName}.Value - {right}.{memberModel.MemberName}.Value) < {literal}))");
                     break;
                 }
 
@@ -139,25 +139,25 @@ namespace Generator.Equals
                 {
                     var literal = FormatPrecisionLiteral(memberModel.Precision!.Value, memberModel.TypeName);
                     writer.WriteLine(
-                        $"&& global::System.Math.Abs({left}.{memberModel.PropertyName} - {right}.{memberModel.PropertyName}) < {literal}");
+                        $"&& global::System.Math.Abs({left}.{memberModel.MemberName} - {right}.{memberModel.MemberName}) < {literal}");
                     break;
                 }
 
                 case EqualityType.CustomEquality when memberModel.ComparerHasStaticInstance:
                     writer.WriteLine(
-                        $"&& {memberModel.ComparerType}.{memberModel.ComparerMemberName}.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)");
+                        $"&& {memberModel.ComparerType}.{memberModel.ComparerMemberName}.Equals({left}.{memberModel.MemberName}!, {right}.{memberModel.MemberName}!)");
 
                     break;
 
                 case EqualityType.CustomEquality when !memberModel.ComparerHasStaticInstance:
                     writer.WriteLine(
-                        $"&& new {memberModel.ComparerType}().Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)");
+                        $"&& new {memberModel.ComparerType}().Equals({left}.{memberModel.MemberName}!, {right}.{memberModel.MemberName}!)");
 
                     break;
 
                 case EqualityType.DefaultEquality:
                     writer.WriteLine(
-                        $"&& global::Generator.Equals.DefaultEqualityComparer<{memberModel.TypeName}>.Default.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)");
+                        $"&& global::Generator.Equals.DefaultEqualityComparer<{memberModel.TypeName}>.Default.Equals({left}.{memberModel.MemberName}!, {right}.{memberModel.MemberName}!)");
                     break;
             }
         }
@@ -246,7 +246,7 @@ namespace Generator.Equals
             {
                 writer.WriteLine("hashCode.Add(");
                 writer.Indent++;
-                writer.WriteLine($"{obj}.{memberModel.PropertyName}!,");
+                writer.WriteLine($"{obj}.{memberModel.MemberName}!,");
                 writer.WriteLine(comparer);
                 writer.Indent--;
                 writer.WriteLine(");");
@@ -277,37 +277,37 @@ namespace Generator.Equals
                 EqualityType.IgnoreEquality => null!,
 
                 EqualityType.UnorderedEquality when memberModel.IsDictionary =>
-                    $"global::Generator.Equals.DictionaryEqualityComparer<{memberModel.TypeName}>.Default.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)",
+                    $"global::Generator.Equals.DictionaryEqualityComparer<{memberModel.TypeName}>.Default.Equals({left}.{memberModel.MemberName}!, {right}.{memberModel.MemberName}!)",
 
                 EqualityType.UnorderedEquality =>
-                    $"{GetCollectionComparerExpression("UnorderedEqualityComparer", memberModel.TypeName, memberModel)}.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)",
+                    $"{GetCollectionComparerExpression("UnorderedEqualityComparer", memberModel.TypeName, memberModel)}.Equals({left}.{memberModel.MemberName}!, {right}.{memberModel.MemberName}!)",
 
                 EqualityType.OrderedEquality =>
-                    $"{GetCollectionComparerExpression("OrderedEqualityComparer", memberModel.TypeName, memberModel)}.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)",
+                    $"{GetCollectionComparerExpression("OrderedEqualityComparer", memberModel.TypeName, memberModel)}.Equals({left}.{memberModel.MemberName}!, {right}.{memberModel.MemberName}!)",
 
                 EqualityType.ReferenceEquality =>
-                    $"global::Generator.Equals.ReferenceEqualityComparer<{memberModel.TypeName}>.Default.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)",
+                    $"global::Generator.Equals.ReferenceEqualityComparer<{memberModel.TypeName}>.Default.Equals({left}.{memberModel.MemberName}!, {right}.{memberModel.MemberName}!)",
 
                 EqualityType.SetEquality =>
-                    $"{GetCollectionComparerExpression("SetEqualityComparer", memberModel.TypeName, memberModel)}.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)",
+                    $"{GetCollectionComparerExpression("SetEqualityComparer", memberModel.TypeName, memberModel)}.Equals({left}.{memberModel.MemberName}!, {right}.{memberModel.MemberName}!)",
 
                 EqualityType.PrecisionEquality when memberModel.IsNullable =>
-                    $"({left}.{memberModel.PropertyName} == {right}.{memberModel.PropertyName} || ({left}.{memberModel.PropertyName}.HasValue && {right}.{memberModel.PropertyName}.HasValue && global::System.Math.Abs({left}.{memberModel.PropertyName}.Value - {right}.{memberModel.PropertyName}.Value) < {FormatPrecisionLiteral(memberModel.Precision!.Value, memberModel.TypeName)}))",
+                    $"({left}.{memberModel.MemberName} == {right}.{memberModel.MemberName} || ({left}.{memberModel.MemberName}.HasValue && {right}.{memberModel.MemberName}.HasValue && global::System.Math.Abs({left}.{memberModel.MemberName}.Value - {right}.{memberModel.MemberName}.Value) < {FormatPrecisionLiteral(memberModel.Precision!.Value, memberModel.TypeName)}))",
 
                 EqualityType.PrecisionEquality =>
-                    $"(global::System.Math.Abs({left}.{memberModel.PropertyName} - {right}.{memberModel.PropertyName}) < {FormatPrecisionLiteral(memberModel.Precision!.Value, memberModel.TypeName)})",
+                    $"(global::System.Math.Abs({left}.{memberModel.MemberName} - {right}.{memberModel.MemberName}) < {FormatPrecisionLiteral(memberModel.Precision!.Value, memberModel.TypeName)})",
 
                 EqualityType.StringEquality =>
-                    $"global::System.StringComparer.{memberModel.StringComparer}.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)",
+                    $"global::System.StringComparer.{memberModel.StringComparer}.Equals({left}.{memberModel.MemberName}!, {right}.{memberModel.MemberName}!)",
 
                 EqualityType.CustomEquality when memberModel.ComparerHasStaticInstance =>
-                    $"{memberModel.ComparerType}.{memberModel.ComparerMemberName}.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)",
+                    $"{memberModel.ComparerType}.{memberModel.ComparerMemberName}.Equals({left}.{memberModel.MemberName}!, {right}.{memberModel.MemberName}!)",
 
                 EqualityType.CustomEquality =>
-                    $"new {memberModel.ComparerType}().Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)",
+                    $"new {memberModel.ComparerType}().Equals({left}.{memberModel.MemberName}!, {right}.{memberModel.MemberName}!)",
 
                 EqualityType.DefaultEquality =>
-                    $"global::Generator.Equals.DefaultEqualityComparer<{memberModel.TypeName}>.Default.Equals({left}.{memberModel.PropertyName}!, {right}.{memberModel.PropertyName}!)",
+                    $"global::Generator.Equals.DefaultEqualityComparer<{memberModel.TypeName}>.Default.Equals({left}.{memberModel.MemberName}!, {right}.{memberModel.MemberName}!)",
 
                 _ => null!
             };
@@ -341,7 +341,7 @@ namespace Generator.Equals
                 default:
                     // Simple property diff
                     writer.WriteLine($"if (!{comparerEquals})");
-                    writer.WriteLine(1, $"yield return new global::Generator.Equals.Inequality({pathExpr}.Append(global::Generator.Equals.MemberPathSegment.Property(\"{memberModel.PropertyName}\")), {left}.{memberModel.PropertyName}, {right}.{memberModel.PropertyName});");
+                    writer.WriteLine(1, $"yield return new global::Generator.Equals.Inequality({pathExpr}.Append(global::Generator.Equals.MemberPathSegment.{(memberModel.IsField ? "Field" : "Property")}(\"{memberModel.MemberName}\")), {left}.{memberModel.MemberName}, {right}.{memberModel.MemberName});");
                     break;
             }
         }
@@ -353,9 +353,9 @@ namespace Generator.Equals
             writer.WriteLine($"if (!{comparerEquals})");
             writer.AppendOpenBracket();
 
-            writer.WriteLine($"var __propPath = {pathExpr}.Append(global::Generator.Equals.MemberPathSegment.Property(\"{memberModel.PropertyName}\"));");
-            writer.WriteLine($"var __xList = {left}.{memberModel.PropertyName} is null ? new global::System.Collections.Generic.List<{memberModel.TypeName}>() : new global::System.Collections.Generic.List<{memberModel.TypeName}>({left}.{memberModel.PropertyName});");
-            writer.WriteLine($"var __yList = {right}.{memberModel.PropertyName} is null ? new global::System.Collections.Generic.List<{memberModel.TypeName}>() : new global::System.Collections.Generic.List<{memberModel.TypeName}>({right}.{memberModel.PropertyName});");
+            writer.WriteLine($"var __propPath = {pathExpr}.Append(global::Generator.Equals.MemberPathSegment.{(memberModel.IsField ? "Field" : "Property")}(\"{memberModel.MemberName}\"));");
+            writer.WriteLine($"var __xList = {left}.{memberModel.MemberName} is null ? new global::System.Collections.Generic.List<{memberModel.TypeName}>() : new global::System.Collections.Generic.List<{memberModel.TypeName}>({left}.{memberModel.MemberName});");
+            writer.WriteLine($"var __yList = {right}.{memberModel.MemberName} is null ? new global::System.Collections.Generic.List<{memberModel.TypeName}>() : new global::System.Collections.Generic.List<{memberModel.TypeName}>({right}.{memberModel.MemberName});");
             writer.WriteLine("var __maxLen = global::System.Math.Max(__xList.Count, __yList.Count);");
             writer.WriteLine();
             writer.WriteLine("for (var __i = 0; __i < __maxLen; __i++)");
@@ -397,9 +397,9 @@ namespace Generator.Equals
             writer.WriteLine($"if (!{comparerEquals})");
             writer.AppendOpenBracket();
 
-            writer.WriteLine($"var __propPath = {pathExpr}.Append(global::Generator.Equals.MemberPathSegment.Property(\"{memberModel.PropertyName}\"));");
-            writer.WriteLine($"var __xSet = {left}.{memberModel.PropertyName} is null ? new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>() : new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>({left}.{memberModel.PropertyName});");
-            writer.WriteLine($"var __ySet = {right}.{memberModel.PropertyName} is null ? new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>() : new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>({right}.{memberModel.PropertyName});");
+            writer.WriteLine($"var __propPath = {pathExpr}.Append(global::Generator.Equals.MemberPathSegment.{(memberModel.IsField ? "Field" : "Property")}(\"{memberModel.MemberName}\"));");
+            writer.WriteLine($"var __xSet = {left}.{memberModel.MemberName} is null ? new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>() : new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>({left}.{memberModel.MemberName});");
+            writer.WriteLine($"var __ySet = {right}.{memberModel.MemberName} is null ? new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>() : new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>({right}.{memberModel.MemberName});");
             writer.WriteLine();
             writer.WriteLine("foreach (var __removed in global::System.Linq.Enumerable.Except(__xSet, __ySet))");
             writer.WriteLine(1, "yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Removed()), __removed, null);");
@@ -417,9 +417,9 @@ namespace Generator.Equals
             writer.WriteLine($"if (!{comparerEquals})");
             writer.AppendOpenBracket();
 
-            writer.WriteLine($"var __propPath = {pathExpr}.Append(global::Generator.Equals.MemberPathSegment.Property(\"{memberModel.PropertyName}\"));");
-            writer.WriteLine($"var __xDict = {left}.{memberModel.PropertyName};");
-            writer.WriteLine($"var __yDict = {right}.{memberModel.PropertyName};");
+            writer.WriteLine($"var __propPath = {pathExpr}.Append(global::Generator.Equals.MemberPathSegment.{(memberModel.IsField ? "Field" : "Property")}(\"{memberModel.MemberName}\"));");
+            writer.WriteLine($"var __xDict = {left}.{memberModel.MemberName};");
+            writer.WriteLine($"var __yDict = {right}.{memberModel.MemberName};");
             writer.WriteLine();
             writer.WriteLine("if (__xDict is null && __yDict is not null)");
             writer.AppendOpenBracket();

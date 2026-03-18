@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.RecordStructs;
 
@@ -54,6 +56,39 @@ public partial class CustomEqualityTests : SnapshotTestBase
     [MemberData(nameof(EqualityCases))]
     public void Equality(Sample a, Sample b, bool expected) =>
         EqualityAssert.VerifyStruct(a, b, expected);
+
+    [Fact]
+    public void DifferentLengthName1_ReportsName1Inequality()
+    {
+        var a = new Sample("aaa", "bbb", "ccc");
+        var b = new Sample("aa", "yyy", "zzz");
+
+        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("aaa", "aa", Prop("Name1")) });
+    }
+
+    [Fact]
+    public void DifferentLengthName2_ReportsName2Inequality()
+    {
+        var a = new Sample("aaa", "bbb", "ccc");
+        var b = new Sample("xxx", "yy", "zzz");
+
+        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("bbb", "yy", Prop("Name2")) });
+    }
+
+    [Fact]
+    public void DifferentLengthName3_ReportsName3Inequality()
+    {
+        var a = new Sample("aaa", "bbb", "ccc");
+        var b = new Sample("xxx", "yyy", "zz");
+
+        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("ccc", "zz", Prop("Name3")) });
+    }
 
     [Theory]
     [MemberData(nameof(TargetFrameworks))]

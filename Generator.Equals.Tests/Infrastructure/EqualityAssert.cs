@@ -42,6 +42,16 @@ public static class EqualityAssert
         {
             a.GetHashCode().Should().Be(b.GetHashCode(), "GetHashCode should be equal for equal objects");
         }
+
+        // Test Inequalities() consistency
+        var inequalities = TryGetInequalities(typeof(T), a, b);
+        if (inequalities != null)
+        {
+            if (expectedEqual)
+                inequalities.Should().BeEmpty("Inequalities() should return empty when objects are equal");
+            else if (HasCompleteInequalityCoverage(typeof(T)))
+                inequalities.Should().NotBeEmpty("Inequalities() should return at least one inequality when objects are not equal");
+        }
     }
 
     /// <summary>
@@ -74,6 +84,16 @@ public static class EqualityAssert
         if (expectedEqual)
         {
             a.GetHashCode().Should().Be(b.GetHashCode(), "GetHashCode should be equal for equal objects");
+        }
+
+        // Test Inequalities() consistency
+        var inequalities = TryGetInequalities(typeof(T), a, b);
+        if (inequalities != null)
+        {
+            if (expectedEqual)
+                inequalities.Should().BeEmpty("Inequalities() should return empty when objects are equal");
+            else if (HasCompleteInequalityCoverage(typeof(T)))
+                inequalities.Should().NotBeEmpty("Inequalities() should return at least one inequality when objects are not equal");
         }
     }
 
@@ -167,5 +187,46 @@ public static class EqualityAssert
         var call = Expression.Call(method, paramA, paramB);
         var lambda = Expression.Lambda<Func<T, T, bool>>(call, paramA, paramB);
         return lambda.Compile();
+    }
+
+    static bool HasCompleteInequalityCoverage(Type type)
+    {
+        // Walk base types: if any non-object base lacks [Equatable] (no EqualityComparer nested type),
+        // the generated Inequalities() won't cover properties from that base, so we can't assert
+        // that unequal objects always produce non-empty inequalities.
+        var current = type.BaseType;
+        while (current != null && current != typeof(object) && current != typeof(ValueType))
+        {
+            if (current.GetNestedType("EqualityComparer") == null)
+                return false;
+            current = current.BaseType;
+        }
+        return true;
+    }
+
+    static List<object>? TryGetInequalities(Type type, object? a, object? b)
+    {
+        try
+        {
+            var comparerType = type.GetNestedType("EqualityComparer");
+            if (comparerType == null) return null;
+
+            var defaultProp = comparerType.GetProperty("Default", BindingFlags.Static | BindingFlags.Public);
+            if (defaultProp == null) return null;
+
+            var comparerInstance = defaultProp.GetValue(null);
+            var method = comparerType.GetMethod("Inequalities");
+            if (method == null) return null;
+
+            var pathParam = method.GetParameters()[2];
+            var defaultPath = Activator.CreateInstance(pathParam.ParameterType);
+
+            var result = (System.Collections.IEnumerable)method.Invoke(comparerInstance, [a, b, defaultPath])!;
+            return result.Cast<object>().ToList();
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Classes;
 
@@ -60,6 +62,39 @@ public partial class StringEqualityTests : SnapshotTestBase
     [MemberData(nameof(CaseSensitiveCases))]
     public void CaseSensitiveEquality(SampleCaseSensitive a, SampleCaseSensitive b, bool expected) =>
         EqualityAssert.Verify(a, b, expected);
+
+    [Fact]
+    public void CaseInsensitive_DifferentValues_ReportsInequality()
+    {
+        var a = new SampleCaseInsensitive("BAR");
+        var b = new SampleCaseInsensitive("foo");
+
+        var diffs = SampleCaseInsensitive.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("BAR", "foo", Prop("Name")) });
+    }
+
+    [Fact]
+    public void CaseSensitive_DifferentCase_ReportsInequality()
+    {
+        var a = new SampleCaseSensitive("Foo");
+        var b = new SampleCaseSensitive("foo");
+
+        var diffs = SampleCaseSensitive.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("Foo", "foo", Prop("Name")) });
+    }
+
+    [Fact]
+    public void CaseSensitive_CompletelyDifferent_ReportsInequality()
+    {
+        var a = new SampleCaseSensitive("Foo");
+        var b = new SampleCaseSensitive("Bar");
+
+        var diffs = SampleCaseSensitive.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("Foo", "Bar", Prop("Name")) });
+    }
 
     [Theory]
     [MemberData(nameof(TargetFrameworks))]

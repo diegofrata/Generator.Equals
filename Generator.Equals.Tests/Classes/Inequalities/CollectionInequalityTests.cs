@@ -1,18 +1,13 @@
 using FluentAssertions;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
-namespace Generator.Equals.Tests.Classes.Diff;
+namespace Generator.Equals.Tests.Classes.Inequalities;
 
 /// <summary>
-/// Diff tests for collection properties: ordered, unordered, set, and dictionary.
+/// Inequality tests for collection properties: ordered, unordered, set, and dictionary.
 /// </summary>
-public partial class CollectionDiffTests
+public partial class CollectionInequalityTests
 {
-    static MemberPathSegment Prop(string name) => MemberPathSegment.Property(name);
-    static MemberPathSegment Idx(int i) => MemberPathSegment.Index(i);
-    static MemberPathSegment DKey(object k) => MemberPathSegment.Key(k);
-
-    static Inequality Ineq(object? left, object? right, params MemberPathSegment[] path)
-        => new(new MemberPath(path), left, right);
 
     [Equatable]
     public partial class Sample

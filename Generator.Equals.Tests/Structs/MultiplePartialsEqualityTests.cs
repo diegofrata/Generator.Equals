@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Structs;
 
@@ -61,6 +63,26 @@ public partial class MultiplePartialsEqualityTests : SnapshotTestBase
     [MemberData(nameof(TargetFrameworks))]
     public Task VerifyGeneratedCode(TargetFramework fw) =>
         VerifyGeneratedSource(SampleSource, fw, ct: TestContext.Current.CancellationToken);
+
+    [Fact]
+    public void Inequality_DifferentFirstName()
+    {
+        var diffs = Sample.EqualityComparer.Default.Inequalities(
+            new Sample { Addresses = ["A"], FirstName = "John", LastName = "Doe", Age = 30 },
+            new Sample { Addresses = ["A"], FirstName = "Jane", LastName = "Doe", Age = 30 }).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("John", "Jane", Prop("FirstName")) });
+    }
+
+    [Fact]
+    public void Inequality_DifferentAddresses()
+    {
+        var diffs = Sample.EqualityComparer.Default.Inequalities(
+            new Sample { Addresses = ["A"], FirstName = "John", LastName = "Doe", Age = 30 },
+            new Sample { Addresses = ["B"], FirstName = "John", LastName = "Doe", Age = 30 }).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("A", "B", Prop("Addresses"), Idx(0)) });
+    }
 
     const string SampleSource = """
                                 using Generator.Equals;
