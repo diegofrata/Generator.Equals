@@ -12,6 +12,7 @@ Writing correct equality logic in C# is tedious, error-prone, and easy to forget
 - **Highly customizable** — Use `[CustomEquality]`, `[StringEquality]`, `[PrecisionEquality]`, `[ReferenceEquality]`, or `[IgnoreEquality]` to control comparison per-property.
 - **Works everywhere** — Supports classes, structs, records, and record structs.
 - **Inheritance-friendly** — Correctly chains `base.Equals()` across deep inheritance hierarchies and inherits equality attributes from overridden properties.
+- **Structured diffs** — Call `Inequalities()` to get exactly which members differ between two instances, with full paths into nested objects, collections, and dictionaries.
 - **Compile-time only** — No reflection or IL injection. The generator emits plain C# source code that you can inspect and debug.
 
 ----------------
@@ -290,6 +291,84 @@ partial class Doctor : Person
     public string Id { get; set; }
     public string Specialization { get; set; }
 }
+```
+
+## Inequalities
+
+Every `[Equatable]` type gets a generated `EqualityComparer` with an `Inequalities()` method that returns exactly which members differ between two instances — with full member paths, including nested objects, collection indices, and dictionary keys.
+
+```c#
+[Equatable]
+partial record Customer
+{
+    public required string Name { get; init; }
+    [UnorderedEquality] public required ImmutableDictionary<string, Address> Addresses { get; init; }
+}
+
+[Equatable]
+partial record Address
+{
+    public required string Street { get; init; }
+    public required string City { get; init; }
+}
+```
+
+```c#
+var original = new Customer
+{
+    Name = "John Doe",
+    Addresses = ImmutableDictionary<string, Address>.Empty
+        .Add("home", new Address { Street = "123 Main St", City = "Seattle" })
+};
+
+var modified = original with
+{
+    Name = "Johnny Doe",
+    Addresses = original.Addresses.SetItem("home",
+        original.Addresses["home"] with { Street = "121 Main St" })
+};
+
+foreach (var diff in Customer.EqualityComparer.Default.Inequalities(original, modified))
+    Console.WriteLine(diff);
+```
+
+Output:
+```
+Name: John Doe → Johnny Doe
+Addresses["home"].Street: 123 Main St → 121 Main St
+```
+
+### How it works
+
+`Inequalities()` returns `IEnumerable<Inequality>`, where each `Inequality` has:
+
+- **`Path`** — a `MemberPath` describing which member differs (e.g., `Addresses["home"].Street`)
+- **`Left`** — the value from the first object
+- **`Right`** — the value from the second object
+
+Paths are composed of segments:
+
+| Segment | Example | Meaning |
+|---------|---------|---------|
+| `Property` | `Name` | A property differs |
+| `Field` | `_count` | A field differs |
+| `Index` | `[0]` | An ordered collection element at index |
+| `Key` | `["home"]` | A dictionary entry by key |
+| `Added` | `[+]` | An element present only in the right set |
+| `Removed` | `[-]` | An element present only in the left set |
+
+### Drill-down
+
+When a collection element or dictionary value is itself an `[Equatable]` type, `Inequalities()` automatically drills down into its properties instead of reporting the entire object as changed. In the example above, the address change is reported as `Addresses["home"].Street` rather than the whole `Address` object.
+
+### Base path
+
+You can pass a base path to prefix all reported paths — useful when composing inequalities from parent contexts:
+
+```c#
+var diffs = Address.EqualityComparer.Default.Inequalities(
+    addressA, addressB, new MemberPath(new[] { MemberPathSegment.Property("Home") }));
+// Reports: Home.Street, Home.City, etc.
 ```
 
 ## Migrating from version 3
