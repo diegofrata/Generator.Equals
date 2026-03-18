@@ -19,4 +19,10 @@ sealed record EqualityMemberModel
     public string? ElementComparerType { get; init; }
     public string? ElementComparerMemberName { get; init; }
     public bool ElementComparerHasStaticInstance { get; init; }
+
+    /// <summary>
+    /// FQF of the element type when it has [Equatable], enabling Diff drill-down.
+    /// Null when the element type is not equatable.
+    /// </summary>
+    public string? EquatableElementTypeName { get; init; }
 }

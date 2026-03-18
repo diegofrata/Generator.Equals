@@ -121,15 +121,25 @@ static class EqualityMemberModelTransformer
             var attribute = memberSymbol.GetAttribute(attributesMetadata.UnorderedEquality)!;
             var elementComparer = ExtractElementComparerInfo(attribute, attributesMetadata);
 
+            var isDictionary = args is DictionaryArgumentsResult;
+            string? equatableElementTypeName = null;
+            if (isDictionary)
+            {
+                var valueTypeSymbol = args.Arguments!.Value[1];
+                if (valueTypeSymbol.HasEquatableAttribute())
+                    equatableElementTypeName = valueTypeSymbol.ToFQF();
+            }
+
             return new EqualityMemberModel
             {
                 PropertyName = propertyName,
                 TypeName = args.Name,
                 EqualityType = EqualityType.UnorderedEquality,
-                IsDictionary = args is DictionaryArgumentsResult,
+                IsDictionary = isDictionary,
                 ElementComparerType = elementComparer?.ComparerType,
                 ElementComparerMemberName = elementComparer?.MemberName,
-                ElementComparerHasStaticInstance = elementComparer?.HasStaticInstance ?? false
+                ElementComparerHasStaticInstance = elementComparer?.HasStaticInstance ?? false,
+                EquatableElementTypeName = equatableElementTypeName
             };
         }
         else if (memberSymbol.HasAttribute(attributesMetadata.OrderedEquality))
@@ -139,6 +149,11 @@ static class EqualityMemberModelTransformer
             var attribute = memberSymbol.GetAttribute(attributesMetadata.OrderedEquality)!;
             var elementComparer = ExtractElementComparerInfo(attribute, attributesMetadata);
 
+            var elementTypeSymbol = types.Arguments!.Value[0];
+            string? equatableElementTypeName = elementTypeSymbol.HasEquatableAttribute()
+                ? elementTypeSymbol.ToFQF()
+                : null;
+
             return new EqualityMemberModel
             {
                 PropertyName = propertyName,
@@ -146,7 +161,8 @@ static class EqualityMemberModelTransformer
                 EqualityType = EqualityType.OrderedEquality,
                 ElementComparerType = elementComparer?.ComparerType,
                 ElementComparerMemberName = elementComparer?.MemberName,
-                ElementComparerHasStaticInstance = elementComparer?.HasStaticInstance ?? false
+                ElementComparerHasStaticInstance = elementComparer?.HasStaticInstance ?? false,
+                EquatableElementTypeName = equatableElementTypeName
             };
         }
         else if (memberSymbol.HasAttribute(attributesMetadata.ReferenceEquality))

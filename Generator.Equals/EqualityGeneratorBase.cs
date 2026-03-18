@@ -261,9 +261,9 @@ namespace Generator.Equals
             }
         }
 
-        protected static readonly string[] DiffMethodComment = @"
+        protected static readonly string[] InequalitiesMethodComment = @"
 /// <summary>
-/// Returns the differences between two instances.
+/// Returns the inequalities between two instances.
 /// </summary>
 /// <param name=""x"">The first instance to compare.</param>
 /// <param name=""y"">The second instance to compare.</param>
@@ -313,7 +313,7 @@ namespace Generator.Equals
             };
         }
 
-        static void BuildMemberDiff(EqualityMemberModel memberModel, IndentedTextWriter writer, string left, string right, string pathExpr)
+        static void BuildMemberInequality(EqualityMemberModel memberModel, IndentedTextWriter writer, string left, string right, string pathExpr)
         {
             if (memberModel.Ignored || memberModel.EqualityType == EqualityType.IgnoreEquality)
             {
@@ -326,86 +326,110 @@ namespace Generator.Equals
             switch (memberModel.EqualityType)
             {
                 case EqualityType.OrderedEquality:
-                    BuildOrderedCollectionDiff(memberModel, writer, left, right, pathExpr);
+                    BuildOrderedCollectionInequalities(memberModel, writer, left, right, pathExpr);
                     break;
 
                 case EqualityType.UnorderedEquality when !memberModel.IsDictionary:
                 case EqualityType.SetEquality:
-                    BuildUnorderedCollectionDiff(memberModel, writer, left, right, pathExpr);
+                    BuildUnorderedCollectionInequalities(memberModel, writer, left, right, pathExpr);
                     break;
 
                 case EqualityType.UnorderedEquality when memberModel.IsDictionary:
-                    BuildDictionaryDiff(memberModel, writer, left, right, pathExpr);
+                    BuildDictionaryInequalities(memberModel, writer, left, right, pathExpr);
                     break;
 
                 default:
                     // Simple property diff
                     writer.WriteLine($"if (!{comparerEquals})");
-                    writer.WriteLine(1, $"yield return ({pathExpr} + \"{memberModel.PropertyName}\", {left}.{memberModel.PropertyName}, {right}.{memberModel.PropertyName});");
+                    writer.WriteLine(1, $"yield return new global::Generator.Equals.Inequality({pathExpr}.Append(global::Generator.Equals.MemberPathSegment.Property(\"{memberModel.PropertyName}\")), {left}.{memberModel.PropertyName}, {right}.{memberModel.PropertyName});");
                     break;
             }
         }
 
-        static void BuildOrderedCollectionDiff(EqualityMemberModel memberModel, IndentedTextWriter writer, string left, string right, string pathExpr)
+        static void BuildOrderedCollectionInequalities(EqualityMemberModel memberModel, IndentedTextWriter writer, string left, string right, string pathExpr)
         {
             var comparerEquals = GetComparerEquals(memberModel, left, right);
 
             writer.WriteLine($"if (!{comparerEquals})");
             writer.AppendOpenBracket();
 
+            writer.WriteLine($"var __propPath = {pathExpr}.Append(global::Generator.Equals.MemberPathSegment.Property(\"{memberModel.PropertyName}\"));");
             writer.WriteLine($"var __xList = {left}.{memberModel.PropertyName} is null ? new global::System.Collections.Generic.List<{memberModel.TypeName}>() : new global::System.Collections.Generic.List<{memberModel.TypeName}>({left}.{memberModel.PropertyName});");
             writer.WriteLine($"var __yList = {right}.{memberModel.PropertyName} is null ? new global::System.Collections.Generic.List<{memberModel.TypeName}>() : new global::System.Collections.Generic.List<{memberModel.TypeName}>({right}.{memberModel.PropertyName});");
             writer.WriteLine("var __maxLen = global::System.Math.Max(__xList.Count, __yList.Count);");
             writer.WriteLine();
             writer.WriteLine("for (var __i = 0; __i < __maxLen; __i++)");
             writer.AppendOpenBracket();
-            writer.WriteLine("var __xVal = __i < __xList.Count ? (object?)__xList[__i] : null;");
-            writer.WriteLine("var __yVal = __i < __yList.Count ? (object?)__yList[__i] : null;");
-            writer.WriteLine("if (!global::System.Object.Equals(__xVal, __yVal))");
-            writer.WriteLine(1, $"yield return ({pathExpr} + $\"{memberModel.PropertyName}[{{__i}}]\", __xVal, __yVal);");
+
+            if (memberModel.EquatableElementTypeName != null)
+            {
+                // Element type is [Equatable] — drill down into per-property diffs
+                writer.WriteLine("if (__i < __xList.Count && __i < __yList.Count)");
+                writer.AppendOpenBracket();
+                writer.WriteLine($"foreach (var __ineq in {memberModel.EquatableElementTypeName}.EqualityComparer.Default.Inequalities(__xList[__i], __yList[__i], __propPath.Append(global::Generator.Equals.MemberPathSegment.Index(__i))))");
+                writer.WriteLine(1, "yield return __ineq;");
+                writer.AppendCloseBracket();
+                writer.WriteLine("else");
+                writer.AppendOpenBracket();
+                writer.WriteLine("var __xVal = __i < __xList.Count ? (object?)__xList[__i] : null;");
+                writer.WriteLine("var __yVal = __i < __yList.Count ? (object?)__yList[__i] : null;");
+                writer.WriteLine("yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Index(__i)), __xVal, __yVal);");
+                writer.AppendCloseBracket();
+            }
+            else
+            {
+                // Non-equatable element type — shallow diff
+                writer.WriteLine("var __xVal = __i < __xList.Count ? (object?)__xList[__i] : null;");
+                writer.WriteLine("var __yVal = __i < __yList.Count ? (object?)__yList[__i] : null;");
+                writer.WriteLine("if (!global::System.Object.Equals(__xVal, __yVal))");
+                writer.WriteLine(1, "yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Index(__i)), __xVal, __yVal);");
+            }
+
             writer.AppendCloseBracket();
 
             writer.AppendCloseBracket();
         }
 
-        static void BuildUnorderedCollectionDiff(EqualityMemberModel memberModel, IndentedTextWriter writer, string left, string right, string pathExpr)
+        static void BuildUnorderedCollectionInequalities(EqualityMemberModel memberModel, IndentedTextWriter writer, string left, string right, string pathExpr)
         {
             var comparerEquals = GetComparerEquals(memberModel, left, right);
 
             writer.WriteLine($"if (!{comparerEquals})");
             writer.AppendOpenBracket();
 
+            writer.WriteLine($"var __propPath = {pathExpr}.Append(global::Generator.Equals.MemberPathSegment.Property(\"{memberModel.PropertyName}\"));");
             writer.WriteLine($"var __xSet = {left}.{memberModel.PropertyName} is null ? new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>() : new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>({left}.{memberModel.PropertyName});");
             writer.WriteLine($"var __ySet = {right}.{memberModel.PropertyName} is null ? new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>() : new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>({right}.{memberModel.PropertyName});");
             writer.WriteLine();
             writer.WriteLine("foreach (var __removed in global::System.Linq.Enumerable.Except(__xSet, __ySet))");
-            writer.WriteLine(1, $"yield return ({pathExpr} + \"{memberModel.PropertyName}[-]\", __removed, null);");
+            writer.WriteLine(1, "yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Removed()), __removed, null);");
             writer.WriteLine();
             writer.WriteLine("foreach (var __added in global::System.Linq.Enumerable.Except(__ySet, __xSet))");
-            writer.WriteLine(1, $"yield return ({pathExpr} + \"{memberModel.PropertyName}[+]\", null, __added);");
+            writer.WriteLine(1, "yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Added()), null, __added);");
 
             writer.AppendCloseBracket();
         }
 
-        static void BuildDictionaryDiff(EqualityMemberModel memberModel, IndentedTextWriter writer, string left, string right, string pathExpr)
+        static void BuildDictionaryInequalities(EqualityMemberModel memberModel, IndentedTextWriter writer, string left, string right, string pathExpr)
         {
             var comparerEquals = GetComparerEquals(memberModel, left, right);
 
             writer.WriteLine($"if (!{comparerEquals})");
             writer.AppendOpenBracket();
 
+            writer.WriteLine($"var __propPath = {pathExpr}.Append(global::Generator.Equals.MemberPathSegment.Property(\"{memberModel.PropertyName}\"));");
             writer.WriteLine($"var __xDict = {left}.{memberModel.PropertyName};");
             writer.WriteLine($"var __yDict = {right}.{memberModel.PropertyName};");
             writer.WriteLine();
             writer.WriteLine("if (__xDict is null && __yDict is not null)");
             writer.AppendOpenBracket();
             writer.WriteLine("foreach (var __kvp in __yDict)");
-            writer.WriteLine(1, $"yield return ({pathExpr} + $\"{memberModel.PropertyName}[{{__kvp.Key}}]\", null, __kvp.Value);");
+            writer.WriteLine(1, "yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Key(__kvp.Key)), null, __kvp.Value);");
             writer.AppendCloseBracket();
             writer.WriteLine("else if (__xDict is not null && __yDict is null)");
             writer.AppendOpenBracket();
             writer.WriteLine("foreach (var __kvp in __xDict)");
-            writer.WriteLine(1, $"yield return ({pathExpr} + $\"{memberModel.PropertyName}[{{__kvp.Key}}]\", __kvp.Value, null);");
+            writer.WriteLine(1, "yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Key(__kvp.Key)), __kvp.Value, null);");
             writer.AppendCloseBracket();
             writer.WriteLine("else if (__xDict is not null && __yDict is not null)");
             writer.AppendOpenBracket();
@@ -414,16 +438,30 @@ namespace Generator.Equals
             writer.WriteLine("foreach (var __kvp in __xDict)");
             writer.AppendOpenBracket();
             writer.WriteLine("if (!__yDict.TryGetValue(__kvp.Key, out var __yVal))");
-            writer.WriteLine(1, $"yield return ({pathExpr} + $\"{memberModel.PropertyName}[{{__kvp.Key}}]\", __kvp.Value, null);");
-            writer.WriteLine("else if (!global::System.Object.Equals(__kvp.Value, __yVal))");
-            writer.WriteLine(1, $"yield return ({pathExpr} + $\"{memberModel.PropertyName}[{{__kvp.Key}}]\", __kvp.Value, __yVal);");
+            writer.WriteLine(1, "yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Key(__kvp.Key)), __kvp.Value, null);");
+
+            if (memberModel.EquatableElementTypeName != null)
+            {
+                // Value type is [Equatable] — drill down into per-property diffs
+                writer.WriteLine("else");
+                writer.AppendOpenBracket();
+                writer.WriteLine($"foreach (var __ineq in {memberModel.EquatableElementTypeName}.EqualityComparer.Default.Inequalities(__kvp.Value, __yVal, __propPath.Append(global::Generator.Equals.MemberPathSegment.Key(__kvp.Key))))");
+                writer.WriteLine(1, "yield return __ineq;");
+                writer.AppendCloseBracket();
+            }
+            else
+            {
+                writer.WriteLine("else if (!global::System.Object.Equals(__kvp.Value, __yVal))");
+                writer.WriteLine(1, "yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Key(__kvp.Key)), __kvp.Value, __yVal);");
+            }
+
             writer.AppendCloseBracket();
 
             // Check for added keys in y
             writer.WriteLine("foreach (var __kvp in __yDict)");
             writer.AppendOpenBracket();
             writer.WriteLine("if (!__xDict.ContainsKey(__kvp.Key))");
-            writer.WriteLine(1, $"yield return ({pathExpr} + $\"{memberModel.PropertyName}[{{__kvp.Key}}]\", null, __kvp.Value);");
+            writer.WriteLine(1, "yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Key(__kvp.Key)), null, __kvp.Value);");
             writer.AppendCloseBracket();
 
             writer.AppendCloseBracket();
@@ -431,17 +469,17 @@ namespace Generator.Equals
             writer.AppendCloseBracket();
         }
 
-        internal static void BuildMembersDiff(
+        internal static void BuildMembersInequalities(
             ImmutableArray<EqualityMemberModel> models,
             IndentedTextWriter writer,
             string left = "x",
             string right = "y",
-            string pathExpr = "__path"
+            string pathExpr = "path"
         )
         {
             foreach (var model in models)
             {
-                BuildMemberDiff(model, writer, left, right, pathExpr);
+                BuildMemberInequality(model, writer, left, right, pathExpr);
             }
         }
     }

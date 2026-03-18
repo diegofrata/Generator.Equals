@@ -160,44 +160,42 @@ namespace Generator.Equals.Generators
 
             writer.WriteLine();
 
-            // Diff method
-            BuildDiffMethod(model, writer, symbolName);
+            // Inequalities method
+            BuildInequalitiesMethod(model, writer, symbolName);
 
             writer.AppendCloseBracket();
         }
 
-        static void BuildDiffMethod(EqualityTypeModel model, IndentedTextWriter writer, string symbolName)
+        static void BuildInequalitiesMethod(EqualityTypeModel model, IndentedTextWriter writer, string symbolName)
         {
             var baseTypeName = model.BaseTypeName;
             var baseTypeFullname = model.BaseTypeFullname;
             var isRootClass = baseTypeName == "object" || !model.BaseHasEquatable;
 
-            writer.WriteLines(DiffMethodComment);
+            writer.WriteLines(InequalitiesMethodComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
-            writer.WriteLine($"public global::System.Collections.Generic.IEnumerable<(string Path, object? Left, object? Right)> Diff({symbolName}? x, {symbolName}? y, string? path = null)");
+            writer.WriteLine($"public global::System.Collections.Generic.IEnumerable<global::Generator.Equals.Inequality> Inequalities({symbolName}? x, {symbolName}? y, global::Generator.Equals.MemberPath path = default)");
             writer.AppendOpenBracket();
 
             writer.WriteLine("if (ReferenceEquals(x, y)) yield break;");
             writer.WriteLine("if (x is null || y is null)");
             writer.AppendOpenBracket();
-            writer.WriteLine("yield return (path ?? \"\", x, y);");
+            writer.WriteLine("yield return new global::Generator.Equals.Inequality(path, x, y);");
             writer.WriteLine("yield break;");
             writer.AppendCloseBracket();
             writer.WriteLine();
-            writer.WriteLine("var __path = string.IsNullOrEmpty(path) ? \"\" : path + \".\";");
-            writer.WriteLine();
 
-            // For classes with [Equatable] base, delegate to base's Diff
+            // For classes with [Equatable] base, delegate to base's Inequalities
             if (!isRootClass && !model.IgnoreInheritedMembers)
             {
-                writer.WriteLine($"foreach (var __diff in {baseTypeFullname}.EqualityComparer.Default.Diff(x, y, path))");
-                writer.WriteLine(1, "yield return __diff;");
+                writer.WriteLine($"foreach (var __ineq in {baseTypeFullname}.EqualityComparer.Default.Inequalities(x, y, path))");
+                writer.WriteLine(1, "yield return __ineq;");
                 writer.WriteLine();
             }
 
             // Include inherited members (when no ancestor has [Equatable])
-            BuildMembersDiff(model.InheritedEqualityModels, writer, "x", "y", "__path");
-            BuildMembersDiff(model.BuildEqualityModels, writer, "x", "y", "__path");
+            BuildMembersInequalities(model.InheritedEqualityModels, writer, "x", "y");
+            BuildMembersInequalities(model.BuildEqualityModels, writer, "x", "y");
 
             writer.AppendCloseBracket();
         }

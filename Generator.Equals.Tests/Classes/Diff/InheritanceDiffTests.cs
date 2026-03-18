@@ -7,8 +7,10 @@ namespace Generator.Equals.Tests.Classes.Diff;
 /// </summary>
 public partial class InheritanceDiffTests
 {
-    static (string Path, object? Left, object? Right) Diff(string path, object? left, object? right)
-        => (path, left, right);
+    static MemberPathSegment Prop(string name) => MemberPathSegment.Property(name);
+
+    static Inequality Ineq(object? left, object? right, params MemberPathSegment[] path)
+        => new(new MemberPath(path), left, right);
 
     [Equatable]
     public partial class Person
@@ -42,9 +44,9 @@ public partial class InheritanceDiffTests
         var a = new Manager { Name = "Alice", Department = "Engineering" };
         var b = new Manager { Name = "Bob", Department = "Engineering" };
 
-        var diffs = Manager.EqualityComparer.Default.Diff(a, b).ToList();
+        var diffs = Manager.EqualityComparer.Default.Inequalities(a, b).ToList();
 
-        diffs.Should().BeEquivalentTo(new[] { Diff("Name", "Alice", "Bob") });
+        diffs.Should().BeEquivalentTo(new[] { Ineq("Alice", "Bob", Prop("Name")) });
     }
 
     [Fact]
@@ -53,9 +55,9 @@ public partial class InheritanceDiffTests
         var a = new Manager { Name = "Alice", Department = "Engineering" };
         var b = new Manager { Name = "Alice", Department = "Sales" };
 
-        var diffs = Manager.EqualityComparer.Default.Diff(a, b).ToList();
+        var diffs = Manager.EqualityComparer.Default.Inequalities(a, b).ToList();
 
-        diffs.Should().BeEquivalentTo(new[] { Diff("Department", "Engineering", "Sales") });
+        diffs.Should().BeEquivalentTo(new[] { Ineq("Engineering", "Sales", Prop("Department")) });
     }
 
     [Fact]
@@ -64,12 +66,12 @@ public partial class InheritanceDiffTests
         var a = new Manager { Name = "Alice", Department = "Engineering" };
         var b = new Manager { Name = "Bob", Department = "Sales" };
 
-        var diffs = Manager.EqualityComparer.Default.Diff(a, b).ToList();
+        var diffs = Manager.EqualityComparer.Default.Inequalities(a, b).ToList();
 
         diffs.Should().BeEquivalentTo(new[]
         {
-            Diff("Name", "Alice", "Bob"),
-            Diff("Department", "Engineering", "Sales")
+            Ineq("Alice", "Bob", Prop("Name")),
+            Ineq("Engineering", "Sales", Prop("Department"))
         });
     }
 
@@ -78,9 +80,9 @@ public partial class InheritanceDiffTests
     {
         var a = new Manager { Name = "Alice", Department = "Engineering" };
 
-        var diffs = Manager.EqualityComparer.Default.Diff(a, null).ToList();
+        var diffs = Manager.EqualityComparer.Default.Inequalities(a, null).ToList();
 
-        diffs.Should().BeEquivalentTo(new[] { Diff("", a, null) });
+        diffs.Should().BeEquivalentTo(new[] { Ineq(a, null) });
     }
 
     #endregion
@@ -93,9 +95,9 @@ public partial class InheritanceDiffTests
         var a = new DerivedFromNonEquatable { BaseProp = "Base1", DerivedProp = "Derived" };
         var b = new DerivedFromNonEquatable { BaseProp = "Base2", DerivedProp = "Derived" };
 
-        var diffs = DerivedFromNonEquatable.EqualityComparer.Default.Diff(a, b).ToList();
+        var diffs = DerivedFromNonEquatable.EqualityComparer.Default.Inequalities(a, b).ToList();
 
-        diffs.Should().BeEquivalentTo(new[] { Diff("BaseProp", "Base1", "Base2") });
+        diffs.Should().BeEquivalentTo(new[] { Ineq("Base1", "Base2", Prop("BaseProp")) });
     }
 
     [Fact]
@@ -104,9 +106,9 @@ public partial class InheritanceDiffTests
         var a = new DerivedFromNonEquatable { BaseProp = "Base", DerivedProp = "Derived1" };
         var b = new DerivedFromNonEquatable { BaseProp = "Base", DerivedProp = "Derived2" };
 
-        var diffs = DerivedFromNonEquatable.EqualityComparer.Default.Diff(a, b).ToList();
+        var diffs = DerivedFromNonEquatable.EqualityComparer.Default.Inequalities(a, b).ToList();
 
-        diffs.Should().BeEquivalentTo(new[] { Diff("DerivedProp", "Derived1", "Derived2") });
+        diffs.Should().BeEquivalentTo(new[] { Ineq("Derived1", "Derived2", Prop("DerivedProp")) });
     }
 
     [Fact]
@@ -115,12 +117,12 @@ public partial class InheritanceDiffTests
         var a = new DerivedFromNonEquatable { BaseProp = "Base1", DerivedProp = "Derived1" };
         var b = new DerivedFromNonEquatable { BaseProp = "Base2", DerivedProp = "Derived2" };
 
-        var diffs = DerivedFromNonEquatable.EqualityComparer.Default.Diff(a, b).ToList();
+        var diffs = DerivedFromNonEquatable.EqualityComparer.Default.Inequalities(a, b).ToList();
 
         diffs.Should().BeEquivalentTo(new[]
         {
-            Diff("BaseProp", "Base1", "Base2"),
-            Diff("DerivedProp", "Derived1", "Derived2")
+            Ineq("Base1", "Base2", Prop("BaseProp")),
+            Ineq("Derived1", "Derived2", Prop("DerivedProp"))
         });
     }
 

@@ -1,38 +1,42 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
-		<NoPackageAnalysis>true</NoPackageAnalysis>
-		<!-- Generates a package at build -->
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<!-- Do not include the generator as a lib dependency -->
-		<IncludeBuildOutput>false</IncludeBuildOutput>
-		<LangVersion>latest</LangVersion>
-		<Nullable>enable</Nullable>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <NoPackageAnalysis>true</NoPackageAnalysis>
+        <!-- Generates a package at build -->
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <!-- Do not include the generator as a lib dependency -->
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
 
-		<IsRoslynComponent>true</IsRoslynComponent>
-		<AnalysisLevel>latest-all</AnalysisLevel>
-		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-	</PropertyGroup>
+        <IsRoslynComponent>true</IsRoslynComponent>
+        <AnalysisLevel>latest-all</AnalysisLevel>
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    </PropertyGroup>
 
 
-	<ItemGroup>
-		<PackageReference Update="NETStandard.Library" PrivateAssets="all" GeneratePathProperty="true" />
-		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="all" />
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.0.0" PrivateAssets="all" />
-		<PackageReference Include="PolySharp" Version="1.15.0">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Update="NETStandard.Library" PrivateAssets="all" GeneratePathProperty="true"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.0.0" PrivateAssets="all"/>
+        <PackageReference Include="PolySharp" Version="1.15.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
 
-	<ItemGroup>
-		<!-- Package the generator in the analyzer directory of the nuget package -->
-		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-	</ItemGroup>
+    <ItemGroup>
+        <!-- Package the generator in the analyzer directory of the nuget package -->
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+    </ItemGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\Generator.Equals.Runtime\Generator.Equals.Runtime.csproj" />
-	</ItemGroup>
-	
+    <ItemGroup>
+        <ProjectReference Include="..\Generator.Equals.Runtime\Generator.Equals.Runtime.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)\..\README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
+
 </Project>

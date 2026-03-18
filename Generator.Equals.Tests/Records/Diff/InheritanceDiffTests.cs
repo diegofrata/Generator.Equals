@@ -7,8 +7,10 @@ namespace Generator.Equals.Tests.Records.Diff;
 /// </summary>
 public partial class InheritanceDiffTests
 {
-    static (string Path, object? Left, object? Right) Diff(string path, object? left, object? right)
-        => (path, left, right);
+    static MemberPathSegment Prop(string name) => MemberPathSegment.Property(name);
+
+    static Inequality Ineq(object? left, object? right, params MemberPathSegment[] path)
+        => new(new MemberPath(path), left, right);
 
     [Equatable]
     public partial record BasePerson(string? Name);
@@ -22,9 +24,9 @@ public partial class InheritanceDiffTests
         var a = new DerivedManager("Alice", "Engineering");
         var b = new DerivedManager("Bob", "Engineering");
 
-        var diffs = DerivedManager.EqualityComparer.Default.Diff(a, b).ToList();
+        var diffs = DerivedManager.EqualityComparer.Default.Inequalities(a, b).ToList();
 
-        diffs.Should().BeEquivalentTo(new[] { Diff("Name", "Alice", "Bob") });
+        diffs.Should().BeEquivalentTo(new[] { Ineq("Alice", "Bob", Prop("Name")) });
     }
 
     [Fact]
@@ -33,9 +35,9 @@ public partial class InheritanceDiffTests
         var a = new DerivedManager("Alice", "Engineering");
         var b = new DerivedManager("Alice", "Sales");
 
-        var diffs = DerivedManager.EqualityComparer.Default.Diff(a, b).ToList();
+        var diffs = DerivedManager.EqualityComparer.Default.Inequalities(a, b).ToList();
 
-        diffs.Should().BeEquivalentTo(new[] { Diff("Department", "Engineering", "Sales") });
+        diffs.Should().BeEquivalentTo(new[] { Ineq("Engineering", "Sales", Prop("Department")) });
     }
 
     [Fact]
@@ -44,12 +46,12 @@ public partial class InheritanceDiffTests
         var a = new DerivedManager("Alice", "Engineering");
         var b = new DerivedManager("Bob", "Sales");
 
-        var diffs = DerivedManager.EqualityComparer.Default.Diff(a, b).ToList();
+        var diffs = DerivedManager.EqualityComparer.Default.Inequalities(a, b).ToList();
 
         diffs.Should().BeEquivalentTo(new[]
         {
-            Diff("Name", "Alice", "Bob"),
-            Diff("Department", "Engineering", "Sales")
+            Ineq("Alice", "Bob", Prop("Name")),
+            Ineq("Engineering", "Sales", Prop("Department"))
         });
     }
 
@@ -58,8 +60,8 @@ public partial class InheritanceDiffTests
     {
         var a = new DerivedManager("Alice", "Engineering");
 
-        var diffs = DerivedManager.EqualityComparer.Default.Diff(a, null).ToList();
+        var diffs = DerivedManager.EqualityComparer.Default.Inequalities(a, null).ToList();
 
-        diffs.Should().BeEquivalentTo(new[] { Diff("", a, null) });
+        diffs.Should().BeEquivalentTo(new[] { Ineq(a, null) });
     }
 }

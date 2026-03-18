@@ -85,26 +85,25 @@ namespace Generator.Equals.Tests.Classes
             }
             
             /// <summary>
-            /// Returns the differences between two instances.
+            /// Returns the inequalities between two instances.
             /// </summary>
             /// <param name="x">The first instance to compare.</param>
             /// <param name="y">The second instance to compare.</param>
             /// <param name="path">The base path for difference reporting.</param>
             /// <returns>An enumerable of differences, where each difference contains the path, left value, and right value.</returns>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public global::System.Collections.Generic.IEnumerable<(string Path, object? Left, object? Right)> Diff(global::Generator.Equals.Tests.Classes.OrderedEqualityWithComparerSampleWithCustomComparer? x, global::Generator.Equals.Tests.Classes.OrderedEqualityWithComparerSampleWithCustomComparer? y, string? path = null)
+            public global::System.Collections.Generic.IEnumerable<global::Generator.Equals.Inequality> Inequalities(global::Generator.Equals.Tests.Classes.OrderedEqualityWithComparerSampleWithCustomComparer? x, global::Generator.Equals.Tests.Classes.OrderedEqualityWithComparerSampleWithCustomComparer? y, global::Generator.Equals.MemberPath path = default)
             {
                 if (ReferenceEquals(x, y)) yield break;
                 if (x is null || y is null)
                 {
-                    yield return (path ?? "", x, y);
+                    yield return new global::Generator.Equals.Inequality(path, x, y);
                     yield break;
                 }
                 
-                var __path = string.IsNullOrEmpty(path) ? "" : path + ".";
-                
                 if (!new global::Generator.Equals.OrderedEqualityComparer<global::System.String>(global::System.StringComparer.OrdinalIgnoreCase).Equals(x.Names!, y.Names!))
                 {
+                    var __propPath = path.Append(global::Generator.Equals.MemberPathSegment.Property("Names"));
                     var __xList = x.Names is null ? new global::System.Collections.Generic.List<global::System.String>() : new global::System.Collections.Generic.List<global::System.String>(x.Names);
                     var __yList = y.Names is null ? new global::System.Collections.Generic.List<global::System.String>() : new global::System.Collections.Generic.List<global::System.String>(y.Names);
                     var __maxLen = global::System.Math.Max(__xList.Count, __yList.Count);
@@ -114,7 +113,7 @@ namespace Generator.Equals.Tests.Classes
                         var __xVal = __i < __xList.Count ? (object?)__xList[__i] : null;
                         var __yVal = __i < __yList.Count ? (object?)__yList[__i] : null;
                         if (!global::System.Object.Equals(__xVal, __yVal))
-                            yield return (__path + $"Names[{__i}]", __xVal, __yVal);
+                            yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Index(__i)), __xVal, __yVal);
                     }
                 }
             }

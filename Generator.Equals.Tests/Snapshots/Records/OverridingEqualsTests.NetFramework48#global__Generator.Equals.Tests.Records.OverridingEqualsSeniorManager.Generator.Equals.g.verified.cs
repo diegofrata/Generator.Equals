@@ -54,29 +54,27 @@ namespace Generator.Equals.Tests.Records
             }
             
             /// <summary>
-            /// Returns the differences between two instances.
+            /// Returns the inequalities between two instances.
             /// </summary>
             /// <param name="x">The first instance to compare.</param>
             /// <param name="y">The second instance to compare.</param>
             /// <param name="path">The base path for difference reporting.</param>
             /// <returns>An enumerable of differences, where each difference contains the path, left value, and right value.</returns>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public global::System.Collections.Generic.IEnumerable<(string Path, object? Left, object? Right)> Diff(global::Generator.Equals.Tests.Records.OverridingEqualsSeniorManager? x, global::Generator.Equals.Tests.Records.OverridingEqualsSeniorManager? y, string? path = null)
+            public global::System.Collections.Generic.IEnumerable<global::Generator.Equals.Inequality> Inequalities(global::Generator.Equals.Tests.Records.OverridingEqualsSeniorManager? x, global::Generator.Equals.Tests.Records.OverridingEqualsSeniorManager? y, global::Generator.Equals.MemberPath path = default)
             {
                 if (ReferenceEquals(x, y)) yield break;
                 if (x is null || y is null)
                 {
-                    yield return (path ?? "", x, y);
+                    yield return new global::Generator.Equals.Inequality(path, x, y);
                     yield break;
                 }
                 
-                var __path = string.IsNullOrEmpty(path) ? "" : path + ".";
-                
-                foreach (var __diff in global::Generator.Equals.Tests.Records.OverridingEqualsManager.EqualityComparer.Default.Diff(x, y, path))
-                    yield return __diff;
+                foreach (var __ineq in global::Generator.Equals.Tests.Records.OverridingEqualsManager.EqualityComparer.Default.Inequalities(x, y, path))
+                    yield return __ineq;
                 
                 if (!global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(x.Shares!, y.Shares!))
-                    yield return (__path + "Shares", x.Shares, y.Shares);
+                    yield return new global::Generator.Equals.Inequality(path.Append(global::Generator.Equals.MemberPathSegment.Property("Shares")), x.Shares, y.Shares);
             }
         }
     }

@@ -7,8 +7,11 @@ namespace Generator.Equals.Tests.Classes.Diff;
 /// </summary>
 public partial class AttributeDiffTests
 {
-    static (string Path, object? Left, object? Right) Diff(string path, object? left, object? right)
-        => (path, left, right);
+    static MemberPathSegment Prop(string name) => MemberPathSegment.Property(name);
+    static MemberPathSegment Idx(int i) => MemberPathSegment.Index(i);
+
+    static Inequality Ineq(object? left, object? right, params MemberPathSegment[] path)
+        => new(new MemberPath(path), left, right);
 
     [Equatable]
     public partial class IgnoredPropertySample
@@ -45,7 +48,7 @@ public partial class AttributeDiffTests
         var a = new IgnoredPropertySample { Name = "Alice", IgnoredAge = 30 };
         var b = new IgnoredPropertySample { Name = "Alice", IgnoredAge = 99 };
 
-        var diffs = IgnoredPropertySample.EqualityComparer.Default.Diff(a, b).ToList();
+        var diffs = IgnoredPropertySample.EqualityComparer.Default.Inequalities(a, b).ToList();
 
         diffs.Should().BeEmpty();
     }
@@ -56,9 +59,9 @@ public partial class AttributeDiffTests
         var a = new IgnoredPropertySample { Name = "Alice", IgnoredAge = 30 };
         var b = new IgnoredPropertySample { Name = "Bob", IgnoredAge = 99 };
 
-        var diffs = IgnoredPropertySample.EqualityComparer.Default.Diff(a, b).ToList();
+        var diffs = IgnoredPropertySample.EqualityComparer.Default.Inequalities(a, b).ToList();
 
-        diffs.Should().BeEquivalentTo(new[] { Diff("Name", "Alice", "Bob") });
+        diffs.Should().BeEquivalentTo(new[] { Ineq("Alice", "Bob", Prop("Name")) });
     }
 
     #endregion
@@ -71,7 +74,7 @@ public partial class AttributeDiffTests
         var a = new StringComparisonSample { CaseInsensitiveName = "Alice", CaseSensitiveName = "Test" };
         var b = new StringComparisonSample { CaseInsensitiveName = "ALICE", CaseSensitiveName = "Test" };
 
-        var diffs = StringComparisonSample.EqualityComparer.Default.Diff(a, b).ToList();
+        var diffs = StringComparisonSample.EqualityComparer.Default.Inequalities(a, b).ToList();
 
         diffs.Should().BeEmpty();
     }
@@ -82,9 +85,9 @@ public partial class AttributeDiffTests
         var a = new StringComparisonSample { CaseInsensitiveName = "Alice", CaseSensitiveName = "Test" };
         var b = new StringComparisonSample { CaseInsensitiveName = "Alice", CaseSensitiveName = "TEST" };
 
-        var diffs = StringComparisonSample.EqualityComparer.Default.Diff(a, b).ToList();
+        var diffs = StringComparisonSample.EqualityComparer.Default.Inequalities(a, b).ToList();
 
-        diffs.Should().BeEquivalentTo(new[] { Diff("CaseSensitiveName", "Test", "TEST") });
+        diffs.Should().BeEquivalentTo(new[] { Ineq("Test", "TEST", Prop("CaseSensitiveName")) });
     }
 
     [Fact]
@@ -93,9 +96,9 @@ public partial class AttributeDiffTests
         var a = new StringComparisonSample { CaseInsensitiveName = "Alice", CaseSensitiveName = "Test" };
         var b = new StringComparisonSample { CaseInsensitiveName = "Bob", CaseSensitiveName = "Test" };
 
-        var diffs = StringComparisonSample.EqualityComparer.Default.Diff(a, b).ToList();
+        var diffs = StringComparisonSample.EqualityComparer.Default.Inequalities(a, b).ToList();
 
-        diffs.Should().BeEquivalentTo(new[] { Diff("CaseInsensitiveName", "Alice", "Bob") });
+        diffs.Should().BeEquivalentTo(new[] { Ineq("Alice", "Bob", Prop("CaseInsensitiveName")) });
     }
 
     #endregion
@@ -109,7 +112,7 @@ public partial class AttributeDiffTests
         var a = new ReferenceEqualitySample { Reference = sharedRef, Name = "Test" };
         var b = new ReferenceEqualitySample { Reference = sharedRef, Name = "Test" };
 
-        var diffs = ReferenceEqualitySample.EqualityComparer.Default.Diff(a, b).ToList();
+        var diffs = ReferenceEqualitySample.EqualityComparer.Default.Inequalities(a, b).ToList();
 
         diffs.Should().BeEmpty();
     }
@@ -122,9 +125,9 @@ public partial class AttributeDiffTests
         var a = new ReferenceEqualitySample { Reference = ref1, Name = "Test" };
         var b = new ReferenceEqualitySample { Reference = ref2, Name = "Test" };
 
-        var diffs = ReferenceEqualitySample.EqualityComparer.Default.Diff(a, b).ToList();
+        var diffs = ReferenceEqualitySample.EqualityComparer.Default.Inequalities(a, b).ToList();
 
-        diffs.Should().BeEquivalentTo(new[] { Diff("Reference", ref1, ref2) });
+        diffs.Should().BeEquivalentTo(new[] { Ineq(ref1, ref2, Prop("Reference")) });
     }
 
     [Fact]
@@ -137,10 +140,132 @@ public partial class AttributeDiffTests
         var a = new ReferenceEqualitySample { Reference = str1, Name = "Test" };
         var b = new ReferenceEqualitySample { Reference = str2, Name = "Test" };
 
-        var diffs = ReferenceEqualitySample.EqualityComparer.Default.Diff(a, b).ToList();
+        var diffs = ReferenceEqualitySample.EqualityComparer.Default.Inequalities(a, b).ToList();
 
         // Reference equality should report diff even if content is equal
-        diffs.Should().BeEquivalentTo(new[] { Diff("Reference", str1, str2) });
+        diffs.Should().BeEquivalentTo(new[] { Ineq(str1, str2, Prop("Reference")) });
+    }
+
+    #endregion
+
+    #region Field Inequality Tests
+
+    [Equatable]
+    public partial class FieldSample
+    {
+        public FieldSample(string name, int age)
+        {
+            _name = name;
+            _age = age;
+        }
+
+        [DefaultEquality] readonly string _name;
+        [DefaultEquality] readonly int _age;
+    }
+
+    [Fact]
+    public void Field_SameValues_NoDiff()
+    {
+        var a = new FieldSample("Alice", 30);
+        var b = new FieldSample("Alice", 30);
+
+        var diffs = FieldSample.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Field_DifferentValues_ReportsDiff()
+    {
+        var a = new FieldSample("Alice", 30);
+        var b = new FieldSample("Bob", 35);
+
+        var diffs = FieldSample.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[]
+        {
+            Ineq("Alice", "Bob", Prop("_name")),
+            Ineq(30, 35, Prop("_age"))
+        });
+    }
+
+    [Fact]
+    public void Field_OnlyChangedFieldReported()
+    {
+        var a = new FieldSample("Alice", 30);
+        var b = new FieldSample("Alice", 35);
+
+        var diffs = FieldSample.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq(30, 35, Prop("_age")) });
+    }
+
+    [Equatable]
+    public partial class CollectionFieldSample
+    {
+        public CollectionFieldSample(string[] items)
+        {
+            _items = items;
+        }
+
+        [OrderedEquality] readonly string[] _items;
+    }
+
+    [Fact]
+    public void CollectionField_DifferentElements_ReportsElementDiffs()
+    {
+        var a = new CollectionFieldSample(["a", "b"]);
+        var b = new CollectionFieldSample(["a", "c"]);
+
+        var diffs = CollectionFieldSample.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("b", "c", Prop("_items"), Idx(1)) });
+    }
+
+    [Fact]
+    public void CollectionField_SameElements_NoDiff()
+    {
+        var a = new CollectionFieldSample(["a", "b"]);
+        var b = new CollectionFieldSample(["a", "b"]);
+
+        var diffs = CollectionFieldSample.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEmpty();
+    }
+
+    [Equatable]
+    public partial class IgnoredFieldSample
+    {
+        public IgnoredFieldSample(string name, int secret)
+        {
+            _name = name;
+            _secret = secret;
+        }
+
+        [DefaultEquality] readonly string _name;
+        [IgnoreEquality] readonly int _secret;
+    }
+
+    [Fact]
+    public void IgnoredField_NotReportedInDiff()
+    {
+        var a = new IgnoredFieldSample("Alice", 42);
+        var b = new IgnoredFieldSample("Alice", 99);
+
+        var diffs = IgnoredFieldSample.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void IgnoredField_OnlyReportsNonIgnored()
+    {
+        var a = new IgnoredFieldSample("Alice", 42);
+        var b = new IgnoredFieldSample("Bob", 99);
+
+        var diffs = IgnoredFieldSample.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("Alice", "Bob", Prop("_name")) });
     }
 
     #endregion

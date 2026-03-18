@@ -7,8 +7,10 @@ namespace Generator.Equals.Tests.RecordStructs.Diff;
 /// </summary>
 public partial class BasicDiffTests
 {
-    static (string Path, object? Left, object? Right) Diff(string path, object? left, object? right)
-        => (path, left, right);
+    static MemberPathSegment Prop(string name) => MemberPathSegment.Property(name);
+
+    static Inequality Ineq(object? left, object? right, params MemberPathSegment[] path)
+        => new(new MemberPath(path), left, right);
 
     [Equatable]
     public partial record struct Sample(string? Name, int Age);
@@ -19,7 +21,7 @@ public partial class BasicDiffTests
         var a = new Sample("Alice", 30);
         var b = new Sample("Alice", 30);
 
-        var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
+        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
 
         diffs.Should().BeEmpty();
     }
@@ -30,9 +32,9 @@ public partial class BasicDiffTests
         var a = new Sample("Alice", 30);
         var b = new Sample("Bob", 30);
 
-        var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
+        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
 
-        diffs.Should().BeEquivalentTo(new[] { Diff("Name", "Alice", "Bob") });
+        diffs.Should().BeEquivalentTo(new[] { Ineq("Alice", "Bob", Prop("Name")) });
     }
 
     [Fact]
@@ -41,9 +43,9 @@ public partial class BasicDiffTests
         var a = new Sample("Alice", 30);
         var b = new Sample("Alice", 35);
 
-        var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
+        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
 
-        diffs.Should().BeEquivalentTo(new[] { Diff("Age", 30, 35) });
+        diffs.Should().BeEquivalentTo(new[] { Ineq(30, 35, Prop("Age")) });
     }
 
     [Fact]
@@ -52,12 +54,12 @@ public partial class BasicDiffTests
         var a = new Sample("Alice", 30);
         var b = new Sample("Bob", 35);
 
-        var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
+        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
 
         diffs.Should().BeEquivalentTo(new[]
         {
-            Diff("Name", "Alice", "Bob"),
-            Diff("Age", 30, 35)
+            Ineq("Alice", "Bob", Prop("Name")),
+            Ineq(30, 35, Prop("Age"))
         });
     }
 
@@ -67,9 +69,9 @@ public partial class BasicDiffTests
         var a = new Sample("Alice", 30);
         var b = new Sample("Bob", 30);
 
-        var diffs = Sample.EqualityComparer.Default.Diff(a, b, "Root").ToList();
+        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b, new MemberPath(new[] { Prop("Root") })).ToList();
 
-        diffs.Should().BeEquivalentTo(new[] { Diff("Root.Name", "Alice", "Bob") });
+        diffs.Should().BeEquivalentTo(new[] { Ineq("Alice", "Bob", Prop("Root"), Prop("Name")) });
     }
 
     [Fact]
@@ -79,7 +81,7 @@ public partial class BasicDiffTests
         var b = new Sample("Alice", 30);
 
         var areEqual = Sample.EqualityComparer.Default.Equals(a, b);
-        var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
+        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
 
         areEqual.Should().BeTrue();
         diffs.Should().BeEmpty("Diff should return no differences when Equals returns true");
@@ -92,13 +94,13 @@ public partial class BasicDiffTests
         var b = new Sample("Bob", 35);
 
         var areEqual = Sample.EqualityComparer.Default.Equals(a, b);
-        var diffs = Sample.EqualityComparer.Default.Diff(a, b).ToList();
+        var diffs = Sample.EqualityComparer.Default.Inequalities(a, b).ToList();
 
         areEqual.Should().BeFalse();
         diffs.Should().BeEquivalentTo(new[]
         {
-            Diff("Name", "Alice", "Bob"),
-            Diff("Age", 30, 35)
+            Ineq("Alice", "Bob", Prop("Name")),
+            Ineq(30, 35, Prop("Age"))
         });
     }
 }

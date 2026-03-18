@@ -85,26 +85,24 @@ namespace Generator.Equals.Tests.Classes
             }
             
             /// <summary>
-            /// Returns the differences between two instances.
+            /// Returns the inequalities between two instances.
             /// </summary>
             /// <param name="x">The first instance to compare.</param>
             /// <param name="y">The second instance to compare.</param>
             /// <param name="path">The base path for difference reporting.</param>
             /// <returns>An enumerable of differences, where each difference contains the path, left value, and right value.</returns>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public global::System.Collections.Generic.IEnumerable<(string Path, object? Left, object? Right)> Diff(global::Generator.Equals.Tests.Classes.IgnoreInheritedMembersSample? x, global::Generator.Equals.Tests.Classes.IgnoreInheritedMembersSample? y, string? path = null)
+            public global::System.Collections.Generic.IEnumerable<global::Generator.Equals.Inequality> Inequalities(global::Generator.Equals.Tests.Classes.IgnoreInheritedMembersSample? x, global::Generator.Equals.Tests.Classes.IgnoreInheritedMembersSample? y, global::Generator.Equals.MemberPath path = default)
             {
                 if (ReferenceEquals(x, y)) yield break;
                 if (x is null || y is null)
                 {
-                    yield return (path ?? "", x, y);
+                    yield return new global::Generator.Equals.Inequality(path, x, y);
                     yield break;
                 }
                 
-                var __path = string.IsNullOrEmpty(path) ? "" : path + ".";
-                
                 if (!global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(x.Age!, y.Age!))
-                    yield return (__path + "Age", x.Age, y.Age);
+                    yield return new global::Generator.Equals.Inequality(path.Append(global::Generator.Equals.MemberPathSegment.Property("Age")), x.Age, y.Age);
             }
         }
     }
