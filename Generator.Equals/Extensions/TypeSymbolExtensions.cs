@@ -8,7 +8,7 @@ namespace Generator.Equals.Extensions;
 /// <summary>
 /// Extension methods for <see cref="ITypeSymbol"/> used by the analyzer.
 /// </summary>
-internal static class TypeSymbolExtensions
+static class TypeSymbolExtensions
 {
     private static readonly HashSet<string> PrimitiveTypeNames = new()
     {

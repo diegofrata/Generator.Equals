@@ -15,12 +15,6 @@ sealed record EqualityTypeModel
     /// </summary>
     public string? BaseTypeFullname { get; init; }
 
-    /// <summary>
-    /// Fully qualified name of the nearest ancestor that has a generated EqualityComparer.
-    /// This is used when the immediate base doesn't have a comparer but an ancestor does.
-    /// </summary>
-    public string? NearestComparerAncestorFullname { get; init; }
-
     public required bool IsSealed { get; init; }
     public required EquatableImmutableArray<ContainingSymbol> ContainingSymbols { get; init; }
     public required AttributesMetadata AttributesMetadata { get; init; }

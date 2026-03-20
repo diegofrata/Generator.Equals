@@ -84,9 +84,7 @@ sealed class EqualityTypeModelTransformer
         // reach a meaningful equality implementation. We walk up the inheritance chain
         // to find if any ancestor has a generated EqualityComparer. If so, we should call
         // that ancestor's comparer.
-        var nearestComparerAncestor = FindNearestComparerAncestor(symbol.BaseType, attributesMetadata);
-        var baseHasEquatable = nearestComparerAncestor != null;
-        var nearestComparerAncestorFullname = nearestComparerAncestor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var baseHasEquatable = FindNearestComparerAncestor(symbol.BaseType, attributesMetadata) != null;
 
         var bems = EqualityMemberModelTransformer.BuildEqualityModels(symbol, attributesMetadata, explicitMode, filter);
 
@@ -107,7 +105,6 @@ sealed class EqualityTypeModelTransformer
             IsSealed = symbol.IsSealed,
             BaseTypeName = baseTypeName,
             BaseTypeFullname = baseTypeFullname,
-            NearestComparerAncestorFullname = nearestComparerAncestorFullname,
             Fullname = fullname,
             SyntaxKind = _context.TargetNode.Kind(),
             BaseHasEquatable = baseHasEquatable,
@@ -180,10 +177,6 @@ sealed class EqualityTypeModelTransformer
     /// This includes types with [Equatable] attribute or types with a generated EqualityComparer (for cross-assembly).
     /// If so, calling the base comparer will reach that implementation.
     /// </summary>
-    static bool AnyAncestorHasEquatable(INamedTypeSymbol? baseType, AttributesMetadata attributesMetadata)
-    {
-        return FindNearestComparerAncestor(baseType, attributesMetadata) != null;
-    }
 
     /// <summary>
     /// Collects all properties from ancestor types that don't have [Equatable] or a generated EqualityComparer.

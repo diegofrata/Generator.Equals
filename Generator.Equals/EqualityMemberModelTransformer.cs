@@ -109,7 +109,6 @@ static class EqualityMemberModelTransformer
                 MemberName = propertyName, IsField = isField,
                 TypeName = typeName,
                 EqualityType = EqualityType.IgnoreEquality,
-                Ignored = true,
             };
         }
 
@@ -273,7 +272,6 @@ static class EqualityMemberModelTransformer
             MemberName = propertyName, IsField = isField,
             TypeName = typeName,
             EqualityType = isIgnored ? EqualityType.IgnoreEquality : EqualityType.DefaultEquality,
-            Ignored = isIgnored
         };
     }
 }

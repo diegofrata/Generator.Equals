@@ -14,7 +14,7 @@ sealed record EqualityMemberModel
     public double? Precision { get; init; }
     public bool IsNullable { get; init; }
 
-    public bool Ignored { get; init; }
+    public bool Ignored => EqualityType == EqualityType.IgnoreEquality;
     public bool ComparerHasStaticInstance { get; init; }
 
     // Element comparer properties for collection equality attributes

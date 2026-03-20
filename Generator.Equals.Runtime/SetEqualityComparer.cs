@@ -11,21 +11,13 @@ namespace Generator.Equals
 
         public IEqualityComparer<T> EqualityComparer { get; }
 
-        readonly bool _hasCustomComparer;
-
-        public SetEqualityComparer() : this(DefaultEqualityComparer<T>.Default, hasCustomComparer: false)
+        public SetEqualityComparer() : this(DefaultEqualityComparer<T>.Default)
         {
         }
 
         public SetEqualityComparer(IEqualityComparer<T> equalityComparer)
-            : this(equalityComparer, hasCustomComparer: true)
-        {
-        }
-
-        SetEqualityComparer(IEqualityComparer<T> equalityComparer, bool hasCustomComparer)
         {
             EqualityComparer = equalityComparer;
-            _hasCustomComparer = hasCustomComparer;
         }
 
         public bool Equals(IEnumerable<T>? x, IEnumerable<T>? y)
@@ -38,7 +30,7 @@ namespace Generator.Equals
 
             // When no custom comparer was specified, delegate to the set's own
             // comparer so we respect whatever the collection was built with.
-            if (!_hasCustomComparer)
+            if (ReferenceEquals(EqualityComparer, DefaultEqualityComparer<T>.Default))
             {
                 if (x is ISet<T> xSet)
                     return xSet.SetEquals(y);

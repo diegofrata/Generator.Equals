@@ -315,7 +315,7 @@ namespace Generator.Equals
 
         static void BuildMemberInequality(EqualityMemberModel memberModel, IndentedTextWriter writer, string left, string right, string pathExpr)
         {
-            if (memberModel.Ignored || memberModel.EqualityType == EqualityType.IgnoreEquality)
+            if (memberModel.Ignored)
             {
                 return;
             }
