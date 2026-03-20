@@ -15,4 +15,5 @@ internal sealed record EqualityTypeModel
     public required bool IgnoreInheritedMembers { get; init; }
     public required EquatableImmutableArray<EqualityMemberModel> BuildEqualityModels { get; init; }
     public required string Fullname { get; init; }
+    public required bool OverrideEqualityOperators { get; init; }
 }
