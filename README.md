@@ -44,8 +44,19 @@ class Program
     {
         var record1 = new MyRecord(new[] {"banana", "apple"});
         var record2 = new MyRecord(new[] {"banana", "apple"});
+        var record3 = new MyRecord(new[] {"banana", "cherry"});
 
-        Console.WriteLine(record1 == record2);
+        // Use the generated == operator
+        Console.WriteLine(record1 == record2); // True
+
+        // Use the generated comparer directly
+        Console.WriteLine(MyRecord.EqualityComparer.Default.Equals(record1, record3)); // False
+
+        // List exactly which members differ between two instances
+        foreach (var diff in MyRecord.EqualityComparer.Default.Inequalities(record1, record3))
+            Console.WriteLine(diff);
+        // Output:
+        //   Fruits[1]: apple → cherry
     }
 }
 ```
