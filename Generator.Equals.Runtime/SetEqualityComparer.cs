@@ -11,13 +11,21 @@ namespace Generator.Equals
 
         public IEqualityComparer<T> EqualityComparer { get; }
 
-        public SetEqualityComparer() : this(DefaultEqualityComparer<T>.Default)
+        readonly bool _hasCustomComparer;
+
+        public SetEqualityComparer() : this(DefaultEqualityComparer<T>.Default, hasCustomComparer: false)
         {
         }
 
         public SetEqualityComparer(IEqualityComparer<T> equalityComparer)
+            : this(equalityComparer, hasCustomComparer: true)
+        {
+        }
+
+        SetEqualityComparer(IEqualityComparer<T> equalityComparer, bool hasCustomComparer)
         {
             EqualityComparer = equalityComparer;
+            _hasCustomComparer = hasCustomComparer;
         }
 
         public bool Equals(IEnumerable<T>? x, IEnumerable<T>? y)
@@ -28,17 +36,21 @@ namespace Generator.Equals
             if (x == null || y == null)
                 return false;
 
-            // If either of the underlying collections is a set, then we want to respect whatever 
-            // is the equality comparer tha was specified.
-            if (x is ISet<T> xSet)
-                return xSet.SetEquals(y);
+            // When no custom comparer was specified, delegate to the set's own
+            // comparer so we respect whatever the collection was built with.
+            if (!_hasCustomComparer)
+            {
+                if (x is ISet<T> xSet)
+                    return xSet.SetEquals(y);
 
-            if (y is ISet<T> ySet)
-                return ySet.SetEquals(x);
+                if (y is ISet<T> ySet)
+                    return ySet.SetEquals(x);
+            }
 
-            // Otherwise we go with our own.
-            xSet = new HashSet<T>(x, EqualityComparer);
-            return xSet.SetEquals(y);
+            // When a custom comparer was specified (or neither input is a set),
+            // build a fresh set with the attribute-specified comparer.
+            var set = new HashSet<T>(x, EqualityComparer);
+            return set.SetEquals(y);
         }
 
         public int GetHashCode(IEnumerable<T>? obj) => 0;

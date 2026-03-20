@@ -12,37 +12,37 @@ public partial class SetEqualityWithComparerTests : SnapshotTestBase
     [Equatable]
     public partial struct SampleWithStringComparison
     {
-        public SampleWithStringComparison(string[]? tags)
+        public SampleWithStringComparison(HashSet<string>? tags)
         {
             Tags = tags;
         }
 
         [SetEquality(StringComparison.OrdinalIgnoreCase)]
-        public string[]? Tags { get; }
+        public HashSet<string>? Tags { get; }
     }
 
     [Equatable]
     public partial struct SampleWithCustomComparer
     {
-        public SampleWithCustomComparer(string[]? names)
+        public SampleWithCustomComparer(HashSet<string>? names)
         {
             Names = names;
         }
 
         [SetEquality(typeof(StringComparer), nameof(StringComparer.OrdinalIgnoreCase))]
-        public string[]? Names { get; }
+        public HashSet<string>? Names { get; }
     }
 
     [Equatable]
     public partial struct SampleWithLengthComparer
     {
-        public SampleWithLengthComparer(string[]? values)
+        public SampleWithLengthComparer(HashSet<string>? values)
         {
             Values = values;
         }
 
         [SetEquality(typeof(LengthEqualityComparer))]
-        public string[]? Values { get; }
+        public HashSet<string>? Values { get; }
     }
 
     class LengthEqualityComparer : IEqualityComparer<string>
@@ -155,37 +155,37 @@ public partial class SetEqualityWithComparerTests : SnapshotTestBase
                                 [Equatable]
                                 public partial struct SetEqualityWithComparerSampleWithStringComparison
                                 {
-                                    public SetEqualityWithComparerSampleWithStringComparison(string[]? tags)
+                                    public SetEqualityWithComparerSampleWithStringComparison(HashSet<string>? tags)
                                     {
                                         Tags = tags;
                                     }
 
                                     [SetEquality(StringComparison.OrdinalIgnoreCase)]
-                                    public string[]? Tags { get; }
+                                    public HashSet<string>? Tags { get; }
                                 }
 
                                 [Equatable]
                                 public partial struct SetEqualityWithComparerSampleWithCustomComparer
                                 {
-                                    public SetEqualityWithComparerSampleWithCustomComparer(string[]? names)
+                                    public SetEqualityWithComparerSampleWithCustomComparer(HashSet<string>? names)
                                     {
                                         Names = names;
                                     }
 
                                     [SetEquality(typeof(StringComparer), nameof(StringComparer.OrdinalIgnoreCase))]
-                                    public string[]? Names { get; }
+                                    public HashSet<string>? Names { get; }
                                 }
 
                                 [Equatable]
                                 public partial struct SetEqualityWithComparerSampleWithLengthComparer
                                 {
-                                    public SetEqualityWithComparerSampleWithLengthComparer(string[]? values)
+                                    public SetEqualityWithComparerSampleWithLengthComparer(HashSet<string>? values)
                                     {
                                         Values = values;
                                     }
 
                                     [SetEquality(typeof(SetLengthEqualityComparer))]
-                                    public string[]? Values { get; }
+                                    public HashSet<string>? Values { get; }
                                 }
 
                                 class SetLengthEqualityComparer : IEqualityComparer<string>
