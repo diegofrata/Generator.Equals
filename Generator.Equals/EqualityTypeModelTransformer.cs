@@ -31,8 +31,7 @@ sealed class EqualityTypeModelTransformer
         var equatableAttributeData = _context.Attributes.SingleOrDefault();
         if (equatableAttributeData is null || !attributesMetadata.Equatable.Equals(equatableAttributeData.AttributeClass))
         {
-            // TODO: Report diagnostic
-            // throw new Exception("Expected exactly one EquatableAttribute.");
+            // Defensive: attribute mismatch during incremental compilation
             return null;
         }
 
@@ -46,8 +45,7 @@ sealed class EqualityTypeModelTransformer
 
         if (_context.TargetSymbol is not ITypeSymbol symbol)
         {
-            // TODO: Report diagnostic
-            // throw new Exception("Expected a type symbol.");
+            // Defensive: non-type symbol during incremental compilation
             return null;
         }
 
