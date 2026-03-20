@@ -41,6 +41,7 @@ internal sealed class EqualityTypeModelTransformer
 
         var explicitMode = equatableAttributeData.GetNamedArgumentValue("Explicit") is true;
         var ignoreInheritedMembers = equatableAttributeData.GetNamedArgumentValue("IgnoreInheritedMembers") is true;
+        var overrideEqualityOperators = equatableAttributeData.GetNamedArgumentValue(nameof(EquatableAttribute.OverrideEqualityOperators)) is not false;
 
         if (_context.TargetSymbol is not ITypeSymbol symbol)
         {
@@ -83,7 +84,8 @@ internal sealed class EqualityTypeModelTransformer
             IsSealed = symbol.IsSealed,
             BaseTypeName = baseTypeName,
             Fullname = fullname,
-            SyntaxKind = _context.TargetNode.Kind()
+            SyntaxKind = _context.TargetNode.Kind(),
+            OverrideEqualityOperators = overrideEqualityOperators,
         };
 
         if (model.SyntaxKind is not (

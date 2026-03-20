@@ -18,6 +18,12 @@ namespace Generator.Equals
         /// Equality and hash code do not consider members of base classes.
         /// </summary>
         public bool IgnoreInheritedMembers { get; set; }
+
+        /// <summary>
+        /// Indicates whether the equality operators (<c>==</c> and <c>!=</c>) will be overridden for the decorated member.
+        /// <br/>Default value is <see langword="true"/>.
+        /// </summary>
+        public bool OverrideEqualityOperators { get; set; } = true;
     }
 
     [GeneratedCode("Generator.Equals", "1.0.0.0")]

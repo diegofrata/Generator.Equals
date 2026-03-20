@@ -9,6 +9,7 @@ namespace Generator.Equals.Tests
         public abstract object Factory1();
         public virtual object Factory2() => Factory1();
         public virtual bool Expected => true;
+        public virtual bool ExpectedOperatorEquals => Expected;
         public abstract bool EqualsOperator(object value1, object value2);
         public abstract bool NotEqualsOperator(object value1, object value2);
         
@@ -27,7 +28,7 @@ namespace Generator.Equals.Tests
             var value1 = Factory1();
             var value2 = Factory2();
             var result = EqualsOperator(value1, value2);
-            result.Should().Be(Expected);
+            result.Should().Be(ExpectedOperatorEquals);
         }
 
         [Fact]
@@ -36,7 +37,7 @@ namespace Generator.Equals.Tests
             var value1 = Factory1();
             var value2 = Factory2();
             var result = NotEqualsOperator(value1, value2);
-            result.Should().NotBe(Expected);
+            result.Should().NotBe(ExpectedOperatorEquals);
         }
 
         [Fact]
