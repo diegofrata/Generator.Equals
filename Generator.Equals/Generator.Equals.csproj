@@ -37,6 +37,7 @@
 
     <ItemGroup>
         <None Include="$(MSBuildThisFileDirectory)\..\README.md" Pack="true" PackagePath="\"/>
+        <None Include="$(MSBuildThisFileDirectory)\..\skills\SKILL.md" Pack="true" PackagePath="skills"/>
     </ItemGroup>
 
 </Project>
