@@ -1,6 +1,7 @@
 ---
 name: generator.equals
 description: Guidance for using Generator.Equals — a C# source generator for auto-generating Equals, GetHashCode, operators, and Diff/Inequalities methods via attributes.
+packages: Generator.Equals
 ---
 
 # Generator.Equals
