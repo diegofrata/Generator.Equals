@@ -1,4 +1,4 @@
-﻿//HintName: global__Generator.Equals.Tests.Classes.StringEqualityCaseInsensitiveSample.Generator.Equals.g.cs
+﻿//HintName: global__Generator.Equals.Tests.Classes.PolymorphicAnimal.Generator.Equals.g.cs
 
 #nullable enable
 #pragma warning disable CS0612,CS0618
@@ -6,7 +6,7 @@
 
 namespace Generator.Equals.Tests.Classes
 {
-    partial class StringEqualityCaseInsensitiveSample : global::System.IEquatable<global::Generator.Equals.Tests.Classes.StringEqualityCaseInsensitiveSample>
+    partial class PolymorphicAnimal : global::System.IEquatable<global::Generator.Equals.Tests.Classes.PolymorphicAnimal>
     {
         /// <summary>
         /// Indicates whether the object on the left is equal to the object on the right.
@@ -15,7 +15,7 @@ namespace Generator.Equals.Tests.Classes
         /// <param name="right">The right object</param>
         /// <returns>true if the objects are equal; otherwise, false.</returns>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-        public static bool operator ==(global::Generator.Equals.Tests.Classes.StringEqualityCaseInsensitiveSample? left, global::Generator.Equals.Tests.Classes.StringEqualityCaseInsensitiveSample? right) =>
+        public static bool operator ==(global::Generator.Equals.Tests.Classes.PolymorphicAnimal? left, global::Generator.Equals.Tests.Classes.PolymorphicAnimal? right) =>
             EqualityComparer.Default.Equals(left, right);
         
         /// <summary>
@@ -25,27 +25,26 @@ namespace Generator.Equals.Tests.Classes
         /// <param name="right">The right object</param>
         /// <returns>true if the objects are not equal; otherwise, false.</returns>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-        public static bool operator !=(global::Generator.Equals.Tests.Classes.StringEqualityCaseInsensitiveSample? left, global::Generator.Equals.Tests.Classes.StringEqualityCaseInsensitiveSample? right) =>
+        public static bool operator !=(global::Generator.Equals.Tests.Classes.PolymorphicAnimal? left, global::Generator.Equals.Tests.Classes.PolymorphicAnimal? right) =>
             !EqualityComparer.Default.Equals(left, right);
         
         /// <inheritdoc/>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
         public override bool Equals(object? obj) =>
-            Equals(obj as global::Generator.Equals.Tests.Classes.StringEqualityCaseInsensitiveSample);
+            Equals(obj as global::Generator.Equals.Tests.Classes.PolymorphicAnimal);
         
         /// <inheritdoc/>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-        bool global::System.IEquatable<global::Generator.Equals.Tests.Classes.StringEqualityCaseInsensitiveSample>.Equals(global::Generator.Equals.Tests.Classes.StringEqualityCaseInsensitiveSample? obj) => Equals((object?) obj);
+        bool global::System.IEquatable<global::Generator.Equals.Tests.Classes.PolymorphicAnimal>.Equals(global::Generator.Equals.Tests.Classes.PolymorphicAnimal? obj) => Equals((object?) obj);
         
         /// <inheritdoc/>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-        protected bool Equals(global::Generator.Equals.Tests.Classes.StringEqualityCaseInsensitiveSample? other)
+        protected bool Equals(global::Generator.Equals.Tests.Classes.PolymorphicAnimal? other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             
             return other.GetType() == this.GetType()
-                && global::System.StringComparer.CurrentCultureIgnoreCase.Equals(this.Name!, other.Name!)
                 ;
         }
         
@@ -56,21 +55,17 @@ namespace Generator.Equals.Tests.Classes
             var hashCode = new global::System.HashCode();
             
             hashCode.Add(this.GetType());
-            hashCode.Add(
-                this.Name!,
-                global::System.StringComparer.CurrentCultureIgnoreCase
-            );
             
             return hashCode.ToHashCode();
         }
         
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-        public sealed class EqualityComparer : global::System.Collections.Generic.IEqualityComparer<global::Generator.Equals.Tests.Classes.StringEqualityCaseInsensitiveSample>
+        public sealed class EqualityComparer : global::System.Collections.Generic.IEqualityComparer<global::Generator.Equals.Tests.Classes.PolymorphicAnimal>
         {
             public static EqualityComparer Default { get; } = new EqualityComparer();
             
             /// <inheritdoc/>
-            public bool Equals(global::Generator.Equals.Tests.Classes.StringEqualityCaseInsensitiveSample? x, global::Generator.Equals.Tests.Classes.StringEqualityCaseInsensitiveSample? y)
+            public bool Equals(global::Generator.Equals.Tests.Classes.PolymorphicAnimal? x, global::Generator.Equals.Tests.Classes.PolymorphicAnimal? y)
             {
                 if (ReferenceEquals(x, y)) return true;
                 if (x is null || y is null) return false;
@@ -79,7 +74,7 @@ namespace Generator.Equals.Tests.Classes
             }
             
             /// <inheritdoc/>
-            public int GetHashCode(global::Generator.Equals.Tests.Classes.StringEqualityCaseInsensitiveSample obj)
+            public int GetHashCode(global::Generator.Equals.Tests.Classes.PolymorphicAnimal obj)
             {
                 return obj.GetHashCode();
             }
@@ -92,7 +87,7 @@ namespace Generator.Equals.Tests.Classes
             /// <param name="path">The base path for difference reporting.</param>
             /// <returns>An enumerable of differences, where each difference contains the path, left value, and right value.</returns>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public global::System.Collections.Generic.IEnumerable<global::Generator.Equals.Inequality> Inequalities(global::Generator.Equals.Tests.Classes.StringEqualityCaseInsensitiveSample? x, global::Generator.Equals.Tests.Classes.StringEqualityCaseInsensitiveSample? y, global::Generator.Equals.MemberPath path = default)
+            public global::System.Collections.Generic.IEnumerable<global::Generator.Equals.Inequality> Inequalities(global::Generator.Equals.Tests.Classes.PolymorphicAnimal? x, global::Generator.Equals.Tests.Classes.PolymorphicAnimal? y, global::Generator.Equals.MemberPath path = default)
             {
                 if (ReferenceEquals(x, y)) yield break;
                 if (x is null || y is null)
@@ -101,8 +96,6 @@ namespace Generator.Equals.Tests.Classes
                     yield break;
                 }
                 
-                if (!global::System.StringComparer.CurrentCultureIgnoreCase.Equals(x.Name!, y.Name!))
-                    yield return new global::Generator.Equals.Inequality(path.Append(global::Generator.Equals.MemberPathSegment.Property("Name")), x.Name, y.Name);
             }
         }
     }

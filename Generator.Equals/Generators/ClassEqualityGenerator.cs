@@ -143,7 +143,12 @@ namespace Generator.Equals.Generators
             writer.WriteLine("if (ReferenceEquals(x, y)) return true;");
             writer.WriteLine("if (x is null || y is null) return false;");
             writer.WriteLine();
-            writer.WriteLine("return x.Equals(y);");
+            // For non-sealed classes, dispatch through the virtual Equals(object?) so the runtime
+            // (most-derived) type's equality is used when comparing via a base-class reference.
+            // Calling x.Equals(y) would bind non-virtually to the protected Equals(T?) on the base
+            // type, ignoring members declared on derived types (see issue #77). This also keeps the
+            // comparer consistent with GetHashCode, which already dispatches virtually.
+            writer.WriteLine(model.IsSealed ? "return x.Equals(y);" : "return x.Equals((object?) y);");
 
             writer.AppendCloseBracket();
 
