@@ -148,7 +148,7 @@ namespace Generator.Equals.Generators
             // Calling x.Equals(y) would bind non-virtually to the protected Equals(T?) on the base
             // type, ignoring members declared on derived types (see issue #77). This also keeps the
             // comparer consistent with GetHashCode, which already dispatches virtually.
-            writer.WriteLine(model.IsSealed ? "return x.Equals(y);" : "return x.Equals((object?) y);");
+            writer.WriteLine($"return x.Equals({(model.IsSealed ? "y" : "(object?) y")});");
 
             writer.AppendCloseBracket();
 
