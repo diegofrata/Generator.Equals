@@ -85,7 +85,7 @@ namespace Generator.Equals.Tests.Classes
                 if (ReferenceEquals(x, y)) return true;
                 if (x is null || y is null) return false;
                 
-                return x.Equals(y);
+                return x.Equals((object?) y);
             }
             
             /// <inheritdoc/>
