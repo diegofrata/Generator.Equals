@@ -168,7 +168,7 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
             CollectionEqualityAttributes.Contains(x.Metadata));
 
         // GE001: Collection without collection equality attribute
-        if (memberType.IsCollection() && !hasCollectionAttribute)
+        if (memberType.IsCollection() && !hasCollectionAttribute && !memberType.HasProperEquality())
         {
             var location = GetMemberTypeLocation(member) ?? member.Locations.FirstOrDefault() ?? Location.None;
             context.ReportDiagnostic(Diagnostic.Create(

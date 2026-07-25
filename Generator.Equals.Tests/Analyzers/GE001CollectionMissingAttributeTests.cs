@@ -278,4 +278,33 @@ public sealed class GE001CollectionMissingAttributeTests : AnalyzerTestBase<Equa
         // [DefaultEquality] + [OrderedEquality] satisfies the requirement
         await VerifyNoDiagnosticAsync(source);
     }
+
+    [Fact]
+    public async Task CustomCollectionProperty_WithEquatable_NoDiagnostic()
+    {
+        const string source = """
+            using System.Collections;
+            using System.Collections.Generic;
+            using Generator.Equals;
+
+            [Equatable]
+            public partial class Sample
+            {
+                public MyCollection<int> Items { get; set; }
+            }
+            
+            [Equatable]
+            public partial class MyCollection<T> : IEnumerable<T>
+            {
+                [OrderedEquality]
+                private readonly List<T> _list = new();
+                public IEnumerator<T> GetEnumerator() => _list.GetEnumerator();
+                IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+                public void Add(T item) => _list.Add(item);
+            }
+            """;
+
+        // [Equatable] implementation on custom collection
+        await VerifyNoDiagnosticAsync(source);
+    }
 }
