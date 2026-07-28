@@ -128,25 +128,6 @@ sealed class EqualityTypeModelTransformer
     }
 
     /// <summary>
-    /// Determines if a type has the generated nested EqualityComparer class.
-    /// This is used for cross-assembly detection since attributes may be erased.
-    /// </summary>
-    static bool HasGeneratedEqualityComparer(INamedTypeSymbol type)
-    {
-        var comparerType = type.GetTypeMembers("EqualityComparer").FirstOrDefault();
-        if (comparerType is null || !comparerType.IsSealed)
-            return false;
-
-        // Check implements IEqualityComparer<T>
-        var iEqualityComparer = comparerType.Interfaces
-            .FirstOrDefault(i => i.Name == "IEqualityComparer"
-                && i.TypeArguments.Length == 1
-                && SymbolEqualityComparer.Default.Equals(i.TypeArguments[0], type));
-
-        return iEqualityComparer != null;
-    }
-
-    /// <summary>
     /// Finds the nearest ancestor in the inheritance chain that has a generated EqualityComparer.
     /// Returns null if no ancestor has a comparer.
     /// </summary>
@@ -162,7 +143,7 @@ sealed class EqualityTypeModelTransformer
             }
 
             // Check for generated EqualityComparer (cross-assembly support)
-            if (HasGeneratedEqualityComparer(current))
+            if (current.HasGeneratedEqualityComparer())
             {
                 return current;
             }
@@ -209,7 +190,7 @@ sealed class EqualityTypeModelTransformer
             }
 
             // Stop if this ancestor has a generated EqualityComparer (cross-assembly detection)
-            if (HasGeneratedEqualityComparer(current))
+            if (current.HasGeneratedEqualityComparer())
             {
                 break;
             }
@@ -249,7 +230,7 @@ sealed class EqualityTypeModelTransformer
             }
 
             // If any parent type has a generated EqualityComparer (cross-assembly), skip this property
-            if (overridden.ContainingType is INamedTypeSymbol namedType && HasGeneratedEqualityComparer(namedType))
+            if (overridden.ContainingType is INamedTypeSymbol namedType && namedType.HasGeneratedEqualityComparer())
             {
                 return true;
             }

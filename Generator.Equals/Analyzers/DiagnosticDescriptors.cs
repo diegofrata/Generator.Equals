@@ -19,7 +19,7 @@ public static class DiagnosticDescriptors
         category: Category,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        description: "Collection properties in an [Equatable] type should specify how elements are compared using [OrderedEquality], [UnorderedEquality], or [SetEquality] attributes.");
+        description: "Collection properties in an [Equatable] type should specify how elements are compared using [OrderedEquality], [UnorderedEquality], or [SetEquality] attributes. Not reported when the collection type is itself [Equatable], or when the member is marked [DefaultEquality] to opt into the type's own equality.");
 
     /// <summary>
     /// GE002: Complex object property type lacks [Equatable].

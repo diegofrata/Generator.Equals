@@ -158,17 +158,26 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
         if (explicitMode && !memberAttributes.Any(x => x.Metadata.Equals(Metadata.DefaultEquality)))
             return;
 
-        // Check if member has [DefaultEquality] - suppresses GE002/GE003 but not GE001
+        // Check if member has [DefaultEquality] - suppresses GE001/GE002/GE003
         // DefaultEquality explicitly indicates the user wants default equality behavior (e.g., for types
         // like protobuf-generated classes that implement their own Equals/GetHashCode)
         var hasDefaultEquality = memberAttributes.Any(x => x.Metadata.Equals(Metadata.DefaultEquality));
+
+        // In explicit mode [DefaultEquality] carries a different meaning - it is what opts the member
+        // into the comparison at all - so it says nothing about the collection's semantics there
+        var optedIntoDefaultEquality = hasDefaultEquality && !explicitMode;
 
         // Check if member has a collection equality attribute
         var hasCollectionAttribute = memberAttributes.Any(x =>
             CollectionEqualityAttributes.Contains(x.Metadata));
 
-        // GE001: Collection without collection equality attribute
-        if (memberType.IsCollection() && !hasCollectionAttribute)
+        // GE001: Collection without collection equality attribute.
+        // Skipped when the collection type generates its own equality via [Equatable], since the
+        // default comparer already delegates to it. This deliberately does not use
+        // HasProperEquality(): a plain IEquatable<T> implementation may be reference-based
+        // (e.g. ImmutableArray<T>), which is exactly what GE001 exists to catch.
+        if (memberType.IsCollection() && !hasCollectionAttribute && !optedIntoDefaultEquality &&
+            !memberType.HasGeneratedEquality())
         {
             var location = GetMemberTypeLocation(member) ?? member.Locations.FirstOrDefault() ?? Location.None;
             context.ReportDiagnostic(Diagnostic.Create(

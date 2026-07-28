@@ -65,6 +65,15 @@ public List<int> Items { get; set; }
 public List<int> Items { get; set; }
 ```
 
+Two exceptions: a collection type that is itself `[Equatable]` already compares structurally, so no
+attribute is needed. And `[DefaultEquality]` opts the member into the type's own `Equals` — use it for
+collections that implement their own value equality.
+
+```csharp
+[DefaultEquality]
+public MyImmutableList<int> Items { get; set; }   // MyImmutableList compares structurally itself
+```
+
 ### Use Explicit mode when only a few properties matter
 
 ```csharp

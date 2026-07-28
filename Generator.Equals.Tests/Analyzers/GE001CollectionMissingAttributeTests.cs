@@ -237,7 +237,7 @@ public sealed class GE001CollectionMissingAttributeTests : AnalyzerTestBase<Equa
     }
 
     [Fact]
-    public async Task CollectionProperty_WithDefaultEquality_ReportsDiagnostic()
+    public async Task CollectionProperty_WithDefaultEquality_NoDiagnostic()
     {
         const string source = """
             using System.Collections.Generic;
@@ -251,12 +251,9 @@ public sealed class GE001CollectionMissingAttributeTests : AnalyzerTestBase<Equa
             }
             """;
 
-        // [DefaultEquality] alone does not suppress GE001 - collection still needs a collection attribute
-        // List<int> is 9 chars, starts at col 12, ends at col 21
-        await VerifyDiagnosticAsync(source,
-            Diagnostic(DiagnosticDescriptors.CollectionMissingAttribute)
-                .WithSpan(8, 12, 8, 21)
-                .WithArguments("Items"));
+        // [DefaultEquality] is an explicit opt-in to the default comparer - the user has stated
+        // their intent, so GE001 stays quiet (same escape hatch as GE002/GE003)
+        await VerifyNoDiagnosticAsync(source);
     }
 
     [Fact]
@@ -277,5 +274,91 @@ public sealed class GE001CollectionMissingAttributeTests : AnalyzerTestBase<Equa
 
         // [DefaultEquality] + [OrderedEquality] satisfies the requirement
         await VerifyNoDiagnosticAsync(source);
+    }
+
+    [Fact]
+    public async Task CustomCollectionProperty_WithEquatable_NoDiagnostic()
+    {
+        const string source = """
+            using System.Collections;
+            using System.Collections.Generic;
+            using Generator.Equals;
+
+            [Equatable]
+            public partial class Sample
+            {
+                public MyCollection<int> Items { get; set; }
+            }
+
+            [Equatable]
+            public partial class MyCollection<T> : IEnumerable<T>
+            {
+                [OrderedEquality]
+                private readonly List<T> _list = new();
+                public IEnumerator<T> GetEnumerator() => _list.GetEnumerator();
+                IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+                public void Add(T item) => _list.Add(item);
+            }
+            """;
+
+        // The collection generates its own structural equality, which the default comparer
+        // already delegates to - no collection attribute needed
+        await VerifyNoDiagnosticAsync(source);
+    }
+
+    [Fact]
+    public async Task CustomCollectionProperty_WithHandWrittenIEquatable_ReportsDiagnostic()
+    {
+        const string source = """
+            using System;
+            using System.Collections;
+            using System.Collections.Generic;
+            using Generator.Equals;
+
+            [Equatable]
+            public partial class Sample
+            {
+                public MyCollection Items { get; set; }
+            }
+
+            public class MyCollection : IEnumerable<int>, IEquatable<MyCollection>
+            {
+                private readonly List<int> _list = new();
+                public IEnumerator<int> GetEnumerator() => _list.GetEnumerator();
+                IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+                public bool Equals(MyCollection other) => ReferenceEquals(this, other);
+            }
+            """;
+
+        // IEquatable<T> alone says nothing about the semantics - it may well be reference-based,
+        // as it is here. The user opts out explicitly with [DefaultEquality] instead.
+        // MyCollection is 12 chars, starts at col 12, ends at col 24
+        await VerifyDiagnosticAsync(source,
+            Diagnostic(DiagnosticDescriptors.CollectionMissingAttribute)
+                .WithSpan(9, 12, 9, 24)
+                .WithArguments("Items"));
+    }
+
+    [Fact]
+    public async Task ImmutableArrayProperty_WithoutAttribute_ReportsDiagnostic()
+    {
+        const string source = """
+            using System.Collections.Immutable;
+            using Generator.Equals;
+
+            [Equatable]
+            public partial class Sample
+            {
+                public ImmutableArray<int> Items { get; set; }
+            }
+            """;
+
+        // ImmutableArray<T> implements IEquatable<ImmutableArray<T>> by comparing the underlying
+        // array by reference - GE001 must still fire here
+        // ImmutableArray<int> is 19 chars, starts at col 12, ends at col 31
+        await VerifyDiagnosticAsync(source,
+            Diagnostic(DiagnosticDescriptors.CollectionMissingAttribute)
+                .WithSpan(7, 12, 7, 31)
+                .WithArguments("Items"));
     }
 }
