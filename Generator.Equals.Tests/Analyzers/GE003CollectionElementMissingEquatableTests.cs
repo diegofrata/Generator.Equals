@@ -230,7 +230,7 @@ public sealed class GE003CollectionElementMissingEquatableTests : AnalyzerTestBa
     }
 
     [Fact]
-    public async Task CollectionOfComplexType_WithDefaultEquality_NoGE003Diagnostic()
+    public async Task CollectionOfComplexType_WithDefaultEquality_NoDiagnostic()
     {
         const string source = """
             using System.Collections.Generic;
@@ -251,12 +251,8 @@ public sealed class GE003CollectionElementMissingEquatableTests : AnalyzerTestBa
             }
             """;
 
-        // [DefaultEquality] suppresses GE003 but not GE001 (collection still needs a collection attribute)
-        // "List<ProtobufMessage>" = 21 chars, starts at col 12, ends at col 33
-        await VerifyDiagnosticAsync(source,
-            Diagnostic(DiagnosticDescriptors.CollectionMissingAttribute)
-                .WithSpan(15, 12, 15, 33)
-                .WithArguments("Messages"));
+        // [DefaultEquality] suppresses GE001 and GE003 - the user explicitly chose default behavior
+        await VerifyNoDiagnosticAsync(source);
     }
 
     [Fact]

@@ -645,4 +645,110 @@ public sealed class CrossAssemblyEquatableTests
             throw new Exception($"Debug info:\n{string.Join("\n", details)}");
     }
 
+    [Fact]
+    public async Task CollectionWithGeneratedComparer_FromReferencedAssembly_DoesNotTriggerGE001()
+    {
+        // A collection type processed by Generator.Equals in another assembly. The [Equatable]
+        // attribute is [Conditional] and therefore erased from metadata, so the only surviving
+        // signal is the generated nested EqualityComparer class.
+        var externalSource = """
+            using System.Collections;
+            using System.Collections.Generic;
+
+            namespace ExternalLib;
+
+            public partial class ExternalCollection : IEnumerable<int>
+            {
+                public IEnumerator<int> GetEnumerator() => null;
+                IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+                public sealed class EqualityComparer : IEqualityComparer<ExternalCollection>
+                {
+                    public static EqualityComparer Default { get; } = new EqualityComparer();
+                    public bool Equals(ExternalCollection x, ExternalCollection y) => true;
+                    public int GetHashCode(ExternalCollection obj) => 0;
+                }
+            }
+            """;
+
+        var ge001Diagnostics = await GetCollectionDiagnosticsAsync(externalSource, "ExternalCollection");
+
+        if (ge001Diagnostics.Count > 0)
+            throw new Exception($"Expected no GE001 diagnostics but got: {string.Join(", ", ge001Diagnostics.Select(d => d.GetMessage()))}");
+    }
+
+    [Fact]
+    public async Task CollectionWithHandWrittenIEquatable_FromReferencedAssembly_TriggersGE001()
+    {
+        // A collection from another assembly that implements IEquatable<T> with reference
+        // semantics (the ImmutableArray<T> shape). Without a generated comparer there is nothing
+        // to say its equality is structural, so GE001 must still fire.
+        var externalSource = """
+            using System;
+            using System.Collections;
+            using System.Collections.Generic;
+
+            namespace ExternalLib;
+
+            public class ExternalCollection : IEnumerable<int>, IEquatable<ExternalCollection>
+            {
+                public IEnumerator<int> GetEnumerator() => null;
+                IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+                public bool Equals(ExternalCollection other) => ReferenceEquals(this, other);
+            }
+            """;
+
+        var ge001Diagnostics = await GetCollectionDiagnosticsAsync(externalSource, "ExternalCollection");
+
+        if (ge001Diagnostics.Count != 1)
+            throw new Exception($"Expected one GE001 diagnostic but got {ge001Diagnostics.Count}");
+    }
+
+    /// <summary>
+    /// Compiles <paramref name="externalSource"/> into a referenced assembly, then runs the
+    /// analyzer over a container that holds a property of the given external collection type.
+    /// </summary>
+    private static async Task<List<Diagnostic>> GetCollectionDiagnosticsAsync(string externalSource, string externalTypeName)
+    {
+        var externalCompilation = CSharpCompilation.Create(
+            "ExternalLib",
+            [CSharpSyntaxTree.ParseText(externalSource, cancellationToken: TestContext.Current.CancellationToken)],
+            CoreReferences,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var externalErrors = externalCompilation.GetDiagnostics(TestContext.Current.CancellationToken)
+            .Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+        if (externalErrors.Count > 0)
+            throw new Exception($"External compilation had errors: {string.Join(", ", externalErrors.Select(e => e.GetMessage()))}");
+
+        var mainSource = $$"""
+            using Generator.Equals;
+            using ExternalLib;
+
+            namespace MainApp;
+
+            [Equatable]
+            public partial class Container
+            {
+                public {{externalTypeName}} Items { get; set; }
+            }
+            """;
+
+        var mainCompilation = CSharpCompilation.Create(
+            "MainApp",
+            [CSharpSyntaxTree.ParseText(mainSource, cancellationToken: TestContext.Current.CancellationToken)],
+            CoreReferences.Append(externalCompilation.ToMetadataReference()).ToArray(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var mainErrors = mainCompilation.GetDiagnostics(TestContext.Current.CancellationToken)
+            .Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+        if (mainErrors.Count > 0)
+            throw new Exception($"Main compilation had errors: {string.Join(", ", mainErrors.Select(e => e.GetMessage()))}");
+
+        DiagnosticAnalyzer analyzer = new EquatableAnalyzer();
+        var analyzerDiagnostics = await mainCompilation.WithAnalyzers([analyzer])
+            .GetAnalyzerDiagnosticsAsync(TestContext.Current.CancellationToken);
+
+        return analyzerDiagnostics.Where(d => d.Id == "GE001").ToList();
+    }
 }
