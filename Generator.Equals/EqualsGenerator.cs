@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 [assembly: InternalsVisibleTo("Generator.Equals.SnapshotTests")]
 [assembly: InternalsVisibleTo("Generator.Equals.Tests.DynamicGeneration")]
+[assembly: InternalsVisibleTo("Generator.Equals.Tests")]
 
 namespace Generator.Equals;
 
@@ -27,7 +28,7 @@ public class EqualsGenerator : IIncrementalGenerator
         context.RegisterSourceOutput(provider, (spc, ctx) => Execute(spc, ctx));
     }
 
-    private static void Execute(SourceProductionContext productionContext, EqualityTypeModel? model)
+    static void Execute(SourceProductionContext productionContext, EqualityTypeModel? model)
     {
         if (productionContext.CancellationToken.IsCancellationRequested || model is null)
         {
@@ -52,9 +53,9 @@ public class EqualsGenerator : IIncrementalGenerator
         productionContext.AddSource(fileName, source);
     }
 
-    private static readonly char[] _illegalFilenameChars = new[] { '<', '>', ',', ':' };
+    static readonly char[] _illegalFilenameChars = new[] { '<', '>', ',', ':' };
 
-    private static string EscapeFileName(string fileName) => _illegalFilenameChars
+    static string EscapeFileName(string fileName) => _illegalFilenameChars
         .Aggregate(new StringBuilder(fileName), (s, c) => s.Replace(c, '_'))
         .ToString();
 }

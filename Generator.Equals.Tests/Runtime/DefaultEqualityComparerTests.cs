@@ -1,5 +1,4 @@
 using FluentAssertions;
-using Xunit;
 
 namespace Generator.Equals.Tests.Runtime;
 
@@ -15,13 +14,11 @@ public partial class DefaultEqualityComparerTests
     {
     }
 
-
     [Fact]
     public void GetHashCode_SealedClass_NullValueShouldReturnZero()
     {
         DefaultEqualityComparer<SealedClass>.Default.GetHashCode(null!).Should().Be(0);
     }
-
 
     [Fact]
     public void GetHashCode_NonSealedClass_NullValueShouldReturnZero()

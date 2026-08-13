@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Generator.Equals.Models;
 
-internal struct EquatableImmutableArray<T>(ImmutableArray<T> items) : IEquatable<EquatableImmutableArray<T>>
+struct EquatableImmutableArray<T>(ImmutableArray<T> items) : IEquatable<EquatableImmutableArray<T>>
 {
     public ImmutableArray<T> Items { get; set; } = items;
 

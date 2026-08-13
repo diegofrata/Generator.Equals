@@ -1,0 +1,68 @@
+using FluentAssertions;
+using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
+
+namespace Generator.Equals.Tests.Classes;
+
+/// <summary>
+/// Tests for equality on sealed classes.
+/// </summary>
+public partial class SealedClassTests : SnapshotTestBase
+{
+    [Equatable]
+    public sealed partial class Sample
+    {
+        public Sample(string[] addresses)
+        {
+            Addresses = addresses;
+        }
+
+        [OrderedEquality] public string[] Addresses { get; }
+    }
+
+    public static TheoryData<Sample, Sample, bool> EqualityCases => new()
+    {
+        // Same content should be equal
+        { new Sample(["10 Downing St"]), new Sample(["10 Downing St"]), true },
+        // Different content should not be equal
+        { new Sample(["10 Downing St"]), new Sample(["Bricklane"]), false },
+        // Multiple items, same order
+        { new Sample(["A", "B"]), new Sample(["A", "B"]), true },
+    };
+
+    [Theory]
+    [MemberData(nameof(EqualityCases))]
+    public void Equality(Sample a, Sample b, bool expected) =>
+        EqualityAssert.Verify(a, b, expected);
+
+    [Theory]
+    [MemberData(nameof(TargetFrameworks))]
+    public Task VerifyGeneratedCode(TargetFramework fw) =>
+        VerifyGeneratedSource(SampleSource, fw, ct: TestContext.Current.CancellationToken);
+
+    [Fact]
+    public void Inequality_DifferentContent()
+    {
+        var diffs = Sample.EqualityComparer.Default.Inequalities(
+            new Sample(["10 Downing St"]), new Sample(["Bricklane"])).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("10 Downing St", "Bricklane", Prop("Addresses"), Idx(0)) });
+    }
+
+    const string SampleSource = """
+                                using Generator.Equals;
+
+                                namespace Generator.Equals.Tests.Classes;
+
+                                [Equatable]
+                                public sealed partial class SealedClassSample
+                                {
+                                    public SealedClassSample(string[] addresses)
+                                    {
+                                        Addresses = addresses;
+                                    }
+
+                                    [OrderedEquality] public string[] Addresses { get; }
+                                }
+                                """;
+}

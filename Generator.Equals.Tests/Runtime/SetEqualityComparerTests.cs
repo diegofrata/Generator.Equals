@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using FluentAssertions;
-using Xunit;
 
 namespace Generator.Equals.Tests.Runtime;
 
@@ -25,12 +23,14 @@ public class SetEqualityComparerTests
     }
 
     [Fact]
-    public void Sets_Equals_Should_not_use_ValueComparer()
+    public void Sets_Equals_Should_use_ValueComparer_over_collection_comparer()
     {
         var a = new HashSet<int> { 1, 2, 3, 4, 5 };
         var b = new[] { 1, -2, 3, -4, 5 };
 
-        _sut.Equals(a, b).Should().BeFalse();
+        // The custom comparer passed to SetEqualityComparer is authoritative,
+        // even when the input is a set with a different (default) comparer.
+        _sut.Equals(a, b).Should().BeTrue();
     }
 
     [Fact]
@@ -41,7 +41,6 @@ public class SetEqualityComparerTests
 
         _sut.Equals(a, b).Should().BeTrue();
     }
-
 
     [Fact]
     public void Sets_Equals_Should_use_B_collection_comparer()

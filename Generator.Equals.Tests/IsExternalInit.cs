@@ -13,5 +13,13 @@ namespace System.Runtime.CompilerServices;
 static class IsExternalInit
 {
 }
-    
+
+/// <summary>
+/// Polyfill for ModuleInitializerAttribute for .NET Framework.
+/// </summary>
+[AttributeUsage(AttributeTargets.Method, Inherited = false)]
+sealed class ModuleInitializerAttribute : Attribute
+{
+}
+
 #endif

@@ -1,6 +1,6 @@
 ﻿namespace Generator.Equals.Models;
 
-internal enum EqualityType
+enum EqualityType
 {
     DefaultEquality,
     OrderedEquality,
@@ -9,5 +9,6 @@ internal enum EqualityType
     SetEquality,
     StringEquality,
     CustomEquality,
+    PrecisionEquality,
     IgnoreEquality
 }

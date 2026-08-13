@@ -1,0 +1,71 @@
+using FluentAssertions;
+using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
+
+namespace Generator.Equals.Tests.Records;
+
+/// <summary>
+/// Tests for equality in record inheritance hierarchy.
+/// </summary>
+public partial class BaseEqualityTests : SnapshotTestBase
+{
+    [Equatable]
+    public partial record Person(int Age);
+
+    [Equatable]
+    public partial record Manager(int Age, string Department) : Person(Age);
+
+    public static TheoryData<Manager, Manager, bool> EqualityCases => new()
+    {
+        // Same values
+        { new Manager(25, "IT"), new Manager(25, "IT"), true },
+        // Different Department
+        { new Manager(25, "IT"), new Manager(25, "Sales"), false },
+        // Different Age
+        { new Manager(25, "IT"), new Manager(30, "IT"), false },
+    };
+
+    [Theory]
+    [MemberData(nameof(EqualityCases))]
+    public void Equality(Manager a, Manager b, bool expected) =>
+        EqualityAssert.Verify(a, b, expected);
+
+    [Fact]
+    public void ManagerInequality_DifferentDepartment()
+    {
+        var a = new Manager(25, "IT");
+        var b = new Manager(25, "Sales");
+
+        var diffs = Manager.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq("IT", "Sales", Prop("Department")) });
+    }
+
+    [Fact]
+    public void ManagerInequality_DifferentAge()
+    {
+        var a = new Manager(25, "IT");
+        var b = new Manager(30, "IT");
+
+        var diffs = Manager.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        diffs.Should().BeEquivalentTo(new[] { Ineq(25, 30, Prop("Age")) });
+    }
+
+    [Theory]
+    [MemberData(nameof(TargetFrameworks))]
+    public Task VerifyGeneratedCode(TargetFramework fw) =>
+        VerifyGeneratedSource(SampleSource, fw, ct: TestContext.Current.CancellationToken);
+
+    const string SampleSource = """
+                                using Generator.Equals;
+
+                                namespace Generator.Equals.Tests.Records;
+
+                                [Equatable]
+                                public partial record BaseEqualityPerson(int Age);
+
+                                [Equatable]
+                                public partial record BaseEqualityManager(int Age, string Department) : BaseEqualityPerson(Age);
+                                """;
+}

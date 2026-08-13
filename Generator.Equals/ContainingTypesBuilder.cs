@@ -11,7 +11,7 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace Generator.Equals
 {
-    internal static class ContainingTypesBuilder
+    static class ContainingTypesBuilder
     {
         public static string Build(ImmutableArray<ContainingSymbol> containingSymbols, Action<IndentedTextWriter> content)
         {

@@ -1,6 +1,19 @@
 [![Nuget](https://img.shields.io/nuget/v/Generator.Equals)](https://www.nuget.org/packages/Generator.Equals/)
 # Generator.Equals
-A source code generator for automatically implementing IEquatable&lt;T&gt; using only attributes.
+
+A C# source generator that automatically implements `IEquatable<T>`, `Equals`, and `GetHashCode` — using just attributes.
+
+Writing correct equality logic in C# is tedious, error-prone, and easy to forget when adding new properties. Generator.Equals eliminates that boilerplate by generating efficient, best-practice equality code at compile time.
+
+### Why use Generator.Equals?
+
+- **Zero boilerplate** — Mark your type with `[Equatable]` and the generator does the rest. No hand-written `Equals`, `GetHashCode`, or `==`/`!=` operators.
+- **Collection-aware** — Compare arrays, lists, dictionaries, and sets by value out of the box with `[OrderedEquality]`, `[UnorderedEquality]`, and `[SetEquality]`.
+- **Highly customizable** — Use `[CustomEquality]`, `[StringEquality]`, `[PrecisionEquality]`, `[ReferenceEquality]`, or `[IgnoreEquality]` to control comparison per-property.
+- **Works everywhere** — Supports classes, structs, records, and record structs.
+- **Inheritance-friendly** — Correctly chains `base.Equals()` across deep inheritance hierarchies and inherits equality attributes from overridden properties.
+- **Structured diffs** — Call `Inequalities()` to get exactly which members differ between two instances, with full paths into nested objects, collections, and dictionaries.
+- **Compile-time only** — No reflection or IL injection. The generator emits plain C# source code that you can inspect and debug.
 
 ----------------
 ## Requirements
@@ -12,15 +25,6 @@ In order to use this library, you must:
 ## Installation
 
 Simply add the package `Generator.Equals` to your project. Keep reading to learn how to add the attributes to your types.
-
-## Migrating from version 2
-
-Migrating to version 3 is very straightforward.
-
-1. Ensure projects are targeting C# 9.0 or latter using the MSBuild property `LangVersion`.
-2. Be aware that `IEquatable<T>` for classes is now implemented explicitly in order to support deep equality. As a result, the method `Equals(T)` method is no longer marked as public. Most code should still work, requiring only to be recompiled as the ABI has changed.
-
-If you have an existing project using `Generator.Equals` and don't need any of the new features, you can still use version 2.x. The differences are minimal between both major versions.
 
 ## Usage
 
@@ -40,8 +44,19 @@ class Program
     {
         var record1 = new MyRecord(new[] {"banana", "apple"});
         var record2 = new MyRecord(new[] {"banana", "apple"});
+        var record3 = new MyRecord(new[] {"banana", "cherry"});
 
-        Console.WriteLine(record1 == record2);
+        // Use the generated == operator
+        Console.WriteLine(record1 == record2); // True
+
+        // Use the generated comparer directly
+        Console.WriteLine(MyRecord.EqualityComparer.Default.Equals(record1, record3)); // False
+
+        // List exactly which members differ between two instances
+        foreach (var diff in MyRecord.EqualityComparer.Default.Inequalities(record1, record3))
+            Console.WriteLine(diff);
+        // Output:
+        //   Fruits[1]: apple → cherry
     }
 }
 ```
@@ -186,6 +201,23 @@ This will ignore whatever equality is implemented for a particular object and co
 public string Title { get; set; } // Will use the StringComparison set in constructor when comparing strings
 ```
 
+### PrecisionEquality
+
+```c#
+[PrecisionEquality(0.001)]
+public double Temperature { get; set; } // Equal if Math.Abs(a - b) < 0.001
+
+[PrecisionEquality(5)]
+public int Score { get; set; } // Equal if Math.Abs(a - b) < 5
+
+[PrecisionEquality(0.001)]
+public double? NullableValue { get; set; } // Handles nulls: both null = equal, one null = not equal
+```
+
+This equality comparer uses a tolerance (epsilon) to compare numeric values. Two values are considered equal when their absolute difference is less than the specified precision. This is excluded from `GetHashCode` since there is no stable bucketing under tolerance.
+
+Supported types: `float`, `double`, `decimal`, `int`, `long`, `short`, `sbyte`, and their nullable variants.
+
 ### CustomEquality
 
 ```c#
@@ -245,12 +277,19 @@ partial class MyClass
 
 ### Ignore Inherited Members
 
-You can also choose to ignore members from parent classes/record by setting `IgnoreInheritedMembers` to true.
+By default (`IgnoreInheritedMembers = false`), the generated code handles inherited members as follows:
+- If any ancestor has `[Equatable]` or a custom `Equals` override, `base.Equals()` is called to delegate equality
+- If NO ancestor has `[Equatable]`, all inherited properties from the entire chain are explicitly compared
+
+Set `IgnoreInheritedMembers = true` to skip calling `base.Equals()` and ignore all inherited properties.
+This is useful when you want to completely redefine equality for a derived class without considering
+the base class's properties.
 
 ```cs
 using Generator.Equals;
 
-class Person 
+[Equatable]
+partial class Person
 {
     public string Name { get; set; }
 }
@@ -258,8 +297,178 @@ class Person
 [Equatable(IgnoreInheritedMembers = true)]
 partial class Doctor : Person
 {
-    // Only members in the Doctor class will be used for comparison.
+    // Will NOT call base.Equals(), so Person.Name is not compared.
+    // Only Id and Specialization are used for equality.
     public string Id { get; set; }
     public string Specialization { get; set; }
 }
 ```
+
+## Inequalities
+
+Every `[Equatable]` type gets a generated `EqualityComparer` with an `Inequalities()` method that returns exactly which members differ between two instances — with full member paths, including nested objects, collection indices, and dictionary keys.
+
+```c#
+[Equatable]
+partial record Customer
+{
+    public required string Name { get; init; }
+    [UnorderedEquality] public required ImmutableDictionary<string, Address> Addresses { get; init; }
+}
+
+[Equatable]
+partial record Address
+{
+    public required string Street { get; init; }
+    public required string City { get; init; }
+}
+```
+
+```c#
+var original = new Customer
+{
+    Name = "John Doe",
+    Addresses = ImmutableDictionary<string, Address>.Empty
+        .Add("home", new Address { Street = "123 Main St", City = "Seattle" })
+};
+
+var modified = original with
+{
+    Name = "Johnny Doe",
+    Addresses = original.Addresses.SetItem("home",
+        original.Addresses["home"] with { Street = "121 Main St" })
+};
+
+foreach (var diff in Customer.EqualityComparer.Default.Inequalities(original, modified))
+    Console.WriteLine(diff);
+```
+
+Output:
+```
+Name: John Doe → Johnny Doe
+Addresses["home"].Street: 123 Main St → 121 Main St
+```
+
+### How it works
+
+`Inequalities()` returns `IEnumerable<Inequality>`, where each `Inequality` has:
+
+- **`Path`** — a `MemberPath` describing which member differs (e.g., `Addresses["home"].Street`)
+- **`Left`** — the value from the first object
+- **`Right`** — the value from the second object
+
+Paths are composed of segments:
+
+| Segment | Example | Meaning |
+|---------|---------|---------|
+| `Property` | `Name` | A property differs |
+| `Field` | `_count` | A field differs |
+| `Index` | `[0]` | An ordered collection element at index |
+| `Key` | `["home"]` | A dictionary entry by key |
+| `Added` | `[+]` | An element present only in the right set |
+| `Removed` | `[-]` | An element present only in the left set |
+
+### Drill-down
+
+When a collection element or dictionary value is itself an `[Equatable]` type, `Inequalities()` automatically drills down into its properties instead of reporting the entire object as changed. In the example above, the address change is reported as `Addresses["home"].Street` rather than the whole `Address` object.
+
+### Base path
+
+You can pass a base path to prefix all reported paths — useful when composing inequalities from parent contexts:
+
+```c#
+var diffs = Address.EqualityComparer.Default.Inequalities(
+    addressA, addressB, new MemberPath(new[] { MemberPathSegment.Property("Home") }));
+// Reports: Home.Street, Home.City, etc.
+```
+
+## Migrating from version 3
+
+### Inherited Equality Attributes
+
+Version 4 introduces support for inherited equality attributes on overridden properties, making repeating attributes
+unnecessary. When a child class overrides a virtual property from a parent class, it now automatically inherits the
+equality attribute (e.g., `[OrderedEquality]`) from the parent. You no longer need to redeclare attributes on overriding
+properties.
+
+```c#
+[Equatable]
+public partial class Parent
+{
+    [OrderedEquality]
+    public virtual int[] Values { get; set; }
+}
+
+[Equatable]
+public partial class Child : Parent
+{
+    // Automatically inherits [OrderedEquality] from Parent
+    public override int[] Values { get; set; }
+}
+```
+
+### Improved Inheritance Chain Detection
+
+Version 4 improves how `base.Equals()` is called in inheritance hierarchies. Previously, generated code would only
+call `base.Equals()` if the **immediate** base class had `[Equatable]`. Now, the generator walks the **entire**
+inheritance chain and calls `base.Equals()` if:
+
+1. **Any ancestor** has the `[Equatable]` attribute, OR
+2. **Any ancestor** has manually overridden `Equals(object)`
+
+This fixes scenarios where equality was incorrectly skipped in multi-level inheritance:
+
+```c#
+[Equatable]
+public partial class GrandParent
+{
+    public string Name { get; set; }
+}
+
+// No [Equatable] - inherits GrandParent's Equals
+public class Parent : GrandParent
+{
+    public int Age { get; set; }
+}
+
+[Equatable]
+public partial class Child : Parent
+{
+    public string School { get; set; }
+}
+```
+
+**Before (v3):** `Child.Equals()` did NOT call `base.Equals()` because `Parent` lacks `[Equatable]`.
+Only `School` was compared, ignoring `Name`.
+
+**After (v4):** `Child.Equals()` calls `base.Equals()` because `GrandParent` has `[Equatable]`.
+Both `School` and `Name` are compared correctly.
+
+### Ignore Inherited Members
+
+The `IgnoreInheritedMembers` property controls how inherited members are handled:
+
+| IgnoreInheritedMembers | Any Ancestor has [Equatable] | Behavior |
+|------------------------|------------------------------|----------|
+| `true`  | N/A | Compare only declared members, type check, no `base.Equals()` |
+| `false` | Yes | Call `base.Equals()`, let ancestor handle its members |
+| `false` | No  | Type check + compare ALL inherited properties from entire chain |
+
+```c#
+[Equatable(IgnoreInheritedMembers = true)]
+public partial class Child : Parent
+{
+    // Will NOT call base.Equals() even if Parent has [Equatable]
+    // Only properties defined in Child are compared
+    public string School { get; set; }
+}
+```
+
+## Migrating from version 2
+
+Migrating to version 3 is very straightforward.
+
+1. Ensure projects are targeting C# 9.0 or latter using the MSBuild property `LangVersion`.
+2. Be aware that `IEquatable<T>` for classes is now implemented explicitly in order to support deep equality. As a result, the method `Equals(T)` method is no longer marked as public. Most code should still work, requiring only to be recompiled as the ABI has changed.
+
+If you have an existing project using `Generator.Equals` and don't need any of the new features, you can still use version 2.x. The differences are minimal between both major versions.

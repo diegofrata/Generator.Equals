@@ -7,15 +7,15 @@ using Microsoft.CodeAnalysis;
 
 namespace Generator.Equals.Models;
 
-internal record ElementComparerInfo(
+record ElementComparerInfo(
     string? ComparerType,
     string? MemberName,
     bool HasStaticInstance
 );
 
-internal static class EqualityMemberModelTransformer
+static class EqualityMemberModelTransformer
 {
-    private static ElementComparerInfo? ExtractElementComparerInfo(
+    static ElementComparerInfo? ExtractElementComparerInfo(
         AttributeData attribute,
         AttributesMetadata attributesMetadata
     )
@@ -81,8 +81,8 @@ internal static class EqualityMemberModelTransformer
             .Select(member => member switch
             {
                 IPropertySymbol propertySymbol
-                    => BuildEqualityModel(propertySymbol, propertySymbol.Type, attributesMetadata, explicitMode),
-                IFieldSymbol fieldSymbol => BuildEqualityModel(fieldSymbol, fieldSymbol.Type, attributesMetadata, explicitMode),
+                    => BuildEqualityModel(propertySymbol, propertySymbol.Type, attributesMetadata, explicitMode, isField: false),
+                IFieldSymbol fieldSymbol => BuildEqualityModel(fieldSymbol, fieldSymbol.Type, attributesMetadata, explicitMode, isField: true),
                 _ => throw new NotSupportedException($"Member of type {member.GetType()} not supported")
             })
             .ToImmutableArray();
@@ -94,7 +94,8 @@ internal static class EqualityMemberModelTransformer
         ISymbol memberSymbol,
         ITypeSymbol typeSymbol,
         AttributesMetadata attributesMetadata,
-        bool explicitMode
+        bool explicitMode,
+        bool isField = false
     )
     {
         var propertyName = memberSymbol.ToFQF();
@@ -105,10 +106,9 @@ internal static class EqualityMemberModelTransformer
         {
             return new EqualityMemberModel
             {
-                PropertyName = propertyName,
+                MemberName = propertyName, IsField = isField,
                 TypeName = typeName,
                 EqualityType = EqualityType.IgnoreEquality,
-                Ignored = true,
             };
         }
 
@@ -121,15 +121,26 @@ internal static class EqualityMemberModelTransformer
             var attribute = memberSymbol.GetAttribute(attributesMetadata.UnorderedEquality)!;
             var elementComparer = ExtractElementComparerInfo(attribute, attributesMetadata);
 
+            var isDictionary = args is DictionaryArgumentsResult;
+            string? equatableElementTypeName = null;
+            if (isDictionary)
+            {
+                var valueTypeSymbol = args.Arguments!.Value[1];
+                if (valueTypeSymbol.HasEquatableAttribute())
+                    equatableElementTypeName = valueTypeSymbol.ToFQF();
+            }
+
             return new EqualityMemberModel
             {
-                PropertyName = propertyName,
+                MemberName = propertyName, IsField = isField,
                 TypeName = args.Name,
                 EqualityType = EqualityType.UnorderedEquality,
-                IsDictionary = args is DictionaryArgumentsResult,
+                IsDictionary = isDictionary,
+                IsValueTypeCollection = typeSymbol.IsValueType,
                 ElementComparerType = elementComparer?.ComparerType,
                 ElementComparerMemberName = elementComparer?.MemberName,
-                ElementComparerHasStaticInstance = elementComparer?.HasStaticInstance ?? false
+                ElementComparerHasStaticInstance = elementComparer?.HasStaticInstance ?? false,
+                EquatableElementTypeName = equatableElementTypeName
             };
         }
         else if (memberSymbol.HasAttribute(attributesMetadata.OrderedEquality))
@@ -139,21 +150,28 @@ internal static class EqualityMemberModelTransformer
             var attribute = memberSymbol.GetAttribute(attributesMetadata.OrderedEquality)!;
             var elementComparer = ExtractElementComparerInfo(attribute, attributesMetadata);
 
+            var elementTypeSymbol = types.Arguments!.Value[0];
+            string? equatableElementTypeName = elementTypeSymbol.HasEquatableAttribute()
+                ? elementTypeSymbol.ToFQF()
+                : null;
+
             return new EqualityMemberModel
             {
-                PropertyName = propertyName,
+                MemberName = propertyName, IsField = isField,
                 TypeName = types.Name,
                 EqualityType = EqualityType.OrderedEquality,
+                IsValueTypeCollection = typeSymbol.IsValueType,
                 ElementComparerType = elementComparer?.ComparerType,
                 ElementComparerMemberName = elementComparer?.MemberName,
-                ElementComparerHasStaticInstance = elementComparer?.HasStaticInstance ?? false
+                ElementComparerHasStaticInstance = elementComparer?.HasStaticInstance ?? false,
+                EquatableElementTypeName = equatableElementTypeName
             };
         }
         else if (memberSymbol.HasAttribute(attributesMetadata.ReferenceEquality))
         {
             return new EqualityMemberModel
             {
-                PropertyName = propertyName,
+                MemberName = propertyName, IsField = isField,
                 TypeName = typeName,
                 EqualityType = EqualityType.ReferenceEquality
             };
@@ -167,9 +185,10 @@ internal static class EqualityMemberModelTransformer
 
             return new EqualityMemberModel
             {
-                PropertyName = propertyName,
+                MemberName = propertyName, IsField = isField,
                 TypeName = types.Name,
                 EqualityType = EqualityType.SetEquality,
+                IsValueTypeCollection = typeSymbol.IsValueType,
                 ElementComparerType = elementComparer?.ComparerType,
                 ElementComparerMemberName = elementComparer?.MemberName,
                 ElementComparerHasStaticInstance = elementComparer?.HasStaticInstance ?? false
@@ -187,10 +206,41 @@ internal static class EqualityMemberModelTransformer
 
             return new EqualityMemberModel
             {
-                PropertyName = propertyName,
+                MemberName = propertyName, IsField = isField,
                 TypeName = typeName,
                 EqualityType = EqualityType.StringEquality,
                 StringComparer = enumMemberName
+            };
+        }
+        else if (memberSymbol.HasAttribute(attributesMetadata.PrecisionEquality))
+        {
+            var attribute = memberSymbol.GetAttribute(attributesMetadata.PrecisionEquality)!;
+            var precision = Convert.ToDouble(attribute.ConstructorArguments[0].Value, CultureInfo.InvariantCulture);
+
+            string underlyingTypeName;
+            bool isNullable;
+
+            if (typeSymbol is INamedTypeSymbol
+                {
+                    OriginalDefinition.SpecialType: SpecialType.System_Nullable_T
+                } nullableType)
+            {
+                isNullable = true;
+                underlyingTypeName = nullableType.TypeArguments[0].ToNullableFQF();
+            }
+            else
+            {
+                isNullable = false;
+                underlyingTypeName = typeName;
+            }
+
+            return new EqualityMemberModel
+            {
+                MemberName = propertyName, IsField = isField,
+                TypeName = underlyingTypeName,
+                EqualityType = EqualityType.PrecisionEquality,
+                Precision = precision,
+                IsNullable = isNullable
             };
         }
         else if (memberSymbol.HasAttribute(attributesMetadata.CustomEquality))
@@ -206,7 +256,7 @@ internal static class EqualityMemberModelTransformer
 
             return new EqualityMemberModel
             {
-                PropertyName = propertyName,
+                MemberName = propertyName, IsField = isField,
                 TypeName = typeName,
                 EqualityType = EqualityType.CustomEquality,
                 ComparerType = comparerTypeName,
@@ -219,10 +269,9 @@ internal static class EqualityMemberModelTransformer
 
         return new EqualityMemberModel
         {
-            PropertyName = propertyName,
+            MemberName = propertyName, IsField = isField,
             TypeName = typeName,
             EqualityType = isIgnored ? EqualityType.IgnoreEquality : EqualityType.DefaultEquality,
-            Ignored = isIgnored
         };
     }
 }

@@ -15,5 +15,6 @@
         <PackageTags>source generator, equality, equals, equatable</PackageTags>
         <NoPackageAnalysis>true</NoPackageAnalysis>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 </Project>

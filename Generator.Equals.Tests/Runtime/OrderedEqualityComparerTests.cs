@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using FluentAssertions;
-using Xunit;
 
 namespace Generator.Equals.Tests.Runtime;
 
@@ -16,16 +14,16 @@ public class OrderedEqualityComparerTests
             new NegativeEqualityComparer()
         );
 
-        _a = new[] { 1, 2, 3, 4, 5 };
-        _b = new[] { 1, -2, 3, -4, 5 };
+        _a = [1, 2, 3, 4, 5];
+        _b = [1, -2, 3, -4, 5];
     }
-    
+
     [Fact]
     public void Equals_Should_use_ValueComparer()
     {
         _sut.Equals(_a, _b).Should().BeTrue();
     }
-    
+
     [Fact]
     public void GetHashCode_Should_use_ValueComparer()
     {
