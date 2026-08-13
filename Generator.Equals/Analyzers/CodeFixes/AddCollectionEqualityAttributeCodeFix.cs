@@ -142,7 +142,7 @@ public sealed class AddCollectionEqualityAttributeCodeFix : CodeFixProvider
         {
             // Add newline after attribute list
             var lastAttr = newPropertyDeclaration.AttributeLists[newPropertyDeclaration.AttributeLists.Count - 1];
-            var updatedAttrList = lastAttr.WithTrailingTrivia(SyntaxFactory.LineFeed);
+            var updatedAttrList = lastAttr.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
             newPropertyDeclaration = newPropertyDeclaration.WithAttributeLists(
                 newPropertyDeclaration.AttributeLists.Replace(lastAttr, updatedAttrList));
 
