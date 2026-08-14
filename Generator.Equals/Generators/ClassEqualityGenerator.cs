@@ -13,7 +13,7 @@ namespace Generator.Equals.Generators
         {
             var symbolName = model.Fullname;
 
-            if (model.OverrideEqualityOperators)
+            if (model.GenerateClassEqualityOperators)
             {
                 // == operator
                 writer.WriteLines(EqualsOperatorCodeComment);
