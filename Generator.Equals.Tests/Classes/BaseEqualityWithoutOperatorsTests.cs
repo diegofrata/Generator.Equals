@@ -9,9 +9,9 @@ namespace Generator.Equals.Tests.Classes;
 /// Verifies that derived classes properly include base class properties in equality
 /// without generating == and != operators.
 /// </summary>
-public partial class BaseEqualityTestsWithoutOperatorsOverride : SnapshotTestBase
+public partial class BaseEqualityWithoutOperatorsTests : SnapshotTestBase
 {
-    [Equatable(OverrideEqualityOperators = false)]
+    [Equatable(GenerateClassEqualityOperators = false)]
     public partial class Person
     {
         public Person(int age)
@@ -22,7 +22,7 @@ public partial class BaseEqualityTestsWithoutOperatorsOverride : SnapshotTestBas
         public int Age { get; }
     }
 
-    [Equatable(OverrideEqualityOperators = false)]
+    [Equatable(GenerateClassEqualityOperators = false)]
     public partial class Manager : Person
     {
         public Manager(int age, string department) : base(age)
@@ -121,7 +121,7 @@ public partial class BaseEqualityTestsWithoutOperatorsOverride : SnapshotTestBas
 
                                 namespace Generator.Equals.Tests.Classes;
 
-                                [Equatable(OverrideEqualityOperators = false)]
+                                [Equatable(GenerateClassEqualityOperators = false)]
                                 public partial class BaseEqualityPerson
                                 {
                                     public BaseEqualityPerson(int age)
@@ -132,7 +132,7 @@ public partial class BaseEqualityTestsWithoutOperatorsOverride : SnapshotTestBas
                                     public int Age { get; }
                                 }
 
-                                [Equatable(OverrideEqualityOperators = false)]
+                                [Equatable(GenerateClassEqualityOperators = false)]
                                 public partial class BaseEqualityManager : BaseEqualityPerson
                                 {
                                     public BaseEqualityManager(int age, string department) : base(age)
