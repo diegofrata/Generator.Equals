@@ -50,6 +50,23 @@ public partial class BaseEqualityWithoutOperatorsTests : SnapshotTestBase
     public void ManagerEquality(Manager a, Manager b, bool expected) =>
         a.Equals(b).Should().Be(expected);
 
+    public static TheoryData<Manager, Manager, bool> ManagerEqualityOperatorCases => new()
+    {
+        // Same Age and Department
+        { new Manager(25, "IT"), new Manager(25, "IT"), false },
+        // Same Age, different Department
+        { new Manager(25, "IT"), new Manager(25, "Sales"), false },
+        // Different Age, same Department
+        { new Manager(25, "IT"), new Manager(30, "IT"), false },
+        // Different Age and Department
+        { new Manager(25, "IT"), new Manager(30, "Sales"), false },
+    };
+
+    [Theory]
+    [MemberData(nameof(ManagerEqualityOperatorCases))]
+    public void ManagerEqualityOperator(Manager a, Manager b, bool expected) =>
+        (a == b).Should().Be(expected);
+
     public static TheoryData<Person, Person, bool> PersonEqualityCases => new()
     {
         // Same Age
