@@ -128,4 +128,16 @@ public static class DiagnosticDescriptors
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
         description: "[PrecisionEquality] attribute can only be used on properties of type float, double, decimal, int, long, short, sbyte, or their nullable variants.");
+
+    /// <summary>
+    /// GE011: [Equatable] with parameter <see cref="EquatableAttribute.GenerateClassEqualityOperators"/> has no effect on records or structs.
+    /// </summary>
+    public static readonly DiagnosticDescriptor GenerateClassEqualityOperatorsIgnored = new(
+        id: "GE011",
+        title: $"{nameof(EquatableAttribute.GenerateClassEqualityOperators)} has no effect on records or structs",
+        messageFormat: $"{nameof(EquatableAttribute.GenerateClassEqualityOperators)} has no effect on '{{0}}'. Operators are always generated for struct types, and compiler-generated operators are always emitted for record types.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: $"The {nameof(EquatableAttribute.GenerateClassEqualityOperators)} parameter only controls whether the generator emits operators for classes. It does not suppress compiler-generated operators for records and has no impact on struct types.");
 }
