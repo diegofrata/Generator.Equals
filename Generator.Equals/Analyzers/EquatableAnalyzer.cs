@@ -51,7 +51,8 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
         DiagnosticDescriptors.StringEqualityOnNonString,                // GE008
         DiagnosticDescriptors.CollectionAttributeOnNonCollection,       // GE009
         DiagnosticDescriptors.PrecisionEqualityOnUnsupportedType,       // GE010
-        DiagnosticDescriptors.GenerateClassEqualityOperatorsIgnored);        // GE011
+        DiagnosticDescriptors.GenerateClassEqualityOperatorsIgnored,    // GE011
+        DiagnosticDescriptors.GenerateClassEqualityOperatorsShadowedByBase);  // GE012
 
     public override void Initialize(AnalysisContext context)
     {
@@ -70,7 +71,7 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
         var typeSymbol = (INamedTypeSymbol)context.Symbol;
 
         // Only analyze types with [Equatable] attribute
-        if (!typeSymbol.HasAttribute(Metadata.Equatable))
+        if (typeSymbol.GetAttribute(Metadata.Equatable) is not { } equatableAttr)
             return;
 
         // GE006: Check if type is partial
@@ -79,16 +80,10 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
         // GE005: Check for manual Equals/GetHashCode implementation
         CheckManualEqualsImplementation(context, typeSymbol);
 
-        // Get the Equatable attribute to check Explicit mode and GenerateClassEqualityOperators option
-        var equatableAttr = typeSymbol.GetAttribute(Metadata.Equatable);
         var explicitMode = GetExplicitMode(equatableAttr);
 
-        // GE011: Warn when GenerateClassEqualityOperators is used on records or structs.
-        if ((typeSymbol.IsRecord || typeSymbol.TypeKind == TypeKind.Struct) && equatableAttr?.GetNamedArgumentValue(nameof(EquatableAttribute.GenerateClassEqualityOperators)) != null)
-        {
-            var location = equatableAttr?.ApplicationSyntaxReference?.GetSyntax().GetLocation() ?? typeSymbol.Locations.FirstOrDefault() ?? Location.None;
-            context.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.GenerateClassEqualityOperatorsIgnored, location, typeSymbol.Name));
-        }
+        // GE011/GE012: Check the GenerateClassEqualityOperators option is actually honoured.
+        CheckGenerateClassEqualityOperators(context, typeSymbol, equatableAttr);
 
         // Analyze each property/field in the type
         foreach (var member in typeSymbol.GetPropertiesAndFields())
@@ -120,9 +115,7 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
         {
             foreach (var (attr, attrData) in memberAttributes)
             {
-                var location = attrData.ApplicationSyntaxReference?.GetSyntax().GetLocation()
-                               ?? memberSymbol.Locations.FirstOrDefault()
-                               ?? Location.None;
+                var location = GetAttributeLocation(attrData, memberSymbol);
 
                 context.ReportDiagnostic(Diagnostic.Create(
                     DiagnosticDescriptors.OrphanedEqualityAttribute,
@@ -252,6 +245,86 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
         }
     }
 
+    /// <summary>
+    /// GE011/GE012: the GenerateClassEqualityOperators option only does something for a class whose
+    /// ancestors do not already contribute == and != to overload resolution.
+    /// </summary>
+    private static void CheckGenerateClassEqualityOperators(
+        SymbolAnalysisContext context,
+        INamedTypeSymbol typeSymbol,
+        AttributeData equatableAttr)
+    {
+        // Absent (or an unresolved value) means the default, which is always honoured.
+        if (equatableAttr.GetNamedArgumentValue(nameof(EquatableAttribute.GenerateClassEqualityOperators)) is not bool generateOperators)
+            return;
+
+        // GE011: records and structs always have equality operators, whatever the option says.
+        if (typeSymbol.IsRecord || typeSymbol.TypeKind == TypeKind.Struct)
+        {
+            context.ReportDiagnostic(Diagnostic.Create(
+                DiagnosticDescriptors.GenerateClassEqualityOperatorsIgnored,
+                GetAttributeLocation(equatableAttr, typeSymbol),
+                typeSymbol.Name,
+                typeSymbol.IsRecord
+                    ? DiagnosticDescriptors.RecordOperatorsAlwaysEmittedReason
+                    : DiagnosticDescriptors.StructOperatorsAlwaysGeneratedReason));
+            return;
+        }
+
+        if (generateOperators)
+            return;
+
+        // GE012: operators declared on a base type are candidates for derived operands too, so
+        // omitting them here does not bring back reference equality.
+        var shadowingBase = FindBaseTypeDefiningEqualityOperators(typeSymbol, context.Compilation);
+        if (shadowingBase is not null)
+        {
+            context.ReportDiagnostic(Diagnostic.Create(
+                DiagnosticDescriptors.GenerateClassEqualityOperatorsShadowedByBase,
+                GetAttributeLocation(equatableAttr, typeSymbol),
+                typeSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
+                shadowingBase.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)));
+        }
+    }
+
+    private static Location GetAttributeLocation(AttributeData attributeData, ISymbol fallbackSymbol) =>
+        attributeData.ApplicationSyntaxReference?.GetSyntax().GetLocation()
+        ?? fallbackSymbol.Locations.FirstOrDefault()
+        ?? Location.None;
+
+    /// <summary>
+    /// Walks the base chain for the nearest ancestor that already has equality operators: either
+    /// declared in metadata/source, or about to be generated for it by [Equatable].
+    /// </summary>
+    private static INamedTypeSymbol? FindBaseTypeDefiningEqualityOperators(INamedTypeSymbol typeSymbol, Compilation compilation)
+    {
+        for (var baseType = typeSymbol.BaseType;
+             baseType is not null && baseType.SpecialType != SpecialType.System_Object;
+             baseType = baseType.BaseType)
+        {
+            // Not emitted yet: [Equatable] in this compilation will generate operators for the base
+            // unless it opted out too. Checked first because it is the cheap case and the common one.
+            if (baseType.GetAttribute(Metadata.Equatable) is { } baseEquatableAttr
+                && baseEquatableAttr.GeneratesClassEqualityOperators())
+                return baseType;
+
+            // Already emitted: a hand-written operator, or a generated one from another compilation.
+            // Only operators `typeSymbol == typeSymbol` can actually bind to count - an overload like
+            // `operator ==(Base, string)` is never a candidate, so it does not defeat the opt-out.
+            foreach (var member in baseType.GetMembers(WellKnownMemberNames.EqualityOperatorName))
+            {
+                if (member is not IMethodSymbol { Parameters.Length: 2 } op)
+                    continue;
+
+                if (compilation.ClassifyConversion(typeSymbol, op.Parameters[0].Type).IsImplicit
+                    && compilation.ClassifyConversion(typeSymbol, op.Parameters[1].Type).IsImplicit)
+                    return baseType;
+            }
+        }
+
+        return null;
+    }
+
     private static void CheckManualEqualsImplementation(SymbolAnalysisContext context, INamedTypeSymbol typeSymbol)
     {
         // Skip records - they auto-generate Equals/GetHashCode and that's expected behavior
@@ -313,9 +386,7 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
 
         if (ignoreAttr.Metadata != null && otherAttrs.Count > 0)
         {
-            var location = otherAttrs[0].Data.ApplicationSyntaxReference?.GetSyntax().GetLocation()
-                           ?? memberSymbol.Locations.FirstOrDefault()
-                           ?? Location.None;
+            var location = GetAttributeLocation(otherAttrs[0].Data, memberSymbol);
             context.ReportDiagnostic(Diagnostic.Create(
                 DiagnosticDescriptors.ConflictingAttributes,
                 location,
@@ -334,9 +405,7 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
 
         if (nonDefaultAttrs.Count > 1)
         {
-            var location = nonDefaultAttrs[1].Data.ApplicationSyntaxReference?.GetSyntax().GetLocation()
-                           ?? memberSymbol.Locations.FirstOrDefault()
-                           ?? Location.None;
+            var location = GetAttributeLocation(nonDefaultAttrs[1].Data, memberSymbol);
             context.ReportDiagnostic(Diagnostic.Create(
                 DiagnosticDescriptors.ConflictingAttributes,
                 location,
@@ -359,9 +428,7 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
         if (memberType?.SpecialType == SpecialType.System_String)
             return;
 
-        var location = stringEqualityAttr.Data.ApplicationSyntaxReference?.GetSyntax().GetLocation()
-                       ?? memberSymbol.Locations.FirstOrDefault()
-                       ?? Location.None;
+        var location = GetAttributeLocation(stringEqualityAttr.Data, memberSymbol);
         context.ReportDiagnostic(Diagnostic.Create(
             DiagnosticDescriptors.StringEqualityOnNonString,
             location,
@@ -387,9 +454,7 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
         {
             if (CollectionEqualityAttributes.Contains(attrMetadata))
             {
-                var location = attrData.ApplicationSyntaxReference?.GetSyntax().GetLocation()
-                               ?? memberSymbol.Locations.FirstOrDefault()
-                               ?? Location.None;
+                var location = GetAttributeLocation(attrData, memberSymbol);
                 context.ReportDiagnostic(Diagnostic.Create(
                     DiagnosticDescriptors.CollectionAttributeOnNonCollection,
                     location,
@@ -430,9 +495,7 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
         if (SupportedPrecisionTypes.Contains(checkType.SpecialType))
             return;
 
-        var location = precisionAttr.Data.ApplicationSyntaxReference?.GetSyntax().GetLocation()
-                       ?? memberSymbol.Locations.FirstOrDefault()
-                       ?? Location.None;
+        var location = GetAttributeLocation(precisionAttr.Data, memberSymbol);
         context.ReportDiagnostic(Diagnostic.Create(
             DiagnosticDescriptors.PrecisionEqualityOnUnsupportedType,
             location,
@@ -506,18 +569,7 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
         };
     }
 
-    private static bool GetExplicitMode(AttributeData? equatableAttr)
-    {
-        if (equatableAttr == null)
-            return false;
-
-        foreach (var namedArg in equatableAttr.NamedArguments)
-        {
-            if (namedArg.Key == "Explicit" && namedArg.Value.Value is bool explicitValue)
-                return explicitValue;
-        }
-
-        return false;
-    }
+    private static bool GetExplicitMode(AttributeData equatableAttr) =>
+        equatableAttr.GetNamedArgumentValue(nameof(EquatableAttribute.Explicit)) is true;
 
 }

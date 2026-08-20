@@ -28,6 +28,7 @@ Requires C# 9.0+. The type **must be `partial`**.
 | `[Equatable]` | Generates equality members for the type |
 | `[Equatable(Explicit = true)]` | Only compare properties with explicit equality attributes |
 | `[Equatable(IgnoreInheritedMembers = true)]` | Skip base class members entirely |
+| `[Equatable(GenerateClassEqualityOperators = false)]` | Do not generate `==`/`!=` for a class; leave `==` as reference equality |
 
 ### Property/Field-level
 
@@ -134,6 +135,10 @@ Nested `[Equatable]` objects in collections are auto-drilled — you get per-fie
 
 8. **`[PrecisionEquality]` types** (GE010) — Only `float`, `double`, `decimal`, `int`, `long`, `short`, `sbyte` and their nullable variants.
 
+9. **`GenerateClassEqualityOperators` is class-only** (GE011) — Records always get compiler-generated operators; structs always get generated ones, since C# predefines `==` for reference types but not for user-defined structs — dropping them would make every `==` on the type a `CS0019` error, with no reference-equality fallback like a class has.
+
+10. **Opting out of operators must cover the whole chain** (GE012) — C# operator overload resolution considers base-type operators, so `GenerateClassEqualityOperators = false` on a derived class alone does nothing. Set it on the root of the `[Equatable]` chain too.
+
 ## Examples
 
 ### Basic class
@@ -213,11 +218,14 @@ foreach (var d in diffs)
 | GE001 | Collection missing equality attribute |
 | GE002 | Complex property missing `[Equatable]` |
 | GE003 | Collection element missing `[Equatable]` |
+| GE004 | Equality attribute used but containing type lacks `[Equatable]` |
 | GE005 | Manual Equals/GetHashCode with `[Equatable]` |
 | GE006 | `[Equatable]` on non-partial type |
 | GE007 | Conflicting equality attributes |
 | GE008 | `[StringEquality]` on non-string |
 | GE009 | Collection attribute on non-collection |
 | GE010 | `[PrecisionEquality]` on unsupported type |
+| GE011 | `GenerateClassEqualityOperators` on a record or struct |
+| GE012 | `GenerateClassEqualityOperators = false` defeated by a base type's operators |
 
-All diagnostics have automatic code fixes.
+GE001, GE002, GE003, and GE006 have automatic code fixes. Every diagnostic can be suppressed the usual way (`#pragma warning disable`, `.editorconfig`, or `[SuppressMessage]`).

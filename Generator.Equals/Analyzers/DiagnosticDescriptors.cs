@@ -130,14 +130,34 @@ public static class DiagnosticDescriptors
         description: "[PrecisionEquality] attribute can only be used on properties of type float, double, decimal, int, long, short, sbyte, or their nullable variants.");
 
     /// <summary>
-    /// GE011: [Equatable] with parameter <see cref="EquatableAttribute.GenerateClassEqualityOperators"/> has no effect on records or structs.
+    /// Why GE011 fires, by type kind. Shared with the analyzer tests so the wording lives in one place.
+    /// </summary>
+    public const string RecordOperatorsAlwaysEmittedReason = "the compiler always emits equality operators for records";
+
+    /// <inheritdoc cref="RecordOperatorsAlwaysEmittedReason"/>
+    public const string StructOperatorsAlwaysGeneratedReason = "equality operators are always generated for structs";
+
+    /// <summary>
+    /// GE011: <see cref="EquatableAttribute.GenerateClassEqualityOperators"/> has no effect on records or structs.
     /// </summary>
     public static readonly DiagnosticDescriptor GenerateClassEqualityOperatorsIgnored = new(
         id: "GE011",
-        title: $"{nameof(EquatableAttribute.GenerateClassEqualityOperators)} has no effect on records or structs",
-        messageFormat: $"{nameof(EquatableAttribute.GenerateClassEqualityOperators)} has no effect on '{{0}}'. Operators are always generated for struct types, and compiler-generated operators are always emitted for record types.",
+        title: $"[Equatable({nameof(EquatableAttribute.GenerateClassEqualityOperators)})] has no effect on records or structs",
+        messageFormat: $"{nameof(EquatableAttribute.GenerateClassEqualityOperators)} has no effect on '{{0}}' because {{1}}",
         category: Category,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        description: $"The {nameof(EquatableAttribute.GenerateClassEqualityOperators)} parameter only controls whether the generator emits operators for classes. It does not suppress compiler-generated operators for records and has no impact on struct types.");
+        description: $"The {nameof(EquatableAttribute.GenerateClassEqualityOperators)} parameter only controls whether the generator emits == and != for classes: records get compiler-generated operators the generator cannot suppress, and a struct that had none would give CS0019 at every use site rather than falling back to reference equality.");
+
+    /// <summary>
+    /// GE012: <see cref="EquatableAttribute.GenerateClassEqualityOperators"/> opt-out defeated by a base type's operators.
+    /// </summary>
+    public static readonly DiagnosticDescriptor GenerateClassEqualityOperatorsShadowedByBase = new(
+        id: "GE012",
+        title: $"[Equatable({nameof(EquatableAttribute.GenerateClassEqualityOperators)} = false)] has no effect on a derived class",
+        messageFormat: $"{nameof(EquatableAttribute.GenerateClassEqualityOperators)} = false has no effect on '{{0}}' because base type '{{1}}' defines equality operators that also apply to '{{0}}'",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: $"C# operator overload resolution considers operators declared on base types, so omitting == and != on a derived class does not restore reference equality while an ancestor still declares them. If the ancestor is [Equatable], apply {nameof(EquatableAttribute.GenerateClassEqualityOperators)} = false there as well - to every class in the chain, not just this one. If it declares operators of its own, or comes from a referenced assembly, the opt-out cannot take effect at all.");
 }

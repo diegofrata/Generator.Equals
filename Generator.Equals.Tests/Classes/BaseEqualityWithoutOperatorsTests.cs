@@ -1,3 +1,4 @@
+using System.Reflection;
 using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
 using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
@@ -48,24 +49,27 @@ public partial class BaseEqualityWithoutOperatorsTests : SnapshotTestBase
     [Theory]
     [MemberData(nameof(ManagerEqualityCases))]
     public void ManagerEquality(Manager a, Manager b, bool expected) =>
-        a.Equals(b).Should().Be(expected);
+        EqualityAssert.VerifyWithoutOperators(a, b, expected);
 
-    public static TheoryData<Manager, Manager, bool> ManagerEqualityOperatorCases => new()
+    [Fact]
+    public void ManagerOperatorsUseReferenceEquality()
     {
-        // Same Age and Department
-        { new Manager(25, "IT"), new Manager(25, "IT"), false },
-        // Same Age, different Department
-        { new Manager(25, "IT"), new Manager(25, "Sales"), false },
-        // Different Age, same Department
-        { new Manager(25, "IT"), new Manager(30, "IT"), false },
-        // Different Age and Department
-        { new Manager(25, "IT"), new Manager(30, "Sales"), false },
-    };
+        var a = new Manager(25, "IT");
+        var b = new Manager(25, "IT");
 
-    [Theory]
-    [MemberData(nameof(ManagerEqualityOperatorCases))]
-    public void ManagerEqualityOperator(Manager a, Manager b, bool expected) =>
-        (a == b).Should().Be(expected);
+        // Structurally equal, but == is object's reference comparison because no operator was generated.
+        a.Equals(b).Should().BeTrue();
+        (a == b).Should().BeFalse();
+        (a != b).Should().BeTrue();
+
+        // Same reference still compares equal, and so do two nulls.
+        var alias = a;
+        (alias == a).Should().BeTrue();
+        (alias != a).Should().BeFalse();
+        ((Manager?)null == null).Should().BeTrue();
+        (a == null).Should().BeFalse();
+        (null == a).Should().BeFalse();
+    }
 
     public static TheoryData<Person, Person, bool> PersonEqualityCases => new()
     {
@@ -78,7 +82,7 @@ public partial class BaseEqualityWithoutOperatorsTests : SnapshotTestBase
     [Theory]
     [MemberData(nameof(PersonEqualityCases))]
     public void PersonEquality(Person a, Person b, bool expected) =>
-        a.Equals(b).Should().Be(expected);
+        EqualityAssert.VerifyWithoutOperators(a, b, expected);
 
     [Fact]
     public void PersonInequality_DifferentAge()
@@ -126,6 +130,47 @@ public partial class BaseEqualityWithoutOperatorsTests : SnapshotTestBase
             Ineq(25, 30, Prop("Age")),
             Ineq("IT", "Sales", Prop("Department"))
         });
+    }
+
+    [Equatable]
+    public partial class OperatorBase
+    {
+        public OperatorBase(int age)
+        {
+            Age = age;
+        }
+
+        public int Age { get; }
+    }
+
+    // The opt-out is ineffective here: C# overload resolution also considers OperatorBase's operators
+    // for OperatorDerived operands. GE012 warns about exactly this, so the diagnostic is expected.
+#pragma warning disable GE012
+    [Equatable(GenerateClassEqualityOperators = false)]
+    public partial class OperatorDerived : OperatorBase
+    {
+        public OperatorDerived(int age, string department) : base(age)
+        {
+            Department = department;
+        }
+
+        public string Department { get; }
+    }
+#pragma warning restore GE012
+
+    [Fact]
+    public void OptingOutOnDerivedDoesNotHideBaseOperators()
+    {
+        var a = new OperatorDerived(25, "IT");
+        var b = new OperatorDerived(25, "IT");
+
+        typeof(OperatorDerived)
+            .GetMethod("op_Equality", BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly)
+            .Should().BeNull("the derived class opted out of generated operators");
+
+        // ...but OperatorBase.op_Equality still binds, and it dispatches virtually into the derived
+        // Equals, so == remains structural. This is what GE012 exists to warn about.
+        (a == b).Should().BeTrue();
     }
 
     [Theory]

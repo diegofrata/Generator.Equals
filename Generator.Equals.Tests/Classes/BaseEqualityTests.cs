@@ -49,11 +49,6 @@ public partial class BaseEqualityTests : SnapshotTestBase
     public void ManagerEquality(Manager a, Manager b, bool expected) =>
         EqualityAssert.Verify(a, b, expected);
 
-    [Theory]
-    [MemberData(nameof(ManagerEqualityCases))]
-    public void ManagerEqualityOperator(Manager a, Manager b, bool expected) =>
-        (a == b).Should().Be(expected);
-
     public static TheoryData<Person, Person, bool> PersonEqualityCases => new()
     {
         // Same Age
