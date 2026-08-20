@@ -39,6 +39,16 @@ namespace Generator.Equals
 
         protected const string InheritDocComment = "/// <inheritdoc/>";
 
+        protected static readonly string[] EqualityComparerCodeComment = @"
+/// <summary>
+/// An equality comparer for the enclosing type that uses the generated equality semantics.
+/// </summary>".ToLines();
+
+        protected static readonly string[] EqualityComparerDefaultCodeComment = @"
+/// <summary>
+/// Gets the default instance of the comparer.
+/// </summary>".ToLines();
+
         static string GetCollectionComparerExpression(
             string comparerClassName,
             string elementTypeName,
