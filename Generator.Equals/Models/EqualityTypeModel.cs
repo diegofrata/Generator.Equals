@@ -35,4 +35,10 @@ sealed record EqualityTypeModel
     /// so the class should be treated as a "root class" for equality purposes.
     /// </summary>
     public bool BaseHasEquatable { get; init; }
+
+	/// <summary>
+	/// For classes, indicates whether the decorated class should generate == and != operators.
+    /// <br/>It has no impact on struct (operator always generated) and record types (operator compiler-emitted).
+	/// </summary>
+	public required bool GenerateClassEqualityOperators { get; init; }
 }

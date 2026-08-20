@@ -5,12 +5,13 @@ using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 namespace Generator.Equals.Tests.Classes;
 
 /// <summary>
-/// Tests for inheritance with [Equatable] attribute.
-/// Verifies that derived classes properly include base class properties in equality.
+/// Tests for inheritance with [Equatable] attribute when equality operators are disabled.
+/// Verifies that derived classes properly include base class properties in equality
+/// without generating == and != operators.
 /// </summary>
-public partial class BaseEqualityTests : SnapshotTestBase
+public partial class BaseEqualityWithoutOperatorsTests : SnapshotTestBase
 {
-    [Equatable]
+    [Equatable(GenerateClassEqualityOperators = false)]
     public partial class Person
     {
         public Person(int age)
@@ -21,7 +22,7 @@ public partial class BaseEqualityTests : SnapshotTestBase
         public int Age { get; }
     }
 
-    [Equatable]
+    [Equatable(GenerateClassEqualityOperators = false)]
     public partial class Manager : Person
     {
         public Manager(int age, string department) : base(age)
@@ -47,10 +48,22 @@ public partial class BaseEqualityTests : SnapshotTestBase
     [Theory]
     [MemberData(nameof(ManagerEqualityCases))]
     public void ManagerEquality(Manager a, Manager b, bool expected) =>
-        EqualityAssert.Verify(a, b, expected);
+        a.Equals(b).Should().Be(expected);
+
+    public static TheoryData<Manager, Manager, bool> ManagerEqualityOperatorCases => new()
+    {
+        // Same Age and Department
+        { new Manager(25, "IT"), new Manager(25, "IT"), false },
+        // Same Age, different Department
+        { new Manager(25, "IT"), new Manager(25, "Sales"), false },
+        // Different Age, same Department
+        { new Manager(25, "IT"), new Manager(30, "IT"), false },
+        // Different Age and Department
+        { new Manager(25, "IT"), new Manager(30, "Sales"), false },
+    };
 
     [Theory]
-    [MemberData(nameof(ManagerEqualityCases))]
+    [MemberData(nameof(ManagerEqualityOperatorCases))]
     public void ManagerEqualityOperator(Manager a, Manager b, bool expected) =>
         (a == b).Should().Be(expected);
 
@@ -65,7 +78,7 @@ public partial class BaseEqualityTests : SnapshotTestBase
     [Theory]
     [MemberData(nameof(PersonEqualityCases))]
     public void PersonEquality(Person a, Person b, bool expected) =>
-        EqualityAssert.Verify(a, b, expected);
+        a.Equals(b).Should().Be(expected);
 
     [Fact]
     public void PersonInequality_DifferentAge()
@@ -125,7 +138,7 @@ public partial class BaseEqualityTests : SnapshotTestBase
 
                                 namespace Generator.Equals.Tests.Classes;
 
-                                [Equatable]
+                                [Equatable(GenerateClassEqualityOperators = false)]
                                 public partial class BaseEqualityPerson
                                 {
                                     public BaseEqualityPerson(int age)
@@ -136,7 +149,7 @@ public partial class BaseEqualityTests : SnapshotTestBase
                                     public int Age { get; }
                                 }
 
-                                [Equatable]
+                                [Equatable(GenerateClassEqualityOperators = false)]
                                 public partial class BaseEqualityManager : BaseEqualityPerson
                                 {
                                     public BaseEqualityManager(int age, string department) : base(age)

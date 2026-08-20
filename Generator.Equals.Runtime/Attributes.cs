@@ -23,6 +23,13 @@ namespace Generator.Equals
         /// entire inheritance chain are explicitly compared.
         /// </summary>
         public bool IgnoreInheritedMembers { get; set; }
+
+        /// <summary>
+        /// Indicates whether the equality operators (<c>==</c> and <c>!=</c>) will be generated for the decorated class.
+        /// <br/>This does not apply to record types, as equality operators are always compiler-generated, and has no impact on struct types, as operators are always generated.
+        /// <br/>Default value is <see langword="true"/>.
+        /// </summary>
+        public bool GenerateClassEqualityOperators { get; set; } = true;
     }
 
     [GeneratedCode("Generator.Equals", "1.0.0.0")]

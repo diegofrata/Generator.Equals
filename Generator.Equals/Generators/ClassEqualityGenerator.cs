@@ -13,19 +13,22 @@ namespace Generator.Equals.Generators
         {
             var symbolName = model.Fullname;
 
-            // == operator
-            writer.WriteLines(EqualsOperatorCodeComment);
-            writer.WriteLine(GeneratedCodeAttributeDeclaration);
-            writer.WriteLine($"public static bool operator ==({symbolName}? left, {symbolName}? right) =>");
-            writer.WriteLine(1, "EqualityComparer.Default.Equals(left, right);");
-            writer.WriteLine();
+            if (model.GenerateClassEqualityOperators)
+            {
+                // == operator
+                writer.WriteLines(EqualsOperatorCodeComment);
+                writer.WriteLine(GeneratedCodeAttributeDeclaration);
+                writer.WriteLine($"public static bool operator ==({symbolName}? left, {symbolName}? right) =>");
+                writer.WriteLine(1, "EqualityComparer.Default.Equals(left, right);");
+                writer.WriteLine();
 
-            // != operator
-            writer.WriteLines(NotEqualsOperatorCodeComment);
-            writer.WriteLine(GeneratedCodeAttributeDeclaration);
-            writer.WriteLine($"public static bool operator !=({symbolName}? left, {symbolName}? right) =>");
-            writer.WriteLine(1, "!EqualityComparer.Default.Equals(left, right);");
-            writer.WriteLine();
+                // != operator
+                writer.WriteLines(NotEqualsOperatorCodeComment);
+                writer.WriteLine(GeneratedCodeAttributeDeclaration);
+                writer.WriteLine($"public static bool operator !=({symbolName}? left, {symbolName}? right) =>");
+                writer.WriteLine(1, "!EqualityComparer.Default.Equals(left, right);");
+                writer.WriteLine();
+            }
 
             // Equals(object?)
             writer.WriteLine(InheritDocComment);

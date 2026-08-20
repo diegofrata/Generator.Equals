@@ -41,16 +41,17 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
         Metadata.SetEquality);
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
-        DiagnosticDescriptors.CollectionMissingAttribute,          // GE001
-        DiagnosticDescriptors.ComplexTypeMissingEquatable,         // GE002
-        DiagnosticDescriptors.CollectionElementMissingEquatable,   // GE003
-        DiagnosticDescriptors.OrphanedEqualityAttribute,           // GE004
-        DiagnosticDescriptors.ManualEqualsImplementation,          // GE005
-        DiagnosticDescriptors.NonPartialType,                      // GE006
-        DiagnosticDescriptors.ConflictingAttributes,               // GE007
-        DiagnosticDescriptors.StringEqualityOnNonString,           // GE008
-        DiagnosticDescriptors.CollectionAttributeOnNonCollection,    // GE009
-        DiagnosticDescriptors.PrecisionEqualityOnUnsupportedType);    // GE010
+        DiagnosticDescriptors.CollectionMissingAttribute,               // GE001
+        DiagnosticDescriptors.ComplexTypeMissingEquatable,              // GE002
+        DiagnosticDescriptors.CollectionElementMissingEquatable,        // GE003
+        DiagnosticDescriptors.OrphanedEqualityAttribute,                // GE004
+        DiagnosticDescriptors.ManualEqualsImplementation,               // GE005
+        DiagnosticDescriptors.NonPartialType,                           // GE006
+        DiagnosticDescriptors.ConflictingAttributes,                    // GE007
+        DiagnosticDescriptors.StringEqualityOnNonString,                // GE008
+        DiagnosticDescriptors.CollectionAttributeOnNonCollection,       // GE009
+        DiagnosticDescriptors.PrecisionEqualityOnUnsupportedType,       // GE010
+        DiagnosticDescriptors.GenerateClassEqualityOperatorsIgnored);        // GE011
 
     public override void Initialize(AnalysisContext context)
     {
@@ -78,9 +79,16 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
         // GE005: Check for manual Equals/GetHashCode implementation
         CheckManualEqualsImplementation(context, typeSymbol);
 
-        // Get the Equatable attribute to check Explicit mode
+        // Get the Equatable attribute to check Explicit mode and GenerateClassEqualityOperators option
         var equatableAttr = typeSymbol.GetAttribute(Metadata.Equatable);
         var explicitMode = GetExplicitMode(equatableAttr);
+
+        // GE011: Warn when GenerateClassEqualityOperators is used on records or structs.
+        if ((typeSymbol.IsRecord || typeSymbol.TypeKind == TypeKind.Struct) && equatableAttr?.GetNamedArgumentValue(nameof(EquatableAttribute.GenerateClassEqualityOperators)) != null)
+        {
+            var location = equatableAttr?.ApplicationSyntaxReference?.GetSyntax().GetLocation() ?? typeSymbol.Locations.FirstOrDefault() ?? Location.None;
+            context.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.GenerateClassEqualityOperatorsIgnored, location, typeSymbol.Name));
+        }
 
         // Analyze each property/field in the type
         foreach (var member in typeSymbol.GetPropertiesAndFields())
