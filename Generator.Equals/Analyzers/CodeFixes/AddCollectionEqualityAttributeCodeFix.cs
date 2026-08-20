@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Formatting;
 
 namespace Generator.Equals.Analyzers.CodeFixes;
 
@@ -140,9 +141,12 @@ public sealed class AddCollectionEqualityAttributeCodeFix : CodeFixProvider
         // If there were no attributes before, we need to handle the trivia correctly
         if (propertyDeclaration.AttributeLists.Count == 0)
         {
-            // Add newline after attribute list
+            // Add newline after attribute list, honouring the document's configured line ending
+            var options = await document.GetOptionsAsync(cancellationToken).ConfigureAwait(false);
+            var newLine = options.GetOption(FormattingOptions.NewLine);
+
             var lastAttr = newPropertyDeclaration.AttributeLists[newPropertyDeclaration.AttributeLists.Count - 1];
-            var updatedAttrList = lastAttr.WithTrailingTrivia(SyntaxFactory.LineFeed);
+            var updatedAttrList = lastAttr.WithTrailingTrivia(SyntaxFactory.EndOfLine(newLine));
             newPropertyDeclaration = newPropertyDeclaration.WithAttributeLists(
                 newPropertyDeclaration.AttributeLists.Replace(lastAttr, updatedAttrList));
 
