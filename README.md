@@ -304,6 +304,52 @@ partial class Doctor : Person
 }
 ```
 
+### Equality Operators
+
+For classes, the generator emits `==` and `!=` alongside `Equals`, so both perform structural comparison.
+Set `GenerateClassEqualityOperators = false` to leave the operators out — `==` then falls back to C#'s
+default reference comparison, and you are free to declare the operators yourself.
+
+```cs
+using Generator.Equals;
+
+[Equatable(GenerateClassEqualityOperators = false)]
+partial class Person
+{
+    public string Name { get; set; }
+}
+
+var a = new Person { Name = "Ada" };
+var b = new Person { Name = "Ada" };
+
+a.Equals(b);  // true  - structural, as always
+a == b;       // false - reference comparison
+```
+
+Two limitations are worth knowing about, and the analyzer reports both:
+
+**The option only applies to classes (GE011).** Records always get compiler-generated operators, which the
+generator cannot suppress. Structs always get generated operators too, for a different reason: C# predefines
+`==` for reference types but not for user-defined struct types, so a struct only has `==` if something
+declares it. Dropping the generated operators would make every `==` and `!=` on the type a `CS0019` compile
+error — a class degrades to reference comparison, a struct has nothing to degrade to.
+
+**Opting out has to cover the whole inheritance chain (GE012).** C# operator overload resolution considers
+operators declared on base types, so a derived class that opts out still picks up its base's operators:
+
+```cs
+[Equatable]
+partial class Person { public int Age { get; set; } }
+
+// GE012: the opt-out has no effect, Person's operators still apply to Manager operands
+[Equatable(GenerateClassEqualityOperators = false)]
+partial class Manager : Person { public string Department { get; set; } }
+```
+
+Apply `GenerateClassEqualityOperators = false` to every `[Equatable]` class in the chain to get
+reference comparison throughout — one ancestor left at the default is enough to bring the operators
+back for every type below it.
+
 ## Inequalities
 
 Every `[Equatable]` type gets a generated `EqualityComparer` with an `Inequalities()` method that returns exactly which members differ between two instances — with full member paths, including nested objects, collection indices, and dictionary keys.

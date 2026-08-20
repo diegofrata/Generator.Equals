@@ -28,4 +28,12 @@ static class AttributeDataExtensions
 
         return null;
     }
+
+    /// <summary>
+    /// Whether an [Equatable] application asks the generator to emit == and != for a class.
+    /// Single source of truth for the rule, shared by the generator and the analyzer so the two
+    /// cannot drift apart.
+    /// </summary>
+    public static bool GeneratesClassEqualityOperators(this AttributeData equatableAttributeData) =>
+        equatableAttributeData.GetNamedArgumentValue(nameof(EquatableAttribute.GenerateClassEqualityOperators)) is not false;
 }

@@ -40,9 +40,9 @@ sealed class EqualityTypeModelTransformer
             return null;
         }
 
-        var explicitMode = equatableAttributeData.GetNamedArgumentValue("Explicit") is true;
-        var ignoreInheritedMembers = equatableAttributeData.GetNamedArgumentValue("IgnoreInheritedMembers") is true;
-        var generateClassEqualityOperators = equatableAttributeData.GetNamedArgumentValue(nameof(EquatableAttribute.GenerateClassEqualityOperators)) is not false;
+        var explicitMode = equatableAttributeData.GetNamedArgumentValue(nameof(EquatableAttribute.Explicit)) is true;
+        var ignoreInheritedMembers = equatableAttributeData.GetNamedArgumentValue(nameof(EquatableAttribute.IgnoreInheritedMembers)) is true;
+        var generateClassEqualityOperators = equatableAttributeData.GeneratesClassEqualityOperators();
 
         if (_context.TargetSymbol is not ITypeSymbol symbol)
         {

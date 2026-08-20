@@ -18,7 +18,27 @@ public static class EqualityAssert
     /// <param name="a">First object</param>
     /// <param name="b">Second object</param>
     /// <param name="expectedEqual">Whether the objects should be equal</param>
-    public static void Verify<T>(T a, T b, bool expectedEqual) where T : class
+    public static void Verify<T>(T a, T b, bool expectedEqual) where T : class =>
+        VerifyCore(a, b, expectedEqual, checkOperators: true);
+
+    /// <summary>
+    /// Verifies equality for a class that opted out of generated operators with
+    /// <c>[Equatable(GenerateClassEqualityOperators = false)]</c>. Asserts the operators really are
+    /// absent, then runs every check <see cref="Verify{T}"/> does apart from the operator ones.
+    /// </summary>
+    /// <typeparam name="T">The type being tested</typeparam>
+    /// <param name="a">First object</param>
+    /// <param name="b">Second object</param>
+    /// <param name="expectedEqual">Whether the objects should be equal</param>
+    public static void VerifyWithoutOperators<T>(T a, T b, bool expectedEqual) where T : class
+    {
+        FindEqualityOperator(typeof(T), "op_Equality").Should().BeNull("no operator == should apply to T, including one inherited from a base type");
+        FindEqualityOperator(typeof(T), "op_Inequality").Should().BeNull("no operator != should apply to T, including one inherited from a base type");
+
+        VerifyCore(a, b, expectedEqual, checkOperators: false);
+    }
+
+    static void VerifyCore<T>(T a, T b, bool expectedEqual, bool checkOperators) where T : class
     {
         // Test Equals method
         a.Equals(b).Should().Be(expectedEqual, "Equals(object) should return {0}", expectedEqual);
@@ -29,13 +49,16 @@ public static class EqualityAssert
             equatableA.Equals(b).Should().Be(expectedEqual, "IEquatable<T>.Equals should return {0}", expectedEqual);
         }
 
-        // Test == operator using expression trees
-        var equalityResult = InvokeEqualityOperator<T>(a, b);
-        equalityResult.Should().Be(expectedEqual, "operator == should return {0}", expectedEqual);
+        if (checkOperators)
+        {
+            // Test == operator using expression trees
+            var equalityResult = InvokeEqualityOperator<T>(a, b);
+            equalityResult.Should().Be(expectedEqual, "operator == should return {0}", expectedEqual);
 
-        // Test != operator using expression trees
-        var inequalityResult = InvokeInequalityOperator<T>(a, b);
-        inequalityResult.Should().Be(!expectedEqual, "operator != should return {0}", !expectedEqual);
+            // Test != operator using expression trees
+            var inequalityResult = InvokeInequalityOperator<T>(a, b);
+            inequalityResult.Should().Be(!expectedEqual, "operator != should return {0}", !expectedEqual);
+        }
 
         // Test GetHashCode consistency
         if (expectedEqual)
@@ -52,6 +75,24 @@ public static class EqualityAssert
             else if (HasCompleteInequalityCoverage(typeof(T)))
                 inequalities.Should().NotBeEmpty("Inequalities() should return at least one inequality when objects are not equal");
         }
+    }
+
+    /// <summary>
+    /// Finds the operator C# overload resolution would pick for two <paramref name="type"/> operands.
+    /// Reflection does not surface base-type statics without FlattenHierarchy, so the chain is walked
+    /// explicitly - otherwise an operator inherited from a base would look absent while == is still
+    /// structural.
+    /// </summary>
+    static MethodInfo? FindEqualityOperator(Type type, string name)
+    {
+        for (var current = type; current != null && current != typeof(object); current = current.BaseType)
+        {
+            var method = current.GetMethod(name, BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly, null, [current, current], null);
+            if (method != null)
+                return method;
+        }
+
+        return null;
     }
 
     /// <summary>
