@@ -1,0 +1,4 @@
+# Normalise all text files to LF in the repository and in every checkout,
+# regardless of the contributor's core.autocrlf setting. Code-fix tests rely
+# on source files (and their raw string literals) being LF on disk.
+* text=auto eol=lf

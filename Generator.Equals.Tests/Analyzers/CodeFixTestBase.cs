@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Testing;
 
 namespace Generator.Equals.Tests.Analyzers;
@@ -59,6 +60,12 @@ public abstract class CodeFixTestBase<TAnalyzer, TCodeFix>
             {
                 var project = solution.GetProject(projectId);
                 if (project == null) return solution;
+
+                // Pin the newline option to LF so code fixes produce identical output on
+                // every platform (the option defaults to Environment.NewLine). Source files
+                // are checked out as LF via .gitattributes, so expected sources are LF too.
+                solution = solution.WithOptions(solution.Options.WithChangedOption(
+                    FormattingOptions.NewLine, LanguageNames.CSharp, "\n"));
 
                 var compilationOptions = project.CompilationOptions;
                 if (compilationOptions != null)
