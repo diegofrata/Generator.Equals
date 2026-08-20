@@ -53,11 +53,13 @@ namespace Generator.Equals.Generators
             var symbolName = model.Fullname;
 
             writer.WriteLine();
+            writer.WriteLines(EqualityComparerCodeComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
             writer.WriteLine($"public sealed class EqualityComparer : global::System.Collections.Generic.IEqualityComparer<{symbolName}>");
             writer.AppendOpenBracket();
 
             // Default instance
+            writer.WriteLines(EqualityComparerDefaultCodeComment);
             writer.WriteLine("public static EqualityComparer Default { get; } = new EqualityComparer();");
             writer.WriteLine();
 

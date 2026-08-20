@@ -64,9 +64,15 @@ namespace Generator.Equals.Tests.Classes
             return hashCode.ToHashCode();
         }
         
+        /// <summary>
+        /// An equality comparer for the enclosing type that uses the generated equality semantics.
+        /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
         public sealed class EqualityComparer : global::System.Collections.Generic.IEqualityComparer<global::Generator.Equals.Tests.Classes.GapGrandParent>
         {
+            /// <summary>
+            /// Gets the default instance of the comparer.
+            /// </summary>
             public static EqualityComparer Default { get; } = new EqualityComparer();
             
             /// <inheritdoc/>

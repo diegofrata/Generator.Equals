@@ -94,11 +94,13 @@ namespace Generator.Equals.Generators
             var newKeyword = model.BaseHasEquatable ? "new " : "";
 
             writer.WriteLine();
+            writer.WriteLines(EqualityComparerCodeComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
             writer.WriteLine($"public {newKeyword}sealed class EqualityComparer : global::System.Collections.Generic.IEqualityComparer<{symbolName}>");
             writer.AppendOpenBracket();
 
             // Default instance
+            writer.WriteLines(EqualityComparerDefaultCodeComment);
             writer.WriteLine("public static EqualityComparer Default { get; } = new EqualityComparer();");
             writer.WriteLine();
 
