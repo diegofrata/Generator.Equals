@@ -97,7 +97,7 @@ Below is a list of all supported comparers. Would you like something else added?
 This is the comparer that's used when a property has no attributes indicating otherwise. The generated code will use 
 ```EqualityComparer<T>.Default``` for both equals and hashing operation.
 
-> _Fields are not used in comparison unless explicitly annotated. To enable the default comparison for a field, annotate it with the `DefaultEquality` attribute._
+> _In v4+, fields are included in comparison by default, just like properties. Use `DefaultEquality` to opt a field in when `Explicit = true` is enabled._
 
 ### IgnoreEquality
 
