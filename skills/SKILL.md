@@ -34,7 +34,7 @@ Requires C# 9.0+. The type **must be `partial`**.
 
 | Attribute | Use When |
 |-----------|----------|
-| `[DefaultEquality]` | Default comparer. **Required on fields** (fields are excluded by default). |
+| `[DefaultEquality]` | Default comparer. |
 | `[IgnoreEquality]` | Skip this member |
 | `[OrderedEquality]` | Compare collection elements in order (like `SequenceEqual`) |
 | `[UnorderedEquality]` | Compare collection elements ignoring order |
@@ -87,9 +87,9 @@ partial class User
 }
 ```
 
-### Mark fields explicitly
+### Mark fields in explicit mode
 
-Fields are **not** included by default. You must annotate them:
+In v4+, fields are included by default, just like properties. When `[Equatable(Explicit = true)]` is enabled, annotate the fields you want compared:
 
 ```csharp
 [DefaultEquality]
