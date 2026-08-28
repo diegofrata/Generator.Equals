@@ -97,7 +97,7 @@ Below is a list of all supported comparers. Would you like something else added?
 This is the comparer that's used when a property has no attributes indicating otherwise. The generated code will use 
 ```EqualityComparer<T>.Default``` for both equals and hashing operation.
 
-> _In v4+, fields are included in comparison by default, just like properties. Use `DefaultEquality` to opt a field in when `Explicit = true` is enabled._
+> _Fields are opt-in: they are **not** compared unless explicitly annotated. To include a field, annotate it with `DefaultEquality` (or any other equality attribute). Properties are compared by default. See [Migrating from version 4](#migrating-from-version-4)._
 
 ### IgnoreEquality
 
@@ -427,6 +427,35 @@ var diffs = Address.EqualityComparer.Default.Inequalities(
     addressA, addressB, new MemberPath(new[] { MemberPathSegment.Property("Home") }));
 // Reports: Home.Street, Home.City, etc.
 ```
+
+## Migrating from version 4
+
+### Fields are opt-in again (breaking change)
+
+**Version 5 reinstates the original rule that fields are excluded from equality unless explicitly
+annotated.** Properties are still compared by default; a field participates only when it carries
+`[DefaultEquality]` (or another equality attribute such as `[OrderedEquality]`).
+
+This corrects a regression: from **3.2.0 through 4.x**, fields were compared by default — the opposite
+of the intended and documented behavior. That change was accidental (a refactor dropped the field
+guard) and was never covered by a test, so it went unnoticed. Version 5 restores the intended
+behavior and marks it as breaking so the change is explicit.
+
+**What this means for you:** if you rely on a field being compared, annotate it. Nothing changes for
+properties.
+
+```csharp
+[Equatable]
+public partial class User
+{
+    public string Name { get; set; }        // compared (property, default)
+
+    private int _version;                    // v3.2–v4: compared | v5: NOT compared
+    [DefaultEquality] private int _revision; // compared in all versions
+}
+```
+
+> If you were on 3.1.x or earlier, no action is needed — v5 matches that behavior.
 
 ## Migrating from version 3
 
