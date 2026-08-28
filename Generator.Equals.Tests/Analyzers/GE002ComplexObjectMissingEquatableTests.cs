@@ -377,4 +377,32 @@ public sealed class GE002ComplexObjectMissingEquatableTests : AnalyzerTestBase<E
         // [DefaultEquality] explicitly says "use default equality" - no warning needed
         await VerifyNoDiagnosticAsync(source);
     }
+
+    [Fact]
+    public async Task PlainComplexField_NotReported_ButPropertyIs()
+    {
+        const string source = """
+            using Generator.Equals;
+
+            public class Address
+            {
+                public string Street { get; set; }
+            }
+
+            [Equatable]
+            public partial class Person
+            {
+                public Address Home { get; set; }
+                private Address _cachedHome;
+            }
+            """;
+
+        // Fields are opt-in (issue #86): the un-annotated complex field is not compared, so GE002
+        // must not fire on it. The complex property still reports as usual.
+        // "Address" = 7 chars, starts at col 12, ends at col 19
+        await VerifyDiagnosticAsync(source,
+            Diagnostic(DiagnosticDescriptors.ComplexTypeMissingEquatable)
+                .WithSpan(11, 12, 11, 19)
+                .WithArguments("Home", "Address"));
+    }
 }

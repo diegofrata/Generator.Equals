@@ -95,7 +95,9 @@ static class EqualityMemberModelTransformer
         ITypeSymbol typeSymbol,
         AttributesMetadata attributesMetadata,
         bool explicitMode,
-        bool isField = false
+        // Required (no default): fields are opt-in, so a caller that forgets to thread this would
+        // silently treat a field as an included property, desyncing Equals from GetHashCode.
+        bool isField
     )
     {
         var propertyName = memberSymbol.ToFQF();
@@ -265,7 +267,12 @@ static class EqualityMemberModelTransformer
             };
         }
 
-        var isIgnored = (explicitMode && !memberSymbol.HasAttribute(attributesMetadata.DefaultEquality));
+        // Fields are opt-in: a field participates only when it carries [DefaultEquality] (or another
+        // equality attribute, which is handled above). Properties participate by default unless the
+        // type is in Explicit mode. This field exclusion is the original design intent; it was lost in
+        // the 3.2.0 refactor and reinstated in v5 as a deliberate breaking change (see issue #86).
+        var isIgnored = (explicitMode || isField)
+                        && !memberSymbol.HasAttribute(attributesMetadata.DefaultEquality);
 
         return new EqualityMemberModel
         {

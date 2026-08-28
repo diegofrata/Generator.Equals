@@ -185,21 +185,6 @@ namespace Generator.Equals
             }
         }
 
-        static void BuildHashCode(
-            ISymbol memberSymbol,
-            ITypeSymbol typeSymbol,
-            AttributesMetadata attributesMetadata,
-            IndentedTextWriter writer,
-            bool explicitMode,
-            string obj = "obj"
-        )
-        {
-            var model = EqualityMemberModelTransformer
-                .BuildEqualityModel(memberSymbol, typeSymbol, attributesMetadata, explicitMode);
-
-            BuildHashCode(model, writer, obj);
-        }
-
         static void BuildHashCode(EqualityMemberModel memberModel, IndentedTextWriter writer, string obj)
         {
             if (memberModel.Ignored)

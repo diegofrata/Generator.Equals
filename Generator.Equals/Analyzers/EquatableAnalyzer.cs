@@ -159,6 +159,12 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
         if (explicitMode && !memberAttributes.Any(x => x.Metadata.Equals(Metadata.DefaultEquality)))
             return;
 
+        // Fields are opt-in (see issue #86): a field with no equality attribute is not part of the
+        // comparison, so there is nothing to warn about. Fields that carry an equality attribute
+        // (e.g. [OrderedEquality] or [DefaultEquality]) still flow through the checks below.
+        if (member is IFieldSymbol && memberAttributes.Count == 0)
+            return;
+
         // Check if member has [DefaultEquality] - suppresses GE001/GE002/GE003
         // DefaultEquality explicitly indicates the user wants default equality behavior (e.g., for types
         // like protobuf-generated classes that implement their own Equals/GetHashCode)

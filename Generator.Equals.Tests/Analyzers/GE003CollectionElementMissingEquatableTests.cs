@@ -281,4 +281,34 @@ public sealed class GE003CollectionElementMissingEquatableTests : AnalyzerTestBa
         // [DefaultEquality] suppresses GE003, [OrderedEquality] satisfies GE001
         await VerifyNoDiagnosticAsync(source);
     }
+
+    [Fact]
+    public async Task PlainCollectionField_ComplexElement_NotReported_ButPropertyIs()
+    {
+        const string source = """
+            using System.Collections.Generic;
+            using Generator.Equals;
+
+            public class Address
+            {
+                public string Street { get; set; }
+            }
+
+            [Equatable]
+            public partial class Person
+            {
+                [OrderedEquality]
+                public List<Address> Homes { get; set; }
+                private List<Address> _cache;
+            }
+            """;
+
+        // Fields are opt-in (issue #86): the un-annotated collection field is not compared, so
+        // GE003 must not fire on it. The annotated property still reports its complex element.
+        // "List<Address>" = 13 chars, starts at col 12, ends at col 25
+        await VerifyDiagnosticAsync(source,
+            Diagnostic(DiagnosticDescriptors.CollectionElementMissingEquatable)
+                .WithSpan(13, 12, 13, 25)
+                .WithArguments("Homes", "Address"));
+    }
 }

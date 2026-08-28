@@ -361,4 +361,27 @@ public sealed class GE001CollectionMissingAttributeTests : AnalyzerTestBase<Equa
                 .WithSpan(7, 12, 7, 31)
                 .WithArguments("Items"));
     }
+
+    [Fact]
+    public async Task PlainCollectionField_NotReported_ButPropertyIs()
+    {
+        const string source = """
+            using System.Collections.Generic;
+            using Generator.Equals;
+
+            [Equatable]
+            public partial class Sample
+            {
+                public List<int> Items { get; set; }
+                private readonly List<int> _cache = new();
+            }
+            """;
+
+        // Fields are opt-in (issue #86): the un-annotated field is not part of the comparison, so
+        // GE001 must not fire on it. The property still reports as usual.
+        await VerifyDiagnosticAsync(source,
+            Diagnostic(DiagnosticDescriptors.CollectionMissingAttribute)
+                .WithSpan(7, 12, 7, 21)
+                .WithArguments("Items"));
+    }
 }
