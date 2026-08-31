@@ -197,6 +197,45 @@ public partial class InheritedFromManualEqualityTests : SnapshotTestBase
     public void IgnoreInheritedMembersOverManualBaseEquality(IgnoringDog a, IgnoringDog b, bool expected) =>
         EqualityAssert.Verify(a, b, expected);
 
+    // Base providing value equality via IEquatable<TSelf> ONLY (a public typed Equals + GetHashCode,
+    // NO Equals(object) override). The generator now detects this and delegates via the typed cast
+    // base.Equals(other as IEquatableBird) -> IEquatableBird.Equals(IEquatableBird), honoring its
+    // case-insensitive semantics, rather than falling back to property comparison.
+    public class IEquatableBird : IEquatable<IEquatableBird>
+    {
+        public IEquatableBird(string species) => Species = species;
+
+        public string Species { get; }
+
+        public bool Equals(IEquatableBird? other) =>
+            other is not null && string.Equals(Species, other.Species, StringComparison.OrdinalIgnoreCase);
+
+        public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(Species);
+    }
+
+    [Equatable]
+    public partial class Sparrow : IEquatableBird
+    {
+        public Sparrow(string species, int wingspan) : base(species) => Wingspan = wingspan;
+
+        public int Wingspan { get; }
+    }
+
+    public static TheoryData<Sparrow, Sparrow, bool> IEquatableOnlyCases => new()
+    {
+        { new Sparrow("Robin", 10), new Sparrow("Robin", 10), true },
+        // Base Species differs only by case -> equal only if the base's IEquatable is delegated to
+        { new Sparrow("Robin", 10), new Sparrow("ROBIN", 10), true },
+        { new Sparrow("Robin", 10), new Sparrow("Wren", 10), false },
+        // Own member (Wingspan) differs -> not equal
+        { new Sparrow("Robin", 10), new Sparrow("Robin", 20), false },
+    };
+
+    [Theory]
+    [MemberData(nameof(IEquatableOnlyCases))]
+    public void IEquatableOnlyBaseEquality(Sparrow a, Sparrow b, bool expected) =>
+        EqualityAssert.Verify(a, b, expected);
+
     // One combined source so a single snapshot captures every shape (the snapshot file name is keyed
     // to this test file, so all scenarios must share one VerifyGeneratedSource call):
     //  - ManualBaseDog            : delegates to a complete hand-written base
@@ -334,6 +373,28 @@ public partial class InheritedFromManualEqualityTests : SnapshotTestBase
                                     public IgnoringManualDog(string name, string breed) : base(name) => Breed = breed;
 
                                     public string Breed { get; }
+                                }
+
+                                // Value equality via IEquatable<TSelf> ONLY (public typed Equals + GetHashCode, no
+                                // Equals(object) override): delegated to via the typed cast, not the object fallback.
+                                public class IEquatableBird : System.IEquatable<IEquatableBird>
+                                {
+                                    public IEquatableBird(string species) => Species = species;
+
+                                    public string Species { get; }
+
+                                    public bool Equals(IEquatableBird? other) =>
+                                        other is not null && string.Equals(Species, other.Species, StringComparison.OrdinalIgnoreCase);
+
+                                    public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(Species);
+                                }
+
+                                [Equatable]
+                                public partial class ManualSparrow : IEquatableBird
+                                {
+                                    public ManualSparrow(string species, int wingspan) : base(species) => Wingspan = wingspan;
+
+                                    public int Wingspan { get; }
                                 }
                                 """;
 }

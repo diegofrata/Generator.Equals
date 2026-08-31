@@ -26,6 +26,15 @@ namespace Generator.Equals.Generators
             && !model.IgnoreInheritedMembers
             && model.BaseHasManualEquality;
 
+        /// <summary>
+        /// Whether base delegation must route through <c>Equals(object)</c> (the fallback). True only for a
+        /// hand-written base that exposes no public typed <c>Equals(TSelf)</c> to bind to. When false,
+        /// delegation casts to the base type and binds to its typed <c>Equals</c> — the base's
+        /// <c>IEquatable&lt;TSelf&gt;</c>, or (on the comparer path) the generated typed <c>Equals</c>.
+        /// </summary>
+        static bool DelegatesWithObjectCast(EqualityTypeModel model) =>
+            model.BaseHasManualEquality && !model.ImmediateBaseHasTypedEquals;
+
         static void BuildDelegatingMethods(
             EqualityTypeModel model,
             IndentedTextWriter writer
@@ -84,13 +93,15 @@ namespace Generator.Equals.Generators
             // When the base owns equality (via [Equatable]/a generated comparer or a hand-written
             // complete contract), chain through base.Equals() so its semantics are honored. Otherwise
             // compare the exact runtime type; inherited members are carried by the collected models.
+            //
+            // Prefer the base's typed Equals: casting to the base type binds to its IEquatable<TSelf>
+            // (or, on the comparer path, the generated typed Equals). Fall back to the object cast only
+            // for a hand-written base that has no typed Equals — there, casting to the base type would
+            // instead bind to an [Equatable] ancestor's generated protected Equals(TAncestor?) and skip
+            // the hand-written type's own members.
             if (DelegatesToBase(model))
             {
-                // For a hand-written base, cast the argument to object so overload resolution binds to
-                // its Equals(object) override. Passing the base-typed argument would instead bind to an
-                // [Equatable] ancestor's generated protected Equals(TAncestor?) (a more specific overload),
-                // skipping the hand-written type's own members.
-                writer.WriteLine(DelegatesToManualBase(model)
+                writer.WriteLine(DelegatesWithObjectCast(model)
                     ? "return base.Equals((object?) other)"
                     : $"return base.Equals(other as {baseTypeFullname})");
             }
@@ -253,9 +264,9 @@ namespace Generator.Equals.Generators
                 // base is reached through its (possibly inherited) generated comparer instead.
                 if (DelegatesToManualBase(model))
                 {
-                    // castArgumentToObject: bind to the base's hand-written Equals(object), not an
-                    // [Equatable] ancestor's generated typed Equals (see BuildEquals for the full note).
-                    BuildBaseEqualityBridge(model, writer, castArgumentToObject: true);
+                    // Mirror BuildEquals' cast choice: prefer the base's typed Equals, fall back to
+                    // Equals(object) only when the base exposes no typed Equals.
+                    BuildBaseEqualityBridge(model, writer, castArgumentToObject: DelegatesWithObjectCast(model));
                 }
 
                 BuildNestedEqualityComparer(model, writer);

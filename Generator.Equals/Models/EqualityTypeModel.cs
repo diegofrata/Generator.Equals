@@ -57,6 +57,14 @@ sealed record EqualityTypeModel
     public bool ImmediateBaseHasComparer { get; init; }
 
     /// <summary>
+    /// Whether the immediate base type exposes a public typed <c>Equals(TSelf)</c> (implicit
+    /// <c>IEquatable&lt;TSelf&gt;</c>). When delegating to a hand-written base, the class generator prefers
+    /// casting to the base type (binding to that typed <c>Equals</c>) and falls back to
+    /// <c>base.Equals((object?) other)</c> only when this is false.
+    /// </summary>
+    public bool ImmediateBaseHasTypedEquals { get; init; }
+
+    /// <summary>
     /// For classes, indicates whether the decorated class should generate == and != operators.
     /// <br/>It has no impact on struct (operator always generated) and record types (operator compiler-emitted).
     /// </summary>

@@ -44,7 +44,7 @@ namespace Generator.Equals.Tests.Classes
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             
-            return base.Equals((object?) other)
+            return base.Equals(other as global::Generator.Equals.Tests.Classes.OverridingEqualsManager)
                 && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.Shares!, other.Shares!)
                 ;
         }
@@ -66,7 +66,7 @@ namespace Generator.Equals.Tests.Classes
         
         // Non-virtual bridge to the base type's Equals, for use by the nested comparer.
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-        private bool __BaseEquals(global::Generator.Equals.Tests.Classes.OverridingEqualsManager? other) => base.Equals((object?) other);
+        private bool __BaseEquals(global::Generator.Equals.Tests.Classes.OverridingEqualsManager? other) => base.Equals(other);
         
         /// <summary>
         /// An equality comparer for the enclosing type that uses the generated equality semantics.

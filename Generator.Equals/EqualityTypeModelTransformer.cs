@@ -97,6 +97,12 @@ sealed class EqualityTypeModelTransformer
         var baseHasManualEquality = baseEqualityOwnership
             is BaseEqualityOwnership.Manual or BaseEqualityOwnership.ComparerBehindManual;
 
+        // Whether the immediate base exposes a public typed Equals(TSelf) (implicit IEquatable<TSelf>).
+        // When it does, base delegation casts to the base type and binds to that typed Equals; otherwise
+        // it falls back to base.Equals((object?) other). Only consumed on the hand-written-base path.
+        var immediateBaseHasTypedEquals = symbol.BaseType is { } typedBase
+            && DeclaresPublicTypedEquals(typedBase);
+
         var bems = EqualityMemberModelTransformer.BuildEqualityModels(symbol, attributesMetadata, explicitMode, filter);
 
         // When IgnoreInheritedMembers=false and no ancestor has [Equatable], we collect inherited
@@ -123,6 +129,7 @@ sealed class EqualityTypeModelTransformer
             BaseHasEquatable = baseHasEquatable,
             BaseHasManualEquality = baseHasManualEquality,
             ImmediateBaseHasComparer = immediateBaseHasComparer,
+            ImmediateBaseHasTypedEquals = immediateBaseHasTypedEquals,
             InheritedEqualityModels = inheritedModels,
             GenerateClassEqualityOperators = generateClassEqualityOperators,
         };
@@ -188,15 +195,28 @@ sealed class EqualityTypeModelTransformer
         type.GetMembers("GetHashCode").OfType<IMethodSymbol>().Any(SymbolExtensions.IsGetHashCodeOverride);
 
     /// <summary>
-    /// True if the type hand-rolls a complete equality contract — it overrides BOTH <c>Equals(object)</c>
-    /// and <c>GetHashCode</c> on the same type (and is not a record, whose equality is compiler-managed).
-    /// Requiring both keeps <c>base.Equals()</c>/<c>base.GetHashCode()</c> delegation mutually consistent.
-    /// Callers exclude <c>[Equatable]</c>/comparer ancestors before reaching this check.
+    /// True if the type exposes a public, normal-lookup <c>bool Equals(TSelf)</c> — i.e. an implicit
+    /// <c>IEquatable&lt;TSelf&gt;</c> implementation. <c>base.Equals(other as TSelf)</c> binds to this exact
+    /// overload, so it is preferred over routing through <c>Equals(object)</c>. (Explicit interface
+    /// implementations are not normal-lookup candidates and so are not matched here.)
+    /// </summary>
+    static bool DeclaresPublicTypedEquals(INamedTypeSymbol type) =>
+        type.GetMembers("Equals").OfType<IMethodSymbol>().Any(m =>
+            m is { MethodKind: MethodKind.Ordinary, DeclaredAccessibility: Accessibility.Public, IsStatic: false, Parameters.Length: 1 }
+            && m.ReturnType.SpecialType == SpecialType.System_Boolean
+            && SymbolEqualityComparer.Default.Equals(m.Parameters[0].Type, type));
+
+    /// <summary>
+    /// True if the type hand-rolls a complete equality contract — a <c>GetHashCode</c> override plus a
+    /// value <c>Equals</c> reachable via a base call: either a public typed <c>Equals(TSelf)</c>
+    /// (preferred) or an <c>Equals(object)</c> override (fallback). Not a record (whose equality is
+    /// compiler-managed). Requiring GetHashCode keeps delegation mutually consistent, and callers exclude
+    /// <c>[Equatable]</c>/comparer ancestors before reaching this check.
     /// </summary>
     static bool DeclaresManualEqualityPair(INamedTypeSymbol type) =>
         !type.IsRecord
-        && DeclaresEqualsObjectOverride(type)
-        && DeclaresGetHashCodeOverride(type);
+        && DeclaresGetHashCodeOverride(type)
+        && (DeclaresPublicTypedEquals(type) || DeclaresEqualsObjectOverride(type));
 
     /// <summary>
     /// Classifies how the base chain owns equality, in a single upward walk. A generated comparer
