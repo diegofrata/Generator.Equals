@@ -72,7 +72,7 @@ public static class EqualityAssert
         {
             if (expectedEqual)
                 inequalities.Should().BeEmpty("Inequalities() should return empty when objects are equal");
-            else if (HasCompleteInequalityCoverage(typeof(T)))
+            else
                 inequalities.Should().NotBeEmpty("Inequalities() should return at least one inequality when objects are not equal");
         }
     }
@@ -133,7 +133,7 @@ public static class EqualityAssert
         {
             if (expectedEqual)
                 inequalities.Should().BeEmpty("Inequalities() should return empty when objects are equal");
-            else if (HasCompleteInequalityCoverage(typeof(T)))
+            else
                 inequalities.Should().NotBeEmpty("Inequalities() should return at least one inequality when objects are not equal");
         }
     }
@@ -228,22 +228,6 @@ public static class EqualityAssert
         var call = Expression.Call(method, paramA, paramB);
         var lambda = Expression.Lambda<Func<T, T, bool>>(call, paramA, paramB);
         return lambda.Compile();
-    }
-
-    static bool HasCompleteInequalityCoverage(Type type)
-    {
-        // Walk base types: if a non-[Equatable] base overrides Equals, its equality logic
-        // won't be covered by the generated Inequalities() method. Non-[Equatable] bases
-        // WITHOUT their own Equals override are fine — the generator includes their members.
-        var current = type.BaseType;
-        while (current != null && current != typeof(object) && current != typeof(ValueType))
-        {
-            if (current.GetNestedType("EqualityComparer") == null
-                && current.GetMethod("Equals", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly, null, [current], null) != null)
-                return false;
-            current = current.BaseType;
-        }
-        return true;
     }
 
     static List<object>? TryGetInequalities(Type type, object? a, object? b)

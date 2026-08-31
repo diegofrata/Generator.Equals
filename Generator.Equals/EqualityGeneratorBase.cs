@@ -503,5 +503,44 @@ namespace Generator.Equals
                 BuildMemberInequality(model, writer, left, right, pathExpr);
             }
         }
+
+        /// <summary>
+        /// Emits the private <c>__BaseEquals</c> bridge that lets the nested comparer reach the base
+        /// type's <c>Equals</c> through a non-virtual base call (which cannot be written from inside the
+        /// comparer type). When <paramref name="castArgumentToObject"/> is true the argument is cast to
+        /// <c>object</c> so overload resolution binds to the base's hand-written <c>Equals(object)</c>
+        /// rather than an <c>[Equatable]</c> ancestor's generated <c>Equals(TAncestor?)</c> (a more
+        /// specific overload that would skip the hand-written type's own members); records bind to their
+        /// typed <c>Equals</c> directly and pass false.
+        /// </summary>
+        protected static void BuildBaseEqualityBridge(EqualityTypeModel model, IndentedTextWriter writer, bool castArgumentToObject)
+        {
+            var argument = castArgumentToObject ? "(object?) other" : "other";
+            writer.WriteLine();
+            writer.WriteLine("// Non-virtual bridge to the base type's Equals, for use by the nested comparer.");
+            writer.WriteLine(GeneratedCodeAttributeDeclaration);
+            writer.WriteLine($"private bool __BaseEquals({model.BaseTypeFullname}? other) => base.Equals({argument});");
+        }
+
+        /// <summary>
+        /// Emits the member-level base delegation inside an Inequalities body: forwards each of the base
+        /// comparer's inequalities. Valid only when the immediate base owns its own comparer.
+        /// </summary>
+        protected static void BuildBaseComparerInequalityDelegation(EqualityTypeModel model, IndentedTextWriter writer)
+        {
+            writer.WriteLine($"foreach (var __ineq in {model.BaseTypeFullname}.EqualityComparer.Default.Inequalities(x, y, path))");
+            writer.WriteLine(1, "yield return __ineq;");
+        }
+
+        /// <summary>
+        /// Emits a single coarse inequality for the whole base portion inside an Inequalities body, used
+        /// when the base is opaque to member-level delegation (a hand-written contract reached via the
+        /// <c>__BaseEquals</c> bridge).
+        /// </summary>
+        protected static void BuildCoarseBaseInequality(IndentedTextWriter writer)
+        {
+            writer.WriteLine("if (!x.__BaseEquals(y))");
+            writer.WriteLine(1, "yield return new global::Generator.Equals.Inequality(path, x, y);");
+        }
     }
 }

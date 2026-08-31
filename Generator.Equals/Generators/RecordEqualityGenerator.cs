@@ -6,6 +6,17 @@ namespace Generator.Equals.Generators
 {
     class RecordEqualityGenerator : EqualityGeneratorBase
     {
+        /// <summary>
+        /// Whether Inequalities must report the base portion coarsely via the <c>__BaseEquals</c> bridge:
+        /// a comparer ancestor exists, but the immediate base does not own its comparer (a non-[Equatable]
+        /// record intermediate is in between), so member-level delegation to the inherited comparer would
+        /// skip that intermediate's members. Ties bridge emission and its use to one predicate.
+        /// </summary>
+        static bool NeedsBaseEqualityBridge(EqualityTypeModel model) =>
+            !model.IgnoreInheritedMembers
+            && model.BaseHasEquatable
+            && !model.ImmediateBaseHasComparer;
+
         static void BuildEquals(
             EqualityTypeModel model,
             IndentedTextWriter writer
@@ -137,10 +148,6 @@ namespace Generator.Equals.Generators
 
         static void BuildInequalitiesMethod(EqualityTypeModel model, IndentedTextWriter writer, string symbolName)
         {
-            var baseTypeName = model.BaseTypeName;
-            var baseTypeFullname = model.BaseTypeFullname;
-            var isRootRecord = baseTypeName == "object";
-
             writer.WriteLines(InequalitiesMethodComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
             writer.WriteLine($"public global::System.Collections.Generic.IEnumerable<global::Generator.Equals.Inequality> Inequalities({symbolName}? x, {symbolName}? y, global::Generator.Equals.MemberPath path = default)");
@@ -154,11 +161,18 @@ namespace Generator.Equals.Generators
             writer.AppendCloseBracket();
             writer.WriteLine();
 
-            // For records with [Equatable] base, delegate to base's Inequalities
-            if (!isRootRecord && !model.IgnoreInheritedMembers && model.BaseHasEquatable)
+            if (!model.IgnoreInheritedMembers && model.ImmediateBaseHasComparer)
             {
-                writer.WriteLine($"foreach (var __ineq in {baseTypeFullname}.EqualityComparer.Default.Inequalities(x, y, path))");
-                writer.WriteLine(1, "yield return __ineq;");
+                // The immediate base owns its comparer: delegate member-level (fine-grained) detail.
+                BuildBaseComparerInequalityDelegation(model, writer);
+                writer.WriteLine();
+            }
+            else if (NeedsBaseEqualityBridge(model))
+            {
+                // A non-[Equatable] record intermediate sits between this record and the comparer ancestor.
+                // Its members are honored by base.Equals but invisible to the inherited comparer, so report
+                // the whole base portion coarsely via the bridge when base.Equals disagrees.
+                BuildCoarseBaseInequality(writer);
                 writer.WriteLine();
             }
 
@@ -178,6 +192,14 @@ namespace Generator.Equals.Generators
                 writer.WriteLine();
 
                 BuildGetHashCode(model, writer);
+
+                // A non-[Equatable] record intermediate below a comparer ancestor needs the bridge so
+                // the nested comparer's Inequalities can reach its (otherwise skipped) members.
+                if (NeedsBaseEqualityBridge(model))
+                {
+                    // castArgumentToObject: false — a record binds to its typed Equals directly.
+                    BuildBaseEqualityBridge(model, writer, castArgumentToObject: false);
+                }
 
                 BuildNestedEqualityComparer(model, writer);
             });

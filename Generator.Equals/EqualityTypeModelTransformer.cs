@@ -81,16 +81,28 @@ sealed class EqualityTypeModelTransformer
             ? null
             : s => s is not IPropertySymbol prop || !ShouldSkipOverridingProperty(prop, attributesMetadata);
 
-        // For classes (not records), we need to determine if calling the base comparer will
-        // reach a meaningful equality implementation. We walk up the inheritance chain
-        // to find if any ancestor has a generated EqualityComparer. If so, we should call
-        // that ancestor's comparer.
-        var baseHasEquatable = FindNearestComparerAncestor(symbol.BaseType, attributesMetadata) != null;
+        // Classify how the base chain owns equality, in a single upward walk. A generated comparer
+        // anywhere wins (we delegate to it); otherwise a hand-written complete contract (both
+        // Equals(object) and GetHashCode on one type) makes the base "manual" and we delegate to
+        // base.Equals()/base.GetHashCode() rather than re-deriving from the base's public properties.
+        // BaseHasManualEquality also covers ComparerBehindManual: base.Equals honors the hand-written
+        // intermediate, but the inherited comparer can't see it, so Inequalities must use the bridge.
+        // The walk also reports whether the IMMEDIATE base owns its comparer: when a comparer ancestor is
+        // reached only through a non-comparer intermediate, `{immediateBase}.EqualityComparer` resolves to
+        // the inherited ancestor comparer and skips the intermediate's members, so member-level
+        // Inequalities delegation is only valid when the immediate base owns its comparer directly.
+        var baseEqualityOwnership = ClassifyBaseEquality(symbol.BaseType, attributesMetadata, out var immediateBaseHasComparer);
+        var baseHasEquatable = baseEqualityOwnership
+            is BaseEqualityOwnership.Comparer or BaseEqualityOwnership.ComparerBehindManual;
+        var baseHasManualEquality = baseEqualityOwnership
+            is BaseEqualityOwnership.Manual or BaseEqualityOwnership.ComparerBehindManual;
 
         var bems = EqualityMemberModelTransformer.BuildEqualityModels(symbol, attributesMetadata, explicitMode, filter);
 
-        // When IgnoreInheritedMembers=false and no ancestor has [Equatable],
-        // we need to collect all inherited properties to compare them explicitly.
+        // When IgnoreInheritedMembers=false and no ancestor has [Equatable], we collect inherited
+        // properties to compare them explicitly. CollectInheritedProperties stops at an ancestor that
+        // owns equality (via [Equatable] or a complete manual contract), so any properties it covers
+        // are delegated through base.Equals() instead of being collected (and compared twice).
         var inheritedModels = (!ignoreInheritedMembers && !baseHasEquatable)
             ? CollectInheritedProperties(symbol, symbol.BaseType, attributesMetadata, explicitMode)
             : new EquatableImmutableArray<EqualityMemberModel>();
@@ -109,6 +121,8 @@ sealed class EqualityTypeModelTransformer
             Fullname = fullname,
             SyntaxKind = _context.TargetNode.Kind(),
             BaseHasEquatable = baseHasEquatable,
+            BaseHasManualEquality = baseHasManualEquality,
+            ImmediateBaseHasComparer = immediateBaseHasComparer,
             InheritedEqualityModels = inheritedModels,
             GenerateClassEqualityOperators = generateClassEqualityOperators,
         };
@@ -130,40 +144,95 @@ sealed class EqualityTypeModelTransformer
     }
 
     /// <summary>
-    /// Finds the nearest ancestor in the inheritance chain that has a generated EqualityComparer.
-    /// Returns null if no ancestor has a comparer.
+    /// How the base inheritance chain owns equality, if at all.
     /// </summary>
-    static INamedTypeSymbol? FindNearestComparerAncestor(INamedTypeSymbol? baseType, AttributesMetadata attributesMetadata)
+    enum BaseEqualityOwnership
     {
-        var current = baseType;
-        while (current != null && current.SpecialType != SpecialType.System_Object)
-        {
-            // Check for [Equatable] attribute
-            if (current.HasAttribute(attributesMetadata.Equatable))
-            {
-                return current;
-            }
+        /// <summary>No ancestor owns equality; inherited members are compared explicitly.</summary>
+        None,
 
-            // Check for generated EqualityComparer (cross-assembly support)
-            if (current.HasGeneratedEqualityComparer())
-            {
-                return current;
-            }
+        /// <summary>The nearest equality-owning ancestor exposes a generated EqualityComparer ([Equatable] or cross-assembly), with no hand-written contract between it and this type; delegate to that comparer.</summary>
+        Comparer,
 
-            current = current.BaseType;
-        }
-        return null;
+        /// <summary>A comparer-owning ancestor exists, but a hand-written complete contract sits between it and this type. base.Equals() honors that intermediate, but its members are invisible to the (inherited) comparer, so Inequalities must go through the base-equality bridge instead of delegating member-level.</summary>
+        ComparerBehindManual,
+
+        /// <summary>An ancestor hand-rolls a complete Equals/GetHashCode contract and no comparer exists anywhere; delegate via base.Equals()/base.GetHashCode() and the bridge.</summary>
+        Manual,
     }
 
     /// <summary>
-    /// Determines if any ancestor in the inheritance chain has a generated EqualityComparer.
-    /// This includes types with [Equatable] attribute or types with a generated EqualityComparer (for cross-assembly).
-    /// If so, calling the base comparer will reach that implementation.
+    /// Base types whose <c>Equals</c>/<c>GetHashCode</c> are provided by the runtime and must never
+    /// be treated as a hand-written value-equality contract (they end the inheritance walk).
     /// </summary>
+    static bool IsWellKnownEqualityBase(ITypeSymbol type) =>
+        type.SpecialType is SpecialType.System_Object or SpecialType.System_ValueType or SpecialType.System_Enum;
 
     /// <summary>
-    /// Collects all properties from ancestor types that don't have [Equatable] or a generated EqualityComparer.
-    /// Stops when reaching System.Object, a type with [Equatable], or a type with the generated EqualityComparer.
+    /// True if the type owns equality through a generated comparer — it has <c>[Equatable]</c> or a
+    /// generated <c>EqualityComparer</c> (the cross-assembly signal). Calling its comparer reaches it.
+    /// </summary>
+    static bool OwnsEqualityViaComparer(INamedTypeSymbol type, AttributesMetadata attributesMetadata) =>
+        type.HasAttribute(attributesMetadata.Equatable) || type.HasGeneratedEqualityComparer();
+
+    /// <summary>
+    /// True if the type declares its own <c>public override bool Equals(object)</c>.
+    /// </summary>
+    static bool DeclaresEqualsObjectOverride(INamedTypeSymbol type) =>
+        type.GetMembers("Equals").OfType<IMethodSymbol>().Any(SymbolExtensions.IsEqualsObjectOverride);
+
+    /// <summary>
+    /// True if the type declares its own <c>public override int GetHashCode()</c>.
+    /// </summary>
+    static bool DeclaresGetHashCodeOverride(INamedTypeSymbol type) =>
+        type.GetMembers("GetHashCode").OfType<IMethodSymbol>().Any(SymbolExtensions.IsGetHashCodeOverride);
+
+    /// <summary>
+    /// True if the type hand-rolls a complete equality contract — it overrides BOTH <c>Equals(object)</c>
+    /// and <c>GetHashCode</c> on the same type (and is not a record, whose equality is compiler-managed).
+    /// Requiring both keeps <c>base.Equals()</c>/<c>base.GetHashCode()</c> delegation mutually consistent.
+    /// Callers exclude <c>[Equatable]</c>/comparer ancestors before reaching this check.
+    /// </summary>
+    static bool DeclaresManualEqualityPair(INamedTypeSymbol type) =>
+        !type.IsRecord
+        && DeclaresEqualsObjectOverride(type)
+        && DeclaresGetHashCodeOverride(type);
+
+    /// <summary>
+    /// Classifies how the base chain owns equality, in a single upward walk. A generated comparer
+    /// <em>anywhere</em> in the chain wins (a derived type delegates to the nearest inherited comparer);
+    /// whether a hand-written contract sits below it decides <see cref="BaseEqualityOwnership.Comparer"/>
+    /// vs <see cref="BaseEqualityOwnership.ComparerBehindManual"/>. With no comparer at all, a hand-written
+    /// complete contract makes the base <see cref="BaseEqualityOwnership.Manual"/>. Stops at well-known
+    /// bases (object/ValueType/Enum) that never carry a user contract. <paramref name="immediateBaseHasComparer"/>
+    /// reports whether the immediate base (the first ancestor visited) owns its own comparer.
+    /// </summary>
+    static BaseEqualityOwnership ClassifyBaseEquality(INamedTypeSymbol? baseType, AttributesMetadata attributesMetadata, out bool immediateBaseHasComparer)
+    {
+        immediateBaseHasComparer = false;
+        var hasManual = false;
+        var isImmediate = true;
+        for (var current = baseType; current != null && !IsWellKnownEqualityBase(current); current = current.BaseType, isImmediate = false)
+        {
+            var ownsComparer = OwnsEqualityViaComparer(current, attributesMetadata);
+            if (isImmediate)
+                immediateBaseHasComparer = ownsComparer;
+
+            if (ownsComparer)
+                return hasManual ? BaseEqualityOwnership.ComparerBehindManual : BaseEqualityOwnership.Comparer;
+
+            if (!hasManual && DeclaresManualEqualityPair(current))
+                hasManual = true;
+        }
+
+        return hasManual ? BaseEqualityOwnership.Manual : BaseEqualityOwnership.None;
+    }
+
+    /// <summary>
+    /// Collects all properties from ancestor types that don't own their equality.
+    /// Stops when reaching System.Object, a type with [Equatable], a type with the generated
+    /// EqualityComparer, or a type that hand-rolls a complete equality contract (Equals + GetHashCode) —
+    /// the latter's members are delegated through base.Equals()/base.GetHashCode() instead.
     /// Excludes properties that are overridden by the current type (they'll be handled by BuildEqualityModels).
     /// </summary>
     static EquatableImmutableArray<EqualityMemberModel> CollectInheritedProperties(
@@ -183,16 +252,12 @@ sealed class EqualityTypeModelTransformer
         var builder = ImmutableArray.CreateBuilder<EqualityMemberModel>();
         var current = baseType;
 
-        while (current != null && current.SpecialType != SpecialType.System_Object)
+        while (current != null && !IsWellKnownEqualityBase(current))
         {
-            // Stop if this ancestor has [Equatable] - it will handle its own equality via its EqualityComparer
-            if (current.HasAttribute(attributesMetadata.Equatable))
-            {
-                break;
-            }
-
-            // Stop if this ancestor has a generated EqualityComparer (cross-assembly detection)
-            if (current.HasGeneratedEqualityComparer())
+            // Stop at an ancestor that owns equality: it either exposes a generated comparer, or
+            // hand-rolls a complete contract that base.Equals()/base.GetHashCode() delegates to.
+            // Collecting its (and its ancestors') members here would compare them twice.
+            if (OwnsEqualityViaComparer(current, attributesMetadata) || DeclaresManualEqualityPair(current))
             {
                 break;
             }
