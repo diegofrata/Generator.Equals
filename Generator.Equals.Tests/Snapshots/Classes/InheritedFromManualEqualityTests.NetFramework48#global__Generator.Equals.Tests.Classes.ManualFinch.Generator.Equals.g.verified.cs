@@ -44,7 +44,8 @@ namespace Generator.Equals.Tests.Classes
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             
-            return base.Equals(other as global::Generator.Equals.Tests.Classes.IEquatableBird)
+            return other.GetType() == this.GetType()
+                && base.Equals(other as global::Generator.Equals.Tests.Classes.IEquatableBird)
                 && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.Height!, other.Height!)
                 && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.Color!, other.Color!)
                 ;

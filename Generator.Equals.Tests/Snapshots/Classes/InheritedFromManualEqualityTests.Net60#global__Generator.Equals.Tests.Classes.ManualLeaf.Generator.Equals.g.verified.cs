@@ -44,7 +44,8 @@ namespace Generator.Equals.Tests.Classes
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             
-            return base.Equals((object?) other)
+            return other.GetType() == this.GetType()
+                && base.Equals((object?) other)
                 && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.Level!, other.Level!)
                 && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.Name!, other.Name!)
                 ;

@@ -110,7 +110,9 @@ public sealed class CrossAssemblyManualBaseTests
             "a hand-written base with no comparer needs the bridge");
         generated.Should().Contain("if (!x.__BaseEquals(y))",
             "Inequalities reports the base portion coarsely via the bridge");
-        generated.Should().NotContain("other.GetType() == this.GetType()",
+        generated.Should().Contain("other.GetType() == this.GetType()",
+            "a hand-written base gives no exact-runtime-type guarantee, so the guard stays in front of the delegation");
+        generated.Should().NotContain("Equals(this.Name!, other.Name!)",
             "delegation must replace the property-comparison fallback");
     }
 

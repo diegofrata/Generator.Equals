@@ -103,7 +103,12 @@ namespace Generator.Equals.Generators
             // compare the exact runtime type; inherited members are carried by the collected models.
             //
             // See BaseEqualsArgument for how the argument cast selects the right overload.
-            if (DelegatesToBase(model))
+            //
+            // A generated comparer root enforces the exact-runtime-type check itself (its Equals compares
+            // other.GetType() to this.GetType(), which are the real runtime types even when reached via
+            // base.Equals). A hand-written base offers no such guarantee - a loose `obj is Animal a` accepts
+            // any subclass - so when the delegated chain has no comparer root, keep the check here.
+            if (DelegatesToBase(model) && model.BaseHasEquatable)
             {
                 writer.WriteLine($"return base.Equals({BaseEqualsArgument(model)})");
             }
@@ -113,6 +118,10 @@ namespace Generator.Equals.Generators
             }
 
             writer.Indent++;
+            if (DelegatesToBase(model) && !model.BaseHasEquatable)
+            {
+                writer.WriteLine($"&& base.Equals({BaseEqualsArgument(model)})");
+            }
             // Include inherited members (when no ancestor has [Equatable])
             BuildMembersEquality(model.InheritedEqualityModels, writer, "this", "other");
             BuildMembersEquality(model.BuildEqualityModels, writer, "this", "other");
