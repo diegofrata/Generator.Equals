@@ -197,8 +197,8 @@ namespace Generator.Equals.Generators
                 // the nested comparer's Inequalities can reach its (otherwise skipped) members.
                 if (NeedsBaseEqualityBridge(model))
                 {
-                    // castArgumentToObject: false — a record binds to its typed Equals directly.
-                    BuildBaseEqualityBridge(model, writer, castArgumentToObject: false);
+                    // A record binds to its typed Equals directly; no cast needed.
+                    BuildBaseEqualityBridge(model, writer, "other");
                 }
 
                 BuildNestedEqualityComparer(model, writer);

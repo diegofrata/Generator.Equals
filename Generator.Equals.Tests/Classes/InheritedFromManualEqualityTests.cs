@@ -236,6 +236,41 @@ public partial class InheritedFromManualEqualityTests : SnapshotTestBase
     public void IEquatableOnlyBaseEquality(Sparrow a, Sparrow b, bool expected) =>
         EqualityAssert.Verify(a, b, expected);
 
+    // IEquatable<TSelf>-only GRANDPARENT behind a plain intermediate. The typed Equals lives on the
+    // grandparent, not the immediate base, so delegation must cast to the grandparent's type; casting
+    // to the plain intermediate (or object) would bind to object.Equals and compare by reference.
+    public class PlainPerch : IEquatableBird
+    {
+        public PlainPerch(string species, int height) : base(species) => Height = height;
+
+        public int Height { get; }
+    }
+
+    [Equatable]
+    public partial class Finch : PlainPerch
+    {
+        public Finch(string species, int height, string color) : base(species, height) => Color = color;
+
+        public string Color { get; }
+    }
+
+    public static TheoryData<Finch, Finch, bool> IEquatableGrandparentCases => new()
+    {
+        { new Finch("Robin", 3, "red"), new Finch("Robin", 3, "red"), true },
+        // Grandparent Species differs only by case -> equal only if its IEquatable is delegated to
+        { new Finch("Robin", 3, "red"), new Finch("ROBIN", 3, "red"), true },
+        { new Finch("Robin", 3, "red"), new Finch("Wren", 3, "red"), false },
+        // Plain intermediate Height differs -> not equal (collected member)
+        { new Finch("Robin", 3, "red"), new Finch("Robin", 4, "red"), false },
+        // Own member (Color) differs -> not equal
+        { new Finch("Robin", 3, "red"), new Finch("Robin", 3, "blue"), false },
+    };
+
+    [Theory]
+    [MemberData(nameof(IEquatableGrandparentCases))]
+    public void IEquatableOnlyGrandparentEquality(Finch a, Finch b, bool expected) =>
+        EqualityAssert.Verify(a, b, expected);
+
     // One combined source so a single snapshot captures every shape (the snapshot file name is keyed
     // to this test file, so all scenarios must share one VerifyGeneratedSource call):
     //  - ManualBaseDog            : delegates to a complete hand-written base
@@ -244,6 +279,8 @@ public partial class InheritedFromManualEqualityTests : SnapshotTestBase
     //  - GetHashCodeOnlyChild (CS0659): incomplete base contract -> falls back to property comparison
     //  - SealedManualDog          : sealed [Equatable] over a hand-written base (private Equals, bridge)
     //  - IgnoringManualDog        : IgnoreInheritedMembers=true over a hand-written base (no delegation)
+    //  - ManualSparrow            : IEquatable<TSelf>-only base, delegated via the typed cast
+    //  - ManualFinch              : IEquatable<TSelf>-only grandparent behind a plain parent (typed cast to the grandparent)
     [Theory]
     [MemberData(nameof(TargetFrameworks))]
     public Task VerifyGeneratedCode(TargetFramework fw) =>
@@ -395,6 +432,23 @@ public partial class InheritedFromManualEqualityTests : SnapshotTestBase
                                     public ManualSparrow(string species, int wingspan) : base(species) => Wingspan = wingspan;
 
                                     public int Wingspan { get; }
+                                }
+
+                                // IEquatable<TSelf>-only grandparent behind a plain intermediate: the typed cast targets the
+                                // grandparent (IEquatableBird), not the immediate base, and the parent's member is collected.
+                                public class ManualPlainPerch : IEquatableBird
+                                {
+                                    public ManualPlainPerch(string species, int height) : base(species) => Height = height;
+
+                                    public int Height { get; }
+                                }
+
+                                [Equatable]
+                                public partial class ManualFinch : ManualPlainPerch
+                                {
+                                    public ManualFinch(string species, int height, string color) : base(species, height) => Color = color;
+
+                                    public string Color { get; }
                                 }
                                 """;
 }

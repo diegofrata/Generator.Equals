@@ -91,17 +91,20 @@ sealed class EqualityTypeModelTransformer
         // reached only through a non-comparer intermediate, `{immediateBase}.EqualityComparer` resolves to
         // the inherited ancestor comparer and skips the intermediate's members, so member-level
         // Inequalities delegation is only valid when the immediate base owns its comparer directly.
-        var baseEqualityOwnership = ClassifyBaseEquality(symbol.BaseType, attributesMetadata, out var immediateBaseHasComparer);
+        var baseEqualityOwnership = ClassifyBaseEquality(symbol.BaseType, attributesMetadata, out var immediateBaseHasComparer, out var manualEqualityOwner);
         var baseHasEquatable = baseEqualityOwnership
             is BaseEqualityOwnership.Comparer or BaseEqualityOwnership.ComparerBehindManual;
         var baseHasManualEquality = baseEqualityOwnership
             is BaseEqualityOwnership.Manual or BaseEqualityOwnership.ComparerBehindManual;
 
-        // Whether the immediate base exposes a public typed Equals(TSelf) (implicit IEquatable<TSelf>).
-        // When it does, base delegation casts to the base type and binds to that typed Equals; otherwise
-        // it falls back to base.Equals((object?) other). Only consumed on the hand-written-base path.
-        var immediateBaseHasTypedEquals = symbol.BaseType is { } typedBase
-            && DeclaresPublicTypedEquals(typedBase);
+        // When the hand-written ancestor exposes a public typed Equals(TSelf) (implicit IEquatable<TSelf>),
+        // base delegation casts to THAT ancestor's type so overload resolution binds to its typed Equals;
+        // otherwise it falls back to base.Equals((object?) other). The ancestor need not be the immediate
+        // base: a plain intermediate may sit in between, and casting to the intermediate would miss the
+        // typed overload (binding to object.Equals when no Equals(object) override exists).
+        var manualBaseTypedEqualsTarget = manualEqualityOwner is { } owner && DeclaresPublicTypedEquals(owner)
+            ? owner.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
+            : null;
 
         var bems = EqualityMemberModelTransformer.BuildEqualityModels(symbol, attributesMetadata, explicitMode, filter);
 
@@ -129,7 +132,7 @@ sealed class EqualityTypeModelTransformer
             BaseHasEquatable = baseHasEquatable,
             BaseHasManualEquality = baseHasManualEquality,
             ImmediateBaseHasComparer = immediateBaseHasComparer,
-            ImmediateBaseHasTypedEquals = immediateBaseHasTypedEquals,
+            ManualBaseTypedEqualsTarget = manualBaseTypedEqualsTarget,
             InheritedEqualityModels = inheritedModels,
             GenerateClassEqualityOperators = generateClassEqualityOperators,
         };
@@ -225,11 +228,13 @@ sealed class EqualityTypeModelTransformer
     /// vs <see cref="BaseEqualityOwnership.ComparerBehindManual"/>. With no comparer at all, a hand-written
     /// complete contract makes the base <see cref="BaseEqualityOwnership.Manual"/>. Stops at well-known
     /// bases (object/ValueType/Enum) that never carry a user contract. <paramref name="immediateBaseHasComparer"/>
-    /// reports whether the immediate base (the first ancestor visited) owns its own comparer.
+    /// reports whether the immediate base (the first ancestor visited) owns its own comparer, and
+    /// <paramref name="manualEqualityOwner"/> the ancestor that hand-rolls the complete contract (if any).
     /// </summary>
-    static BaseEqualityOwnership ClassifyBaseEquality(INamedTypeSymbol? baseType, AttributesMetadata attributesMetadata, out bool immediateBaseHasComparer)
+    static BaseEqualityOwnership ClassifyBaseEquality(INamedTypeSymbol? baseType, AttributesMetadata attributesMetadata, out bool immediateBaseHasComparer, out INamedTypeSymbol? manualEqualityOwner)
     {
         immediateBaseHasComparer = false;
+        manualEqualityOwner = null;
         var hasManual = false;
         var isImmediate = true;
         for (var current = baseType; current != null && !IsWellKnownEqualityBase(current); current = current.BaseType, isImmediate = false)
@@ -242,7 +247,10 @@ sealed class EqualityTypeModelTransformer
                 return hasManual ? BaseEqualityOwnership.ComparerBehindManual : BaseEqualityOwnership.Comparer;
 
             if (!hasManual && DeclaresManualEqualityPair(current))
+            {
                 hasManual = true;
+                manualEqualityOwner = current;
+            }
         }
 
         return hasManual ? BaseEqualityOwnership.Manual : BaseEqualityOwnership.None;

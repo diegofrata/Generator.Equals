@@ -57,12 +57,12 @@ sealed record EqualityTypeModel
     public bool ImmediateBaseHasComparer { get; init; }
 
     /// <summary>
-    /// Whether the immediate base type exposes a public typed <c>Equals(TSelf)</c> (implicit
-    /// <c>IEquatable&lt;TSelf&gt;</c>). When delegating to a hand-written base, the class generator prefers
-    /// casting to the base type (binding to that typed <c>Equals</c>) and falls back to
-    /// <c>base.Equals((object?) other)</c> only when this is false.
+    /// Fully-qualified name of the hand-written ancestor whose public typed <c>Equals(TSelf)</c> (implicit
+    /// <c>IEquatable&lt;TSelf&gt;</c>) base delegation binds to, or null when no such overload exists. When
+    /// set, the class generator emits <c>base.Equals(other as TAncestor)</c>; otherwise it falls back to
+    /// <c>base.Equals((object?) other)</c>. The ancestor may sit behind plain intermediates.
     /// </summary>
-    public bool ImmediateBaseHasTypedEquals { get; init; }
+    public string? ManualBaseTypedEqualsTarget { get; init; }
 
     /// <summary>
     /// For classes, indicates whether the decorated class should generate == and != operators.

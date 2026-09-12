@@ -27,13 +27,22 @@ namespace Generator.Equals.Generators
             && model.BaseHasManualEquality;
 
         /// <summary>
-        /// Whether base delegation must route through <c>Equals(object)</c> (the fallback). True only for a
-        /// hand-written base that exposes no public typed <c>Equals(TSelf)</c> to bind to. When false,
-        /// delegation casts to the base type and binds to its typed <c>Equals</c> — the base's
-        /// <c>IEquatable&lt;TSelf&gt;</c>, or (on the comparer path) the generated typed <c>Equals</c>.
+        /// The argument expression for the <c>base.Equals(...)</c> delegation call. On the comparer path it
+        /// casts to the immediate base, binding to the generated typed <c>Equals</c>. On the hand-written
+        /// path it casts to the ancestor that owns the contract when that ancestor exposes a public typed
+        /// <c>Equals(TSelf)</c>, and otherwise to <c>object</c> so overload resolution reaches the
+        /// hand-written <c>Equals(object)</c> rather than an <c>[Equatable]</c> ancestor's generated
+        /// <c>Equals(TAncestor?)</c> (which would skip the hand-written type's own members).
         /// </summary>
-        static bool DelegatesWithObjectCast(EqualityTypeModel model) =>
-            model.BaseHasManualEquality && !model.ImmediateBaseHasTypedEquals;
+        static string BaseEqualsArgument(EqualityTypeModel model)
+        {
+            if (!model.BaseHasManualEquality)
+                return $"other as {model.BaseTypeFullname}";
+
+            return model.ManualBaseTypedEqualsTarget is { } target
+                ? $"other as {target}"
+                : "(object?) other";
+        }
 
         static void BuildDelegatingMethods(
             EqualityTypeModel model,
@@ -79,7 +88,6 @@ namespace Generator.Equals.Generators
         )
         {
             var symbolName = model.Fullname;
-            var baseTypeFullname = model.BaseTypeFullname;
 
             writer.WriteLine(InheritDocComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
@@ -94,16 +102,10 @@ namespace Generator.Equals.Generators
             // complete contract), chain through base.Equals() so its semantics are honored. Otherwise
             // compare the exact runtime type; inherited members are carried by the collected models.
             //
-            // Prefer the base's typed Equals: casting to the base type binds to its IEquatable<TSelf>
-            // (or, on the comparer path, the generated typed Equals). Fall back to the object cast only
-            // for a hand-written base that has no typed Equals — there, casting to the base type would
-            // instead bind to an [Equatable] ancestor's generated protected Equals(TAncestor?) and skip
-            // the hand-written type's own members.
+            // See BaseEqualsArgument for how the argument cast selects the right overload.
             if (DelegatesToBase(model))
             {
-                writer.WriteLine(DelegatesWithObjectCast(model)
-                    ? "return base.Equals((object?) other)"
-                    : $"return base.Equals(other as {baseTypeFullname})");
+                writer.WriteLine($"return base.Equals({BaseEqualsArgument(model)})");
             }
             else
             {
@@ -264,9 +266,12 @@ namespace Generator.Equals.Generators
                 // base is reached through its (possibly inherited) generated comparer instead.
                 if (DelegatesToManualBase(model))
                 {
-                    // Mirror BuildEquals' cast choice: prefer the base's typed Equals, fall back to
-                    // Equals(object) only when the base exposes no typed Equals.
-                    BuildBaseEqualityBridge(model, writer, castArgumentToObject: DelegatesWithObjectCast(model));
+                    // Mirror BuildEquals' cast choice so both paths bind to the same base overload. The
+                    // bridge parameter is already typed as the immediate base, so a cast to it is redundant.
+                    var bridgeArgument = model.ManualBaseTypedEqualsTarget == model.BaseTypeFullname
+                        ? "other"
+                        : BaseEqualsArgument(model);
+                    BuildBaseEqualityBridge(model, writer, bridgeArgument);
                 }
 
                 BuildNestedEqualityComparer(model, writer);

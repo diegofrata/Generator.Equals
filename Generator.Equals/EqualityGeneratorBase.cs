@@ -507,15 +507,12 @@ namespace Generator.Equals
         /// <summary>
         /// Emits the private <c>__BaseEquals</c> bridge that lets the nested comparer reach the base
         /// type's <c>Equals</c> through a non-virtual base call (which cannot be written from inside the
-        /// comparer type). When <paramref name="castArgumentToObject"/> is true the argument is cast to
-        /// <c>object</c> so overload resolution binds to the base's hand-written <c>Equals(object)</c>
-        /// rather than an <c>[Equatable]</c> ancestor's generated <c>Equals(TAncestor?)</c> (a more
-        /// specific overload that would skip the hand-written type's own members); records bind to their
-        /// typed <c>Equals</c> directly and pass false.
+        /// comparer type). <paramref name="argument"/> is the expression passed to <c>base.Equals</c>; the
+        /// caller chooses the cast that binds to the intended base overload (see the class generator's
+        /// <c>BaseEqualsArgument</c>). Records bind to their typed <c>Equals</c> directly and pass "other".
         /// </summary>
-        protected static void BuildBaseEqualityBridge(EqualityTypeModel model, IndentedTextWriter writer, bool castArgumentToObject)
+        protected static void BuildBaseEqualityBridge(EqualityTypeModel model, IndentedTextWriter writer, string argument)
         {
-            var argument = castArgumentToObject ? "(object?) other" : "other";
             writer.WriteLine();
             writer.WriteLine("// Non-virtual bridge to the base type's Equals, for use by the nested comparer.");
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
