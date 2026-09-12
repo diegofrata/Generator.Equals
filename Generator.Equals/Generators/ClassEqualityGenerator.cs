@@ -44,6 +44,15 @@ namespace Generator.Equals.Generators
                 : "(object?) other";
         }
 
+        /// <summary>
+        /// Whether the generated <c>Equals</c> enforces <c>other.GetType() == this.GetType()</c> itself.
+        /// False only when delegating to a generated comparer root, which enforces the check on the real
+        /// runtime types even when reached through <c>base.Equals</c>. <c>Inequalities</c> mirrors this so
+        /// a runtime-type mismatch is reported rather than silently yielding nothing.
+        /// </summary>
+        static bool ChecksExactRuntimeType(EqualityTypeModel model) =>
+            !(DelegatesToBase(model) && model.BaseHasEquatable);
+
         static void BuildDelegatingMethods(
             EqualityTypeModel model,
             IndentedTextWriter writer
@@ -108,7 +117,7 @@ namespace Generator.Equals.Generators
             // other.GetType() to this.GetType(), which are the real runtime types even when reached via
             // base.Equals). A hand-written base offers no such guarantee - a loose `obj is Animal a` accepts
             // any subclass - so when the delegated chain has no comparer root, keep the check here.
-            if (DelegatesToBase(model) && model.BaseHasEquatable)
+            if (!ChecksExactRuntimeType(model))
             {
                 writer.WriteLine($"return base.Equals({BaseEqualsArgument(model)})");
             }
@@ -118,7 +127,7 @@ namespace Generator.Equals.Generators
             }
 
             writer.Indent++;
-            if (DelegatesToBase(model) && !model.BaseHasEquatable)
+            if (ChecksExactRuntimeType(model) && DelegatesToBase(model))
             {
                 writer.WriteLine($"&& base.Equals({BaseEqualsArgument(model)})");
             }
@@ -231,6 +240,18 @@ namespace Generator.Equals.Generators
             writer.WriteLine("yield break;");
             writer.AppendCloseBracket();
             writer.WriteLine();
+
+            if (ChecksExactRuntimeType(model))
+            {
+                // Mirror Equals' exact-runtime-type guard: different runtime types are unequal as a whole,
+                // so report the objects themselves (no member can be blamed) and stop.
+                writer.WriteLine("if (x.GetType() != y.GetType())");
+                writer.AppendOpenBracket();
+                writer.WriteLine("yield return new global::Generator.Equals.Inequality(path, x, y);");
+                writer.WriteLine("yield break;");
+                writer.AppendCloseBracket();
+                writer.WriteLine();
+            }
 
             if (!model.IgnoreInheritedMembers && model.BaseHasEquatable && !model.BaseHasManualEquality)
             {
