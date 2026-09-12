@@ -339,25 +339,17 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
 
         foreach (var method in typeSymbol.GetMembers().OfType<IMethodSymbol>())
         {
-            if (method.IsEqualsObjectOverride())
-            {
-                var location = method.Locations.FirstOrDefault() ?? Location.None;
-                context.ReportDiagnostic(Diagnostic.Create(
-                    DiagnosticDescriptors.ManualEqualsImplementation,
-                    location,
-                    typeSymbol.Name,
-                    "Equals(object)"));
-            }
+            var member = method.IsEqualsObjectOverride() ? "Equals(object)"
+                : method.IsGetHashCodeOverride() ? "GetHashCode()"
+                : null;
+            if (member is null)
+                continue;
 
-            if (method.IsGetHashCodeOverride())
-            {
-                var location = method.Locations.FirstOrDefault() ?? Location.None;
-                context.ReportDiagnostic(Diagnostic.Create(
-                    DiagnosticDescriptors.ManualEqualsImplementation,
-                    location,
-                    typeSymbol.Name,
-                    "GetHashCode()"));
-            }
+            context.ReportDiagnostic(Diagnostic.Create(
+                DiagnosticDescriptors.ManualEqualsImplementation,
+                method.Locations.FirstOrDefault() ?? Location.None,
+                typeSymbol.Name,
+                member));
         }
     }
 

@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Classes;
 
@@ -93,10 +94,7 @@ public partial class OverridingEqualsTests : SnapshotTestBase
 
         // The hand-written Manager is opaque, so the base portion is reported as ONE coarse inequality:
         // an empty path (not a named member such as "Department") carrying the whole objects.
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Segments.Should().BeEmpty("a hand-written base is opaque, so its diff is coarse");
-        diffs[0].Left.Should().BeSameAs(a);
-        diffs[0].Right.Should().BeSameAs(b);
+        diffs.Should().Equal([Ineq(a, b)], "a hand-written base is opaque, so its diff is coarse");
 
         SeniorManager.EqualityComparer.Default.Inequalities(a, a).Should()
             .BeEmpty("equal instances have no inequalities");

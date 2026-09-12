@@ -67,7 +67,7 @@ namespace Generator.Equals.Tests.Classes
         
         // Non-virtual bridge to the base type's Equals, for use by the nested comparer.
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-        private bool __BaseEquals(global::Generator.Equals.Tests.Classes.IEquatableBird? other) => base.Equals(other);
+        private bool __BaseEquals(global::Generator.Equals.Tests.Classes.IEquatableBird? other) => base.Equals(other as global::Generator.Equals.Tests.Classes.IEquatableBird);
         
         /// <summary>
         /// An equality comparer for the enclosing type that uses the generated equality semantics.

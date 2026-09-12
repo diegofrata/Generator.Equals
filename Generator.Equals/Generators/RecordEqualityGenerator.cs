@@ -49,7 +49,6 @@ namespace Generator.Equals.Generators
                 writer.WriteLine($"base.Equals(({baseTypeFullname}?)other)");
             }
 
-            // Include inherited members (when no ancestor has [Equatable])
             BuildMembersEquality(model.InheritedEqualityModels, writer, "this", "other");
             BuildMembersEquality(model.BuildEqualityModels, writer, "this", "other");
 
@@ -85,7 +84,6 @@ namespace Generator.Equals.Generators
                 writer.WriteLine("hashCode.Add(base.GetHashCode());");
             }
 
-            // Include inherited members (when no ancestor has [Equatable])
             BuildMembersHashCode(model.InheritedEqualityModels, writer, "this");
             BuildMembersHashCode(model.BuildEqualityModels, writer, "this");
 
@@ -161,22 +159,10 @@ namespace Generator.Equals.Generators
             writer.AppendCloseBracket();
             writer.WriteLine();
 
-            if (!model.IgnoreInheritedMembers && model.ImmediateBaseHasComparer)
-            {
-                // The immediate base owns its comparer: delegate member-level (fine-grained) detail.
-                BuildBaseComparerInequalityDelegation(model, writer);
-                writer.WriteLine();
-            }
-            else if (NeedsBaseEqualityBridge(model))
-            {
-                // A non-[Equatable] record intermediate sits between this record and the comparer ancestor.
-                // Its members are honored by base.Equals but invisible to the inherited comparer, so report
-                // the whole base portion coarsely via the bridge when base.Equals disagrees.
-                BuildCoarseBaseInequality(writer);
-                writer.WriteLine();
-            }
+            BuildBaseInequalities(model, writer,
+                memberLevel: !model.IgnoreInheritedMembers && model.ImmediateBaseHasComparer,
+                coarse: NeedsBaseEqualityBridge(model));
 
-            // Include inherited members (when no ancestor has [Equatable])
             BuildMembersInequalities(model.InheritedEqualityModels, writer, "x", "y");
             BuildMembersInequalities(model.BuildEqualityModels, writer, "x", "y");
 

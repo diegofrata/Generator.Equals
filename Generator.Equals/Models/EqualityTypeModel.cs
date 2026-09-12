@@ -2,6 +2,37 @@
 
 namespace Generator.Equals.Models;
 
+/// <summary>
+/// How the base inheritance chain owns equality, if at all. Computed once by the transformer in a single
+/// upward walk: a generated comparer <em>anywhere</em> wins; whether a hand-written contract sits below it
+/// decides <see cref="Comparer"/> vs <see cref="ComparerBehindManual"/>; with no comparer at all, a
+/// hand-written complete contract makes the base <see cref="Manual"/>.
+/// </summary>
+enum BaseEqualityOwnership
+{
+    /// <summary>No ancestor owns equality; inherited members are compared explicitly.</summary>
+    None,
+
+    /// <summary>
+    /// The nearest equality-owning ancestor exposes a generated EqualityComparer ([Equatable] or
+    /// cross-assembly) with no hand-written contract in between; delegate to that comparer.
+    /// </summary>
+    Comparer,
+
+    /// <summary>
+    /// A comparer ancestor exists, but a hand-written complete contract sits between it and this type.
+    /// base.Equals() honors that contract, but its members are invisible to the (inherited) comparer, so
+    /// Inequalities must go through the base-equality bridge instead of delegating member-level.
+    /// </summary>
+    ComparerBehindManual,
+
+    /// <summary>
+    /// An ancestor hand-rolls a complete Equals/GetHashCode contract and no comparer exists anywhere;
+    /// delegate via base.Equals()/base.GetHashCode() and the bridge.
+    /// </summary>
+    Manual,
+}
+
 sealed record EqualityTypeModel
 {
     public required SyntaxKind SyntaxKind { get; init; }
@@ -23,46 +54,36 @@ sealed record EqualityTypeModel
     public required EquatableImmutableArray<EqualityMemberModel> BuildEqualityModels { get; init; }
 
     /// <summary>
-    /// Properties collected from ancestor types that don't have [Equatable].
-    /// These are only populated when IgnoreInheritedMembers=false and BaseHasEquatable=false.
+    /// Properties of plain ancestors (no equality of their own) below the nearest equality-owning
+    /// ancestor, compared explicitly by this type. Empty when IgnoreInheritedMembers=true.
     /// </summary>
     public EquatableImmutableArray<EqualityMemberModel> InheritedEqualityModels { get; init; }
     public required string Fullname { get; init; }
 
-    /// <summary>
-    /// For classes, indicates whether the base type has [Equatable] or a generated EqualityComparer.
-    /// If true, the generated equality delegates to the base's generated comparer / <c>base.Equals()</c>.
-    /// </summary>
-    public bool BaseHasEquatable { get; init; }
+    /// <summary>How the base chain owns equality. See <see cref="BaseEqualityOwnership"/>.</summary>
+    public BaseEqualityOwnership BaseEquality { get; init; }
 
     /// <summary>
-    /// For classes, indicates that the delegated base portion includes a hand-written complete equality
-    /// contract — some ancestor overrides BOTH <c>Equals(object)</c> and <c>GetHashCode()</c> on a single
-    /// type. Such a contract is honored by <c>base.Equals()</c>/<c>base.GetHashCode()</c> but is invisible
-    /// to member-level comparer delegation, so <c>Inequalities</c> reports the base portion coarsely via the
-    /// <c>__BaseEquals</c> bridge. This is true both when no comparer exists anywhere (pure manual base) and
-    /// when a comparer ancestor sits above a hand-written intermediate (<see cref="BaseHasEquatable"/> is
-    /// then also true).
+    /// Whether a generated EqualityComparer is inherited from an ancestor (so the nested comparer
+    /// declared here hides it and needs the <c>new</c> modifier).
     /// </summary>
-    public bool BaseHasManualEquality { get; init; }
+    public bool BaseHasEquatable => BaseEquality is BaseEqualityOwnership.Comparer or BaseEqualityOwnership.ComparerBehindManual;
 
     /// <summary>
-    /// Whether the IMMEDIATE base type exposes its own generated <c>EqualityComparer</c> (it has
-    /// <c>[Equatable]</c> or a generated comparer). When false but <see cref="BaseHasEquatable"/> is true,
-    /// a comparer ancestor is reached only through a non-comparer intermediate, so
-    /// <c>{immediateBase}.EqualityComparer</c> resolves to the inherited ancestor comparer and skips that
-    /// intermediate's members. The record generator uses this to decide between member-level
-    /// <c>Inequalities</c> delegation and reporting the base portion coarsely via the bridge.
+    /// Whether the IMMEDIATE base type exposes its own generated EqualityComparer. When false but
+    /// <see cref="BaseHasEquatable"/> is true, <c>{immediateBase}.EqualityComparer</c> resolves to an
+    /// inherited ancestor comparer that knows nothing about the intermediate's members. Records use this
+    /// to choose between member-level Inequalities delegation and the coarse bridge.
     /// </summary>
     public bool ImmediateBaseHasComparer { get; init; }
 
     /// <summary>
-    /// Fully-qualified name of the hand-written ancestor whose public typed <c>Equals(TSelf)</c> (implicit
-    /// <c>IEquatable&lt;TSelf&gt;</c>) base delegation binds to, or null when no such overload exists. When
-    /// set, the class generator emits <c>base.Equals(other as TAncestor)</c>; otherwise it falls back to
-    /// <c>base.Equals((object?) other)</c>. The ancestor may sit behind plain intermediates.
+    /// For classes, the argument expression of the <c>base.Equals(...)</c> delegation call, cast so
+    /// overload resolution binds to the intended base overload (the immediate base's generated typed
+    /// Equals, a hand-written ancestor's public typed Equals, or <c>object</c> for a hand-written
+    /// <c>Equals(object)</c>). Null when <see cref="BaseEquality"/> is <see cref="BaseEqualityOwnership.None"/>.
     /// </summary>
-    public string? ManualBaseTypedEqualsTarget { get; init; }
+    public string? BaseEqualsArgument { get; init; }
 
     /// <summary>
     /// For classes, indicates whether the decorated class should generate == and != operators.

@@ -6,52 +6,28 @@ namespace Generator.Equals.Generators
 {
     sealed class ClassEqualityGenerator : EqualityGeneratorBase
     {
-        /// <summary>
-        /// Whether the generated equality should chain through <c>base.Equals()</c>/<c>base.GetHashCode()</c>.
-        /// True when the base owns equality — via [Equatable]/a generated comparer, or a hand-written
-        /// complete contract — and inherited members are not being ignored.
-        /// </summary>
+        /// <summary>Whether Equals/GetHashCode chain through <c>base.Equals()</c>/<c>base.GetHashCode()</c>.</summary>
         static bool DelegatesToBase(EqualityTypeModel model) =>
-            model.BaseTypeName != "object"
-            && !model.IgnoreInheritedMembers
-            && (model.BaseHasEquatable || model.BaseHasManualEquality);
+            !model.IgnoreInheritedMembers && model.BaseEquality != BaseEqualityOwnership.None;
 
         /// <summary>
-        /// Whether delegation targets a hand-written base with no comparer — the case that needs the
-        /// <c>__BaseEquals</c> bridge. Ties bridge emission and its single use in <c>Inequalities</c>
-        /// to one predicate so they cannot drift.
+        /// Whether the delegated chain contains a hand-written contract, which is opaque to (inherited)
+        /// comparers: Inequalities then reports the base portion coarsely through the <c>__BaseEquals</c>
+        /// bridge. One predicate drives both the bridge emission and its use so they cannot drift.
         /// </summary>
-        static bool DelegatesToManualBase(EqualityTypeModel model) =>
-            model.BaseTypeName != "object"
-            && !model.IgnoreInheritedMembers
-            && model.BaseHasManualEquality;
-
-        /// <summary>
-        /// The argument expression for the <c>base.Equals(...)</c> delegation call. On the comparer path it
-        /// casts to the immediate base, binding to the generated typed <c>Equals</c>. On the hand-written
-        /// path it casts to the ancestor that owns the contract when that ancestor exposes a public typed
-        /// <c>Equals(TSelf)</c>, and otherwise to <c>object</c> so overload resolution reaches the
-        /// hand-written <c>Equals(object)</c> rather than an <c>[Equatable]</c> ancestor's generated
-        /// <c>Equals(TAncestor?)</c> (which would skip the hand-written type's own members).
-        /// </summary>
-        static string BaseEqualsArgument(EqualityTypeModel model)
-        {
-            if (!model.BaseHasManualEquality)
-                return $"other as {model.BaseTypeFullname}";
-
-            return model.ManualBaseTypedEqualsTarget is { } target
-                ? $"other as {target}"
-                : "(object?) other";
-        }
+        static bool UsesBaseEqualityBridge(EqualityTypeModel model) =>
+            !model.IgnoreInheritedMembers
+            && model.BaseEquality is BaseEqualityOwnership.Manual or BaseEqualityOwnership.ComparerBehindManual;
 
         /// <summary>
         /// Whether the generated <c>Equals</c> enforces <c>other.GetType() == this.GetType()</c> itself.
-        /// False only when delegating to a generated comparer root, which enforces the check on the real
-        /// runtime types even when reached through <c>base.Equals</c>. <c>Inequalities</c> mirrors this so
-        /// a runtime-type mismatch is reported rather than silently yielding nothing.
+        /// A generated comparer root enforces it on the real runtime types even when reached through
+        /// <c>base.Equals</c>; a hand-written base offers no such guarantee (a loose <c>obj is Animal a</c>
+        /// accepts any subclass), so the check is kept in every other case. <c>Inequalities</c> mirrors this
+        /// so a runtime-type mismatch is reported rather than silently yielding nothing.
         /// </summary>
         static bool ChecksExactRuntimeType(EqualityTypeModel model) =>
-            !(DelegatesToBase(model) && model.BaseHasEquatable);
+            model.IgnoreInheritedMembers || !model.BaseHasEquatable;
 
         static void BuildDelegatingMethods(
             EqualityTypeModel model,
@@ -107,31 +83,19 @@ namespace Generator.Equals.Generators
             writer.WriteLine("if (ReferenceEquals(this, other)) return true;");
             writer.WriteLine();
 
-            // When the base owns equality (via [Equatable]/a generated comparer or a hand-written
-            // complete contract), chain through base.Equals() so its semantics are honored. Otherwise
-            // compare the exact runtime type; inherited members are carried by the collected models.
-            //
-            // See BaseEqualsArgument for how the argument cast selects the right overload.
-            //
-            // A generated comparer root enforces the exact-runtime-type check itself (its Equals compares
-            // other.GetType() to this.GetType(), which are the real runtime types even when reached via
-            // base.Equals). A hand-written base offers no such guarantee - a loose `obj is Animal a` accepts
-            // any subclass - so when the delegated chain has no comparer root, keep the check here.
-            if (!ChecksExactRuntimeType(model))
+            if (ChecksExactRuntimeType(model))
             {
-                writer.WriteLine($"return base.Equals({BaseEqualsArgument(model)})");
+                writer.WriteLine("return other.GetType() == this.GetType()");
+                writer.Indent++;
+                if (DelegatesToBase(model))
+                    writer.WriteLine($"&& base.Equals({model.BaseEqualsArgument})");
             }
             else
             {
-                writer.WriteLine("return other.GetType() == this.GetType()");
+                writer.WriteLine($"return base.Equals({model.BaseEqualsArgument})");
+                writer.Indent++;
             }
 
-            writer.Indent++;
-            if (ChecksExactRuntimeType(model) && DelegatesToBase(model))
-            {
-                writer.WriteLine($"&& base.Equals({BaseEqualsArgument(model)})");
-            }
-            // Include inherited members (when no ancestor has [Equatable])
             BuildMembersEquality(model.InheritedEqualityModels, writer, "this", "other");
             BuildMembersEquality(model.BuildEqualityModels, writer, "this", "other");
             writer.WriteLine(";");
@@ -160,7 +124,6 @@ namespace Generator.Equals.Generators
                 ? "hashCode.Add(base.GetHashCode());"
                 : "hashCode.Add(this.GetType());");
 
-            // Include inherited members (when no ancestor has [Equatable])
             BuildMembersHashCode(model.InheritedEqualityModels, writer, "this");
             BuildMembersHashCode(model.BuildEqualityModels, writer, "this");
 
@@ -253,24 +216,10 @@ namespace Generator.Equals.Generators
                 writer.WriteLine();
             }
 
-            if (!model.IgnoreInheritedMembers && model.BaseHasEquatable && !model.BaseHasManualEquality)
-            {
-                // The immediate base owns its comparer (no hand-written contract in between): delegate
-                // member-level detail. Excluding BaseHasManualEquality guards the ComparerBehindManual
-                // case, where the inherited comparer would silently skip the manual intermediate's members.
-                BuildBaseComparerInequalityDelegation(model, writer);
-                writer.WriteLine();
-            }
-            else if (DelegatesToManualBase(model))
-            {
-                // A hand-written contract in the delegated base chain is opaque to (inherited) comparers,
-                // so report one coarse inequality for the whole base portion when base.Equals (via the
-                // bridge) disagrees — keeping Inequalities consistent with Equals.
-                BuildCoarseBaseInequality(writer);
-                writer.WriteLine();
-            }
+            BuildBaseInequalities(model, writer,
+                memberLevel: !model.IgnoreInheritedMembers && model.BaseEquality == BaseEqualityOwnership.Comparer,
+                coarse: UsesBaseEqualityBridge(model));
 
-            // Include inherited members (when no ancestor has [Equatable])
             BuildMembersInequalities(model.InheritedEqualityModels, writer, "x", "y");
             BuildMembersInequalities(model.BuildEqualityModels, writer, "x", "y");
 
@@ -292,17 +241,8 @@ namespace Generator.Equals.Generators
 
                 BuildGetHashCode(model, writer);
 
-                // Only a hand-written base (no comparer to inherit) needs the bridge; an [Equatable]
-                // base is reached through its (possibly inherited) generated comparer instead.
-                if (DelegatesToManualBase(model))
-                {
-                    // Mirror BuildEquals' cast choice so both paths bind to the same base overload. The
-                    // bridge parameter is already typed as the immediate base, so a cast to it is redundant.
-                    var bridgeArgument = model.ManualBaseTypedEqualsTarget == model.BaseTypeFullname
-                        ? "other"
-                        : BaseEqualsArgument(model);
-                    BuildBaseEqualityBridge(model, writer, bridgeArgument);
-                }
+                if (UsesBaseEqualityBridge(model))
+                    BuildBaseEqualityBridge(model, writer, model.BaseEqualsArgument!);
 
                 BuildNestedEqualityComparer(model, writer);
 

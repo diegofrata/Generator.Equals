@@ -1,11 +1,6 @@
-extern alias GeneratorEquals;
-
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using FluentAssertions;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
+
+using static Generator.Equals.Tests.Infrastructure.CrossAssemblyCompilation;
 
 namespace Generator.Equals.Tests.Classes;
 
@@ -18,56 +13,6 @@ namespace Generator.Equals.Tests.Classes;
 /// </summary>
 public sealed class CrossAssemblyManualBaseTests
 {
-    static MetadataReference[] CoreReferences()
-    {
-        var refs = new List<MetadataReference>
-        {
-            MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(System.Attribute).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(EquatableAttribute).Assembly.Location),
-        };
-
-        var runtimeDir = System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory();
-        foreach (var name in new[] { "System.Runtime.dll", "netstandard.dll" })
-        {
-            var path = Path.Combine(runtimeDir, name);
-            if (File.Exists(path))
-                refs.Add(MetadataReference.CreateFromFile(path));
-        }
-
-        return refs.ToArray();
-    }
-
-    static Compilation Compile(string assemblyName, string source, params MetadataReference[] extra) =>
-        CSharpCompilation.Create(
-            assemblyName,
-            [CSharpSyntaxTree.ParseText(source, cancellationToken: TestContext.Current.CancellationToken)],
-            CoreReferences().Concat(extra).ToArray(),
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-    /// <summary>Runs the generator on <paramref name="compilation"/> and returns it with the generated trees added.</summary>
-    static Compilation WithGenerated(Compilation compilation)
-    {
-        CSharpGeneratorDriver
-            .Create(new GeneratorEquals::Generator.Equals.EqualsGenerator().AsSourceGenerator())
-            .RunGeneratorsAndUpdateCompilation(compilation, out var updated, out _, TestContext.Current.CancellationToken);
-        return updated;
-    }
-
-    /// <summary>Runs the generator on <paramref name="compilation"/> and returns the generated source whose hint name contains <paramref name="hintNameContains"/>.</summary>
-    static string GeneratedSourceFor(Compilation compilation, string hintNameContains)
-    {
-        var result = CSharpGeneratorDriver
-            .Create(new GeneratorEquals::Generator.Equals.EqualsGenerator().AsSourceGenerator())
-            .RunGenerators(compilation, TestContext.Current.CancellationToken)
-            .GetRunResult();
-
-        return result.Results
-            .SelectMany(r => r.GeneratedSources)
-            .Single(s => s.HintName.Contains(hintNameContains))
-            .SourceText.ToString();
-    }
-
     [Fact]
     public void ManualClassBase_InReferencedAssembly_IsDelegatedToWithObjectCast()
     {

@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Classes;
 
@@ -57,8 +58,7 @@ public partial class PlainIntermediateTests : SnapshotTestBase
             .Inequalities(new DumpTruck("v", 1, true), new DumpTruck("v", 2, true))
             .ToList();
 
-        inequalities.Should().ContainSingle()
-            .Which.Path.ToString().Should().Be("PayloadKg");
+        inequalities.Should().Equal([Ineq(1, 2, Prop("PayloadKg"))]);
     }
 
     public class Van : Vehicle
@@ -74,11 +74,8 @@ public partial class PlainIntermediateTests : SnapshotTestBase
 
         EqualityAssert.Verify(vehicle, van, false);
 
-        var inequalities = Vehicle.EqualityComparer.Default.Inequalities(vehicle, van).ToList();
-        inequalities.Should().ContainSingle();
-        inequalities[0].Path.ToString().Should().BeEmpty();
-        inequalities[0].Left.Should().BeSameAs(vehicle);
-        inequalities[0].Right.Should().BeSameAs(van);
+        Vehicle.EqualityComparer.Default.Inequalities(vehicle, van).Should()
+            .Equal([Ineq(vehicle, van)], "a runtime-type mismatch is reported as one whole-object inequality");
     }
 
     [Theory]

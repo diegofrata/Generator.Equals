@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Records;
 
@@ -60,10 +61,7 @@ public partial class OverridingEqualsTests : SnapshotTestBase
 
         // The non-[Equatable] Manager record is opaque to member-level delegation, so the base portion
         // is reported as ONE coarse inequality: an empty path (not "Department") carrying the whole records.
-        diffs.Should().ContainSingle();
-        diffs[0].Path.Segments.Should().BeEmpty("a non-[Equatable] record intermediate is reported coarsely");
-        diffs[0].Left.Should().BeSameAs(a);
-        diffs[0].Right.Should().BeSameAs(b);
+        diffs.Should().Equal([Ineq(a, b)], "a non-[Equatable] record intermediate is reported coarsely");
 
         SeniorManager.EqualityComparer.Default.Inequalities(a, a).Should()
             .BeEmpty("equal instances have no inequalities");
