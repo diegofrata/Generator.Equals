@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
 
 namespace Generator.Equals.Tests.Classes;
@@ -67,12 +66,8 @@ public partial class InheritedFromManualEqualityTests : SnapshotTestBase
         var dog = new Dog("Rex", "Lab");
         var puppy = new Puppy("Rex", "Lab");
 
-        // Asserted directly rather than via EqualityAssert: Inequalities has never reported a runtime-type
-        // mismatch for any class shape (a pre-existing gap unrelated to manual-base delegation).
-        dog.Equals(puppy).Should().BeFalse();
-        puppy.Equals(dog).Should().BeFalse();
-        dog.Equals((object) puppy).Should().BeFalse();
-        (dog == puppy).Should().BeFalse();
+        EqualityAssert.Verify(dog, puppy, false);
+        EqualityAssert.Verify<Dog>(puppy, dog, false);
     }
 
     // A plain class (no equality of its own) sitting between the [Equatable] leaf and the manual base:

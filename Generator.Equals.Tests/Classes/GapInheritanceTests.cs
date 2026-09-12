@@ -6,7 +6,9 @@ namespace Generator.Equals.Tests.Classes;
 /// Tests for inheritance chains where there's a "gap" - a class without [Equatable]
 /// between two classes that have [Equatable].
 /// Pattern: A [Equatable] → B (no attribute) → C [Equatable]
-/// C should call base.Equals() which eventually reaches A's generated Equals.
+/// C should call base.Equals() which eventually reaches A's generated Equals, AND compare B's own
+/// members explicitly: A's comparer knows nothing about B, so without collecting them a difference in
+/// B would be silently ignored.
 /// </summary>
 public partial class GapInheritanceTests : SnapshotTestBase
 {
@@ -44,12 +46,12 @@ public partial class GapInheritanceTests : SnapshotTestBase
             new Child { Name = "Bob", Age = 10, School = "PS101" },
             false
         },
-        // Different Age - should be equal (Age is in Parent which has no [Equatable])
-        // Parent doesn't have equality comparison, and GrandParent only compares Name
+        // Different Age - should NOT be equal. Parent has no equality of its own and GrandParent's
+        // comparer only knows Name, so Child collects Parent's members and compares them itself.
         {
             new Child { Name = "Alice", Age = 10, School = "PS101" },
             new Child { Name = "Alice", Age = 20, School = "PS101" },
-            true
+            false
         },
         // Different School - should NOT be equal (School compared by Child)
         {

@@ -1,4 +1,4 @@
-﻿//HintName: global__Generator.Equals.Tests.Classes.GapGrandParent.Generator.Equals.g.cs
+﻿//HintName: global__Generator.Equals.Tests.Classes.PlainIntermediateDumpTruck.Generator.Equals.g.cs
 
 #nullable enable
 #pragma warning disable CS0612,CS0618
@@ -6,7 +6,7 @@
 
 namespace Generator.Equals.Tests.Classes
 {
-    partial class GapGrandParent : global::System.IEquatable<global::Generator.Equals.Tests.Classes.GapGrandParent>
+    partial class PlainIntermediateDumpTruck : global::System.IEquatable<global::Generator.Equals.Tests.Classes.PlainIntermediateDumpTruck>
     {
         /// <summary>
         /// Indicates whether the object on the left is equal to the object on the right.
@@ -15,7 +15,7 @@ namespace Generator.Equals.Tests.Classes
         /// <param name="right">The right object</param>
         /// <returns>true if the objects are equal; otherwise, false.</returns>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-        public static bool operator ==(global::Generator.Equals.Tests.Classes.GapGrandParent? left, global::Generator.Equals.Tests.Classes.GapGrandParent? right) =>
+        public static bool operator ==(global::Generator.Equals.Tests.Classes.PlainIntermediateDumpTruck? left, global::Generator.Equals.Tests.Classes.PlainIntermediateDumpTruck? right) =>
             EqualityComparer.Default.Equals(left, right);
         
         /// <summary>
@@ -25,27 +25,28 @@ namespace Generator.Equals.Tests.Classes
         /// <param name="right">The right object</param>
         /// <returns>true if the objects are not equal; otherwise, false.</returns>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-        public static bool operator !=(global::Generator.Equals.Tests.Classes.GapGrandParent? left, global::Generator.Equals.Tests.Classes.GapGrandParent? right) =>
+        public static bool operator !=(global::Generator.Equals.Tests.Classes.PlainIntermediateDumpTruck? left, global::Generator.Equals.Tests.Classes.PlainIntermediateDumpTruck? right) =>
             !EqualityComparer.Default.Equals(left, right);
         
         /// <inheritdoc/>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
         public override bool Equals(object? obj) =>
-            Equals(obj as global::Generator.Equals.Tests.Classes.GapGrandParent);
+            Equals(obj as global::Generator.Equals.Tests.Classes.PlainIntermediateDumpTruck);
         
         /// <inheritdoc/>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-        bool global::System.IEquatable<global::Generator.Equals.Tests.Classes.GapGrandParent>.Equals(global::Generator.Equals.Tests.Classes.GapGrandParent? obj) => Equals((object?) obj);
+        bool global::System.IEquatable<global::Generator.Equals.Tests.Classes.PlainIntermediateDumpTruck>.Equals(global::Generator.Equals.Tests.Classes.PlainIntermediateDumpTruck? obj) => Equals((object?) obj);
         
         /// <inheritdoc/>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-        protected bool Equals(global::Generator.Equals.Tests.Classes.GapGrandParent? other)
+        protected bool Equals(global::Generator.Equals.Tests.Classes.PlainIntermediateDumpTruck? other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             
-            return other.GetType() == this.GetType()
-                && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.Name!, other.Name!)
+            return base.Equals(other as global::Generator.Equals.Tests.Classes.PlainIntermediateTruck)
+                && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.PayloadKg!, other.PayloadKg!)
+                && global::Generator.Equals.DefaultEqualityComparer<global::System.Boolean>.Default.Equals(this.Tipping!, other.Tipping!)
                 ;
         }
         
@@ -55,10 +56,14 @@ namespace Generator.Equals.Tests.Classes
         {
             var hashCode = new global::System.HashCode();
             
-            hashCode.Add(this.GetType());
+            hashCode.Add(base.GetHashCode());
             hashCode.Add(
-                this.Name!,
-                global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default
+                this.PayloadKg!,
+                global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default
+            );
+            hashCode.Add(
+                this.Tipping!,
+                global::Generator.Equals.DefaultEqualityComparer<global::System.Boolean>.Default
             );
             
             return hashCode.ToHashCode();
@@ -68,7 +73,7 @@ namespace Generator.Equals.Tests.Classes
         /// An equality comparer for the enclosing type that uses the generated equality semantics.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-        public sealed class EqualityComparer : global::System.Collections.Generic.IEqualityComparer<global::Generator.Equals.Tests.Classes.GapGrandParent>
+        public new sealed class EqualityComparer : global::System.Collections.Generic.IEqualityComparer<global::Generator.Equals.Tests.Classes.PlainIntermediateDumpTruck>
         {
             /// <summary>
             /// Gets the default instance of the comparer.
@@ -76,7 +81,7 @@ namespace Generator.Equals.Tests.Classes
             public static EqualityComparer Default { get; } = new EqualityComparer();
             
             /// <inheritdoc/>
-            public bool Equals(global::Generator.Equals.Tests.Classes.GapGrandParent? x, global::Generator.Equals.Tests.Classes.GapGrandParent? y)
+            public bool Equals(global::Generator.Equals.Tests.Classes.PlainIntermediateDumpTruck? x, global::Generator.Equals.Tests.Classes.PlainIntermediateDumpTruck? y)
             {
                 if (ReferenceEquals(x, y)) return true;
                 if (x is null || y is null) return false;
@@ -85,7 +90,7 @@ namespace Generator.Equals.Tests.Classes
             }
             
             /// <inheritdoc/>
-            public int GetHashCode(global::Generator.Equals.Tests.Classes.GapGrandParent obj)
+            public int GetHashCode(global::Generator.Equals.Tests.Classes.PlainIntermediateDumpTruck obj)
             {
                 return obj.GetHashCode();
             }
@@ -98,7 +103,7 @@ namespace Generator.Equals.Tests.Classes
             /// <param name="path">The base path for difference reporting.</param>
             /// <returns>An enumerable of differences, where each difference contains the path, left value, and right value.</returns>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public global::System.Collections.Generic.IEnumerable<global::Generator.Equals.Inequality> Inequalities(global::Generator.Equals.Tests.Classes.GapGrandParent? x, global::Generator.Equals.Tests.Classes.GapGrandParent? y, global::Generator.Equals.MemberPath path = default)
+            public global::System.Collections.Generic.IEnumerable<global::Generator.Equals.Inequality> Inequalities(global::Generator.Equals.Tests.Classes.PlainIntermediateDumpTruck? x, global::Generator.Equals.Tests.Classes.PlainIntermediateDumpTruck? y, global::Generator.Equals.MemberPath path = default)
             {
                 if (ReferenceEquals(x, y)) yield break;
                 if (x is null || y is null)
@@ -107,14 +112,13 @@ namespace Generator.Equals.Tests.Classes
                     yield break;
                 }
                 
-                if (x.GetType() != y.GetType())
-                {
-                    yield return new global::Generator.Equals.Inequality(path, x, y);
-                    yield break;
-                }
+                foreach (var __ineq in global::Generator.Equals.Tests.Classes.PlainIntermediateTruck.EqualityComparer.Default.Inequalities(x, y, path))
+                    yield return __ineq;
                 
-                if (!global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(x.Name!, y.Name!))
-                    yield return new global::Generator.Equals.Inequality(path.Append(global::Generator.Equals.MemberPathSegment.Property("Name")), x.Name, y.Name);
+                if (!global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(x.PayloadKg!, y.PayloadKg!))
+                    yield return new global::Generator.Equals.Inequality(path.Append(global::Generator.Equals.MemberPathSegment.Property("PayloadKg")), x.PayloadKg, y.PayloadKg);
+                if (!global::Generator.Equals.DefaultEqualityComparer<global::System.Boolean>.Default.Equals(x.Tipping!, y.Tipping!))
+                    yield return new global::Generator.Equals.Inequality(path.Append(global::Generator.Equals.MemberPathSegment.Property("Tipping")), x.Tipping, y.Tipping);
             }
         }
     }

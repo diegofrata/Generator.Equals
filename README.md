@@ -278,7 +278,7 @@ partial class MyClass
 ### Ignore Inherited Members
 
 By default (`IgnoreInheritedMembers = false`), the generated code handles inherited members as follows:
-- If an ancestor owns equality — it has `[Equatable]`/a generated comparer, or hand-rolls a complete contract (a `GetHashCode()` override plus value equality via `IEquatable<T>` **or** an `Equals(object)` override) — the generated code calls `base.Equals()`/`base.GetHashCode()` to delegate to it. A public `IEquatable<T>` is preferred (delegation binds directly to it); `Equals(object)` is the fallback
+- If an ancestor owns equality — it has `[Equatable]`/a generated comparer, or hand-rolls a complete contract (a `GetHashCode()` override plus value equality via `IEquatable<T>` **or** an `Equals(object)` override) — the generated code calls `base.Equals()`/`base.GetHashCode()` to delegate to it. A public `IEquatable<T>` is preferred (delegation binds directly to it); `Equals(object)` is the fallback. Any plain classes *between* the decorated class and that ancestor (no `[Equatable]`, no equality of their own) have their public properties compared explicitly, since the ancestor knows nothing about them
 - Otherwise, all inherited properties from the entire chain are compared explicitly. A base that provides only one half — an `Equals`/`IEquatable` without `GetHashCode`, or vice versa — is treated this way too: delegating half a contract would break the `Equals`/`GetHashCode` invariant, so its public properties are compared instead
 
 Set `IgnoreInheritedMembers = true` to skip calling `base.Equals()` and ignore all inherited properties.

@@ -108,11 +108,16 @@ sealed class EqualityTypeModelTransformer
 
         var bems = EqualityMemberModelTransformer.BuildEqualityModels(symbol, attributesMetadata, explicitMode, filter);
 
-        // When IgnoreInheritedMembers=false and no ancestor has [Equatable], we collect inherited
-        // properties to compare them explicitly. CollectInheritedProperties stops at an ancestor that
-        // owns equality (via [Equatable] or a complete manual contract), so any properties it covers
-        // are delegated through base.Equals() instead of being collected (and compared twice).
-        var inheritedModels = (!ignoreInheritedMembers && !baseHasEquatable)
+        // When IgnoreInheritedMembers=false, collect the properties of any plain (non-equality-owning)
+        // ancestors so they are compared explicitly. CollectInheritedProperties stops at an ancestor that
+        // owns equality (via [Equatable]/a generated comparer or a complete manual contract), so any
+        // properties it covers are delegated through base.Equals() instead of being collected (and compared
+        // twice). For classes this also covers a plain intermediate sitting below a comparer ancestor: the
+        // inherited comparer knows nothing about the intermediate's members, so they must be collected here.
+        // Records are exempt when a comparer ancestor exists: a non-[Equatable] record intermediate has
+        // compiler-synthesized equality over its own members that base.Equals() already honors.
+        var collectInherited = !ignoreInheritedMembers && (!baseHasEquatable || !symbol.IsRecord);
+        var inheritedModels = collectInherited
             ? CollectInheritedProperties(symbol, symbol.BaseType, attributesMetadata, explicitMode)
             : new EquatableImmutableArray<EqualityMemberModel>();
 
