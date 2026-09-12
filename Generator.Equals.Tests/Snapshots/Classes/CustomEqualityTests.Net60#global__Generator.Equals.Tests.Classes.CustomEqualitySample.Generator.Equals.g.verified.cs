@@ -117,6 +117,12 @@ namespace Generator.Equals.Tests.Classes
                     yield break;
                 }
                 
+                if (x.GetType() != y.GetType())
+                {
+                    yield return new global::Generator.Equals.Inequality(path, x, y);
+                    yield break;
+                }
+                
                 if (!global::Generator.Equals.Tests.Classes.Comparer1.Default.Equals(x.Name1!, y.Name1!))
                     yield return new global::Generator.Equals.Inequality(path.Append(global::Generator.Equals.MemberPathSegment.Property("Name1")), x.Name1, y.Name1);
                 if (!global::Generator.Equals.Tests.Classes.Comparer2.Instance.Equals(x.Name2!, y.Name2!))

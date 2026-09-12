@@ -33,6 +33,10 @@ namespace Generator.Equals.Tests.Records
             return hashCode.ToHashCode();
         }
         
+        // Non-virtual bridge to the base type's Equals, for use by the nested comparer.
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
+        private bool __BaseEquals(global::Generator.Equals.Tests.Records.OverridingEqualsManager? other) => base.Equals(other);
+        
         /// <summary>
         /// An equality comparer for the enclosing type that uses the generated equality semantics.
         /// </summary>
@@ -76,8 +80,8 @@ namespace Generator.Equals.Tests.Records
                     yield break;
                 }
                 
-                foreach (var __ineq in global::Generator.Equals.Tests.Records.OverridingEqualsManager.EqualityComparer.Default.Inequalities(x, y, path))
-                    yield return __ineq;
+                if (!x.__BaseEquals(y))
+                    yield return new global::Generator.Equals.Inequality(path, x, y);
                 
                 if (!global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(x.Shares!, y.Shares!))
                     yield return new global::Generator.Equals.Inequality(path.Append(global::Generator.Equals.MemberPathSegment.Property("Shares")), x.Shares, y.Shares);

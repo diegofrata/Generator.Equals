@@ -107,6 +107,12 @@ namespace Generator.Equals.Tests.Classes
                     yield break;
                 }
                 
+                if (x.GetType() != y.GetType())
+                {
+                    yield return new global::Generator.Equals.Inequality(path, x, y);
+                    yield break;
+                }
+                
                 if (!new global::Generator.Equals.SetEqualityComparer<global::System.String>(global::System.StringComparer.OrdinalIgnoreCase).Equals(x.Tags!, y.Tags!))
                 {
                     var __propPath = path.Append(global::Generator.Equals.MemberPathSegment.Property("Tags"));

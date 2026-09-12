@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Generator.Equals.Tests.Infrastructure;
 using GeneratorEquals::Generator.Equals.Analyzers;
 using TypeSymbolExtensions = GeneratorEquals::Generator.Equals.Extensions.TypeSymbolExtensions;
 
@@ -16,31 +17,7 @@ namespace Generator.Equals.Tests.Analyzers;
 /// </summary>
 public sealed class CrossAssemblyEquatableTests
 {
-    private static readonly MetadataReference[] CoreReferences = GetCoreReferences();
-
-    private static MetadataReference[] GetCoreReferences()
-    {
-        var refs = new List<MetadataReference>
-        {
-            MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(Attribute).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(EquatableAttribute).Assembly.Location),
-        };
-
-        // Get runtime assemblies
-        var runtimeDir = System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory();
-
-        // Add System.Runtime for core types
-        var systemRuntime = Path.Combine(runtimeDir, "System.Runtime.dll");
-        if (File.Exists(systemRuntime))
-            refs.Add(MetadataReference.CreateFromFile(systemRuntime));
-
-        var netstandard = Path.Combine(runtimeDir, "netstandard.dll");
-        if (File.Exists(netstandard))
-            refs.Add(MetadataReference.CreateFromFile(netstandard));
-
-        return refs.ToArray();
-    }
+    private static MetadataReference[] CoreReferences => CrossAssemblyCompilation.CoreReferences;
 
     [Fact]
     public void TypeWithEquatable_FromReferencedAssembly_IsDetected()

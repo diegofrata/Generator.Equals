@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Records;
 
@@ -44,6 +46,26 @@ public partial class OverridingEqualsTests : SnapshotTestBase
     [MemberData(nameof(EqualityCases))]
     public void Equality(SeniorManager a, SeniorManager b, bool expected) =>
         EqualityAssert.Verify(a, b, expected);
+
+    // Record analog of issue #86's Inequalities case: Manager (a record without [Equatable]) sits between
+    // two [Equatable] records and hand-writes Equals comparing Department. A Department-only difference is
+    // unequal via base.Equals, so Inequalities must report it. Previously it delegated to
+    // Manager.EqualityComparer, which resolves to the inherited Person comparer and skipped Department.
+    [Fact]
+    public void Inequalities_ReportsManualIntermediateMember()
+    {
+        var a = new SeniorManager(25, "IT", 1000);
+        var b = new SeniorManager(25, "Sales", 1000);
+
+        var diffs = SeniorManager.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        // The non-[Equatable] Manager record is opaque to member-level delegation, so the base portion
+        // is reported as ONE coarse inequality: an empty path (not "Department") carrying the whole records.
+        diffs.Should().Equal([Ineq(a, b)], "a non-[Equatable] record intermediate is reported coarsely");
+
+        SeniorManager.EqualityComparer.Default.Inequalities(a, a).Should()
+            .BeEmpty("equal instances have no inequalities");
+    }
 
     [Theory]
     [MemberData(nameof(TargetFrameworks))]
