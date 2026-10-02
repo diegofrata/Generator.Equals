@@ -102,6 +102,12 @@ namespace Generator.Equals.Tests.Classes
                     yield break;
                 }
                 
+                if (x.GetType() != y.GetType())
+                {
+                    yield return new global::Generator.Equals.Inequality(path, x, y);
+                    yield break;
+                }
+                
             }
         }
     }

@@ -337,44 +337,19 @@ public class EquatableAnalyzer : DiagnosticAnalyzer
         if (typeSymbol.IsRecord)
             return;
 
-        foreach (var member in typeSymbol.GetMembers())
+        foreach (var method in typeSymbol.GetMembers().OfType<IMethodSymbol>())
         {
-            if (member is IMethodSymbol method)
-            {
-                // Check for Equals(object) override
-                if (method is
-                    {
-                        Name: "Equals",
-                        IsOverride: true,
-                        Parameters.Length: 1,
-                        DeclaredAccessibility: Accessibility.Public
-                    } && method.Parameters[0].Type.SpecialType == SpecialType.System_Object)
-                {
-                    var location = method.Locations.FirstOrDefault() ?? Location.None;
-                    context.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.ManualEqualsImplementation,
-                        location,
-                        typeSymbol.Name,
-                        "Equals(object)"));
-                }
+            var member = method.IsEqualsObjectOverride() ? "Equals(object)"
+                : method.IsGetHashCodeOverride() ? "GetHashCode()"
+                : null;
+            if (member is null)
+                continue;
 
-                // Check for GetHashCode override
-                if (method is
-                    {
-                        Name: "GetHashCode",
-                        IsOverride: true,
-                        Parameters.Length: 0,
-                        DeclaredAccessibility: Accessibility.Public
-                    })
-                {
-                    var location = method.Locations.FirstOrDefault() ?? Location.None;
-                    context.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.ManualEqualsImplementation,
-                        location,
-                        typeSymbol.Name,
-                        "GetHashCode()"));
-                }
-            }
+            context.ReportDiagnostic(Diagnostic.Create(
+                DiagnosticDescriptors.ManualEqualsImplementation,
+                method.Locations.FirstOrDefault() ?? Location.None,
+                typeSymbol.Name,
+                member));
         }
     }
 

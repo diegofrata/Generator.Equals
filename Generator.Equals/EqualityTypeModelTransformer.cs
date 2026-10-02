@@ -81,18 +81,17 @@ sealed class EqualityTypeModelTransformer
             ? null
             : s => s is not IPropertySymbol prop || !ShouldSkipOverridingProperty(prop, attributesMetadata);
 
-        // For classes (not records), we need to determine if calling the base comparer will
-        // reach a meaningful equality implementation. We walk up the inheritance chain
-        // to find if any ancestor has a generated EqualityComparer. If so, we should call
-        // that ancestor's comparer.
-        var baseHasEquatable = FindNearestComparerAncestor(symbol.BaseType, attributesMetadata) != null;
+        // One upward walk classifies how the base chain owns equality and yields the plain ancestors
+        // (no equality of their own) below the equality-owning one. Those ancestors' members are collected
+        // and compared here, because whatever base.Equals() reaches knows nothing about them. Records are
+        // exempt when a comparer ancestor exists: a non-[Equatable] record intermediate has
+        // compiler-synthesized equality over its own members that base.Equals() already honors.
+        var baseChain = ClassifyBaseEquality(symbol.BaseType, attributesMetadata);
+        var collectInherited = !ignoreInheritedMembers && (baseChain.Ownership == BaseEqualityOwnership.None || !symbol.IsRecord);
 
         var bems = EqualityMemberModelTransformer.BuildEqualityModels(symbol, attributesMetadata, explicitMode, filter);
-
-        // When IgnoreInheritedMembers=false and no ancestor has [Equatable],
-        // we need to collect all inherited properties to compare them explicitly.
-        var inheritedModels = (!ignoreInheritedMembers && !baseHasEquatable)
-            ? CollectInheritedProperties(symbol, symbol.BaseType, attributesMetadata, explicitMode)
+        var inheritedModels = collectInherited
+            ? CollectInheritedProperties(symbol, baseChain.PlainAncestors, attributesMetadata)
             : new EquatableImmutableArray<EqualityMemberModel>();
 
         var model = new EqualityTypeModel
@@ -108,7 +107,9 @@ sealed class EqualityTypeModelTransformer
             BaseTypeFullname = baseTypeFullname,
             Fullname = fullname,
             SyntaxKind = _context.TargetNode.Kind(),
-            BaseHasEquatable = baseHasEquatable,
+            BaseEquality = baseChain.Ownership,
+            ImmediateBaseHasComparer = baseChain.ImmediateBaseHasComparer,
+            BaseEqualsArgument = baseChain.BaseEqualsArgument,
             InheritedEqualityModels = inheritedModels,
             GenerateClassEqualityOperators = generateClassEqualityOperators,
         };
@@ -130,83 +131,117 @@ sealed class EqualityTypeModelTransformer
     }
 
     /// <summary>
-    /// Finds the nearest ancestor in the inheritance chain that has a generated EqualityComparer.
-    /// Returns null if no ancestor has a comparer.
+    /// Base types whose <c>Equals</c>/<c>GetHashCode</c> are provided by the runtime and must never
+    /// be treated as a hand-written value-equality contract (they end the inheritance walk).
     /// </summary>
-    static INamedTypeSymbol? FindNearestComparerAncestor(INamedTypeSymbol? baseType, AttributesMetadata attributesMetadata)
+    static bool IsWellKnownEqualityBase(ITypeSymbol type) =>
+        type.SpecialType is SpecialType.System_Object or SpecialType.System_ValueType or SpecialType.System_Enum;
+
+    /// <summary>
+    /// True if the type owns equality through a generated comparer — it has <c>[Equatable]</c> or a
+    /// generated <c>EqualityComparer</c> (the cross-assembly signal). Calling its comparer reaches it.
+    /// </summary>
+    static bool OwnsEqualityViaComparer(INamedTypeSymbol type, AttributesMetadata attributesMetadata) =>
+        type.HasAttribute(attributesMetadata.Equatable) || type.HasGeneratedEqualityComparer();
+
+    /// <summary>
+    /// True if the type exposes a public, normal-lookup <c>bool Equals(TSelf)</c> — i.e. an implicit
+    /// <c>IEquatable&lt;TSelf&gt;</c> implementation. <c>base.Equals(other as TSelf)</c> binds to this exact
+    /// overload, so it is preferred over routing through <c>Equals(object)</c>. (Explicit interface
+    /// implementations are not normal-lookup candidates and so are not matched here.)
+    /// </summary>
+    static bool DeclaresPublicTypedEquals(INamedTypeSymbol type) =>
+        type.GetMembers("Equals").OfType<IMethodSymbol>().Any(m =>
+            m is { MethodKind: MethodKind.Ordinary, DeclaredAccessibility: Accessibility.Public, IsStatic: false, Parameters.Length: 1 }
+            && m.ReturnType.SpecialType == SpecialType.System_Boolean
+            && SymbolEqualityComparer.Default.Equals(m.Parameters[0].Type, type));
+
+    /// <summary>
+    /// True if the type hand-rolls a complete equality contract — a <c>GetHashCode</c> override plus a
+    /// value <c>Equals</c> reachable via a base call: either a public typed <c>Equals(TSelf)</c>
+    /// (preferred, reported through <paramref name="hasTypedEquals"/>) or an <c>Equals(object)</c>
+    /// override (fallback). Not a record (whose equality is compiler-managed). Requiring GetHashCode keeps
+    /// delegation mutually consistent; callers exclude comparer-owning ancestors before this check.
+    /// </summary>
+    static bool DeclaresManualEqualityPair(INamedTypeSymbol type, out bool hasTypedEquals)
     {
-        var current = baseType;
-        while (current != null && current.SpecialType != SpecialType.System_Object)
+        hasTypedEquals = false;
+        if (type.IsRecord || !type.GetMembers("GetHashCode").OfType<IMethodSymbol>().Any(SymbolExtensions.IsGetHashCodeOverride))
+            return false;
+
+        hasTypedEquals = DeclaresPublicTypedEquals(type);
+        return hasTypedEquals || type.GetMembers("Equals").OfType<IMethodSymbol>().Any(SymbolExtensions.IsEqualsObjectOverride);
+    }
+
+    /// <summary>Result of <see cref="ClassifyBaseEquality"/>: everything the model needs to know about the base chain.</summary>
+    readonly record struct BaseChain(
+        BaseEqualityOwnership Ownership,
+        bool ImmediateBaseHasComparer,
+        string? BaseEqualsArgument,
+        ImmutableArray<INamedTypeSymbol> PlainAncestors);
+
+    /// <summary>
+    /// Classifies how the base chain owns equality in a single upward walk (see
+    /// <see cref="BaseEqualityOwnership"/>), stopping at well-known bases (object/ValueType/Enum) that
+    /// never carry a user contract. Also yields the plain ancestors visited before the equality-owning one
+    /// (nearest first) and the class <c>base.Equals</c> argument: cast to the immediate base on the comparer
+    /// path; on the hand-written path, cast to the ancestor owning the contract when it exposes a public typed
+    /// <c>Equals(TSelf)</c> (it may sit behind plain intermediates, so casting to the immediate base would
+    /// miss it), otherwise to <c>object</c> so resolution reaches its <c>Equals(object)</c> rather than an
+    /// <c>[Equatable]</c> ancestor's generated <c>Equals(TAncestor?)</c>.
+    /// </summary>
+    static BaseChain ClassifyBaseEquality(INamedTypeSymbol? baseType, AttributesMetadata attributesMetadata)
+    {
+        var immediateBaseHasComparer = baseType is { } b && OwnsEqualityViaComparer(b, attributesMetadata);
+        var plainAncestors = ImmutableArray.CreateBuilder<INamedTypeSymbol>();
+        string? manualEqualsArgument = null;
+
+        for (var current = baseType; current != null && !IsWellKnownEqualityBase(current); current = current.BaseType)
         {
-            // Check for [Equatable] attribute
-            if (current.HasAttribute(attributesMetadata.Equatable))
+            if (OwnsEqualityViaComparer(current, attributesMetadata))
             {
-                return current;
+                return manualEqualsArgument is null
+                    ? new BaseChain(BaseEqualityOwnership.Comparer, immediateBaseHasComparer, $"other as {baseType!.ToFQF()}", plainAncestors.ToImmutable())
+                    : new BaseChain(BaseEqualityOwnership.ComparerBehindManual, immediateBaseHasComparer, manualEqualsArgument, plainAncestors.ToImmutable());
             }
 
-            // Check for generated EqualityComparer (cross-assembly support)
-            if (current.HasGeneratedEqualityComparer())
-            {
-                return current;
-            }
+            if (manualEqualsArgument is not null)
+                continue;
 
-            current = current.BaseType;
+            if (DeclaresManualEqualityPair(current, out var hasTypedEquals))
+                manualEqualsArgument = hasTypedEquals ? $"other as {current.ToFQF()}" : "(object?) other";
+            else
+                plainAncestors.Add(current);
         }
-        return null;
+
+        return manualEqualsArgument is null
+            ? new BaseChain(BaseEqualityOwnership.None, immediateBaseHasComparer, null, plainAncestors.ToImmutable())
+            : new BaseChain(BaseEqualityOwnership.Manual, immediateBaseHasComparer, manualEqualsArgument, plainAncestors.ToImmutable());
     }
 
     /// <summary>
-    /// Determines if any ancestor in the inheritance chain has a generated EqualityComparer.
-    /// This includes types with [Equatable] attribute or types with a generated EqualityComparer (for cross-assembly).
-    /// If so, calling the base comparer will reach that implementation.
-    /// </summary>
-
-    /// <summary>
-    /// Collects all properties from ancestor types that don't have [Equatable] or a generated EqualityComparer.
-    /// Stops when reaching System.Object, a type with [Equatable], or a type with the generated EqualityComparer.
-    /// Excludes properties that are overridden by the current type (they'll be handled by BuildEqualityModels).
+    /// Collects the properties of <paramref name="plainAncestors"/> (nearest first) in grandparent-to-parent
+    /// order, excluding properties overridden by the current type (handled by BuildEqualityModels).
     /// </summary>
     static EquatableImmutableArray<EqualityMemberModel> CollectInheritedProperties(
         ITypeSymbol currentType,
-        INamedTypeSymbol? baseType,
-        AttributesMetadata attributesMetadata,
-        bool explicitMode)
+        ImmutableArray<INamedTypeSymbol> plainAncestors,
+        AttributesMetadata attributesMetadata)
     {
-        // Collect names of properties that are overridden in the current type
-        // These will be handled by BuildEqualityModels on the current type
         var overriddenPropertyNames = new HashSet<string>(
             currentType.GetMembers()
                 .OfType<IPropertySymbol>()
                 .Where(p => p.IsOverride)
                 .Select(p => p.Name));
 
+        // Inherited properties never use explicit mode - we want all of them.
+        Predicate<ISymbol> filter = s => s is not IPropertySymbol prop || !overriddenPropertyNames.Contains(prop.Name);
+
         var builder = ImmutableArray.CreateBuilder<EqualityMemberModel>();
-        var current = baseType;
-
-        while (current != null && current.SpecialType != SpecialType.System_Object)
+        for (var i = plainAncestors.Length - 1; i >= 0; i--)
         {
-            // Stop if this ancestor has [Equatable] - it will handle its own equality via its EqualityComparer
-            if (current.HasAttribute(attributesMetadata.Equatable))
-            {
-                break;
-            }
-
-            // Stop if this ancestor has a generated EqualityComparer (cross-assembly detection)
-            if (current.HasGeneratedEqualityComparer())
-            {
-                break;
-            }
-
-            // Collect properties from this ancestor, excluding those overridden by the current type
-            // For inherited properties, we don't use explicit mode - we want all properties
-            Predicate<ISymbol> filter = s => s is not IPropertySymbol prop || !overriddenPropertyNames.Contains(prop.Name);
-            var ancestorModels = EqualityMemberModelTransformer.BuildEqualityModels(
-                current, attributesMetadata, explicitMode: false, filter);
-
-            // Add to the beginning so that ancestor properties come first (grandparent, then parent)
-            builder.InsertRange(0, ancestorModels);
-
-            current = current.BaseType;
+            builder.AddRange(EqualityMemberModelTransformer.BuildEqualityModels(
+                plainAncestors[i], attributesMetadata, explicitMode: false, filter));
         }
 
         return builder.ToImmutable();

@@ -503,5 +503,41 @@ namespace Generator.Equals
                 BuildMemberInequality(model, writer, left, right, pathExpr);
             }
         }
+
+        /// <summary>
+        /// Emits the private <c>__BaseEquals</c> bridge that lets the nested comparer reach the base
+        /// type's <c>Equals</c> through a non-virtual base call (which cannot be written from inside the
+        /// comparer type). <paramref name="argument"/> is the expression passed to <c>base.Equals</c>, cast
+        /// so it binds to the intended base overload; records bind to their typed <c>Equals</c> directly.
+        /// </summary>
+        protected static void BuildBaseEqualityBridge(EqualityTypeModel model, IndentedTextWriter writer, string argument)
+        {
+            writer.WriteLine();
+            writer.WriteLine("// Non-virtual bridge to the base type's Equals, for use by the nested comparer.");
+            writer.WriteLine(GeneratedCodeAttributeDeclaration);
+            writer.WriteLine($"private bool __BaseEquals({model.BaseTypeFullname}? other) => base.Equals({argument});");
+        }
+
+        /// <summary>
+        /// Emits the base portion of an Inequalities body. <paramref name="memberLevel"/> forwards each of
+        /// the immediate base comparer's inequalities (valid only when that base owns its own comparer);
+        /// <paramref name="coarse"/> reports one whole-object inequality when the <c>__BaseEquals</c> bridge
+        /// disagrees (for a base that is opaque to member-level delegation). At most one applies.
+        /// </summary>
+        protected static void BuildBaseInequalities(EqualityTypeModel model, IndentedTextWriter writer, bool memberLevel, bool coarse)
+        {
+            if (memberLevel)
+            {
+                writer.WriteLine($"foreach (var __ineq in {model.BaseTypeFullname}.EqualityComparer.Default.Inequalities(x, y, path))");
+                writer.WriteLine(1, "yield return __ineq;");
+                writer.WriteLine();
+            }
+            else if (coarse)
+            {
+                writer.WriteLine("if (!x.__BaseEquals(y))");
+                writer.WriteLine(1, "yield return new global::Generator.Equals.Inequality(path, x, y);");
+                writer.WriteLine();
+            }
+        }
     }
 }

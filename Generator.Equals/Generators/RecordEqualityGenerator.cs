@@ -6,6 +6,17 @@ namespace Generator.Equals.Generators
 {
     class RecordEqualityGenerator : EqualityGeneratorBase
     {
+        /// <summary>
+        /// Whether Inequalities must report the base portion coarsely via the <c>__BaseEquals</c> bridge:
+        /// a comparer ancestor exists, but the immediate base does not own its comparer (a non-[Equatable]
+        /// record intermediate is in between), so member-level delegation to the inherited comparer would
+        /// skip that intermediate's members. Ties bridge emission and its use to one predicate.
+        /// </summary>
+        static bool NeedsBaseEqualityBridge(EqualityTypeModel model) =>
+            !model.IgnoreInheritedMembers
+            && model.BaseHasEquatable
+            && !model.ImmediateBaseHasComparer;
+
         static void BuildEquals(
             EqualityTypeModel model,
             IndentedTextWriter writer
@@ -38,7 +49,6 @@ namespace Generator.Equals.Generators
                 writer.WriteLine($"base.Equals(({baseTypeFullname}?)other)");
             }
 
-            // Include inherited members (when no ancestor has [Equatable])
             BuildMembersEquality(model.InheritedEqualityModels, writer, "this", "other");
             BuildMembersEquality(model.BuildEqualityModels, writer, "this", "other");
 
@@ -74,7 +84,6 @@ namespace Generator.Equals.Generators
                 writer.WriteLine("hashCode.Add(base.GetHashCode());");
             }
 
-            // Include inherited members (when no ancestor has [Equatable])
             BuildMembersHashCode(model.InheritedEqualityModels, writer, "this");
             BuildMembersHashCode(model.BuildEqualityModels, writer, "this");
 
@@ -137,10 +146,6 @@ namespace Generator.Equals.Generators
 
         static void BuildInequalitiesMethod(EqualityTypeModel model, IndentedTextWriter writer, string symbolName)
         {
-            var baseTypeName = model.BaseTypeName;
-            var baseTypeFullname = model.BaseTypeFullname;
-            var isRootRecord = baseTypeName == "object";
-
             writer.WriteLines(InequalitiesMethodComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
             writer.WriteLine($"public global::System.Collections.Generic.IEnumerable<global::Generator.Equals.Inequality> Inequalities({symbolName}? x, {symbolName}? y, global::Generator.Equals.MemberPath path = default)");
@@ -154,15 +159,10 @@ namespace Generator.Equals.Generators
             writer.AppendCloseBracket();
             writer.WriteLine();
 
-            // For records with [Equatable] base, delegate to base's Inequalities
-            if (!isRootRecord && !model.IgnoreInheritedMembers && model.BaseHasEquatable)
-            {
-                writer.WriteLine($"foreach (var __ineq in {baseTypeFullname}.EqualityComparer.Default.Inequalities(x, y, path))");
-                writer.WriteLine(1, "yield return __ineq;");
-                writer.WriteLine();
-            }
+            BuildBaseInequalities(model, writer,
+                memberLevel: !model.IgnoreInheritedMembers && model.ImmediateBaseHasComparer,
+                coarse: NeedsBaseEqualityBridge(model));
 
-            // Include inherited members (when no ancestor has [Equatable])
             BuildMembersInequalities(model.InheritedEqualityModels, writer, "x", "y");
             BuildMembersInequalities(model.BuildEqualityModels, writer, "x", "y");
 
@@ -178,6 +178,14 @@ namespace Generator.Equals.Generators
                 writer.WriteLine();
 
                 BuildGetHashCode(model, writer);
+
+                // A non-[Equatable] record intermediate below a comparer ancestor needs the bridge so
+                // the nested comparer's Inequalities can reach its (otherwise skipped) members.
+                if (NeedsBaseEqualityBridge(model))
+                {
+                    // A record binds to its typed Equals directly; no cast needed.
+                    BuildBaseEqualityBridge(model, writer, "other");
+                }
 
                 BuildNestedEqualityComparer(model, writer);
             });

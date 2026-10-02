@@ -278,8 +278,8 @@ partial class MyClass
 ### Ignore Inherited Members
 
 By default (`IgnoreInheritedMembers = false`), the generated code handles inherited members as follows:
-- If any ancestor has `[Equatable]` or a custom `Equals` override, `base.Equals()` is called to delegate equality
-- If NO ancestor has `[Equatable]`, all inherited properties from the entire chain are explicitly compared
+- If an ancestor owns equality — it has `[Equatable]`/a generated comparer, or hand-rolls a complete contract (a `GetHashCode()` override plus value equality via `IEquatable<T>` **or** an `Equals(object)` override) — the generated code calls `base.Equals()`/`base.GetHashCode()` to delegate to it. A public `IEquatable<T>` is preferred (delegation binds directly to it); `Equals(object)` is the fallback. Any plain classes *between* the decorated class and that ancestor (no `[Equatable]`, no equality of their own) have their public properties compared explicitly, since the ancestor knows nothing about them
+- Otherwise, all inherited properties from the entire chain are compared explicitly. A base that provides only one half — an `Equals`/`IEquatable` without `GetHashCode`, or vice versa — is treated this way too: delegating half a contract would break the `Equals`/`GetHashCode` invariant, so its public properties are compared instead
 
 Set `IgnoreInheritedMembers = true` to skip calling `base.Equals()` and ignore all inherited properties.
 This is useful when you want to completely redefine equality for a derived class without considering
@@ -484,12 +484,16 @@ public partial class Child : Parent
 
 ### Improved Inheritance Chain Detection
 
-Version 4 improves how `base.Equals()` is called in inheritance hierarchies. Previously, generated code would only
-call `base.Equals()` if the **immediate** base class had `[Equatable]`. Now, the generator walks the **entire**
-inheritance chain and calls `base.Equals()` if:
+The generator walks the **entire** inheritance chain and calls `base.Equals()`/`base.GetHashCode()` when an
+ancestor owns equality:
 
-1. **Any ancestor** has the `[Equatable]` attribute, OR
-2. **Any ancestor** has manually overridden `Equals(object)`
+1. **Any ancestor** has the `[Equatable]` attribute (or a generated `EqualityComparer`, incl. cross-assembly), OR
+2. **Any ancestor** hand-rolls a complete contract on that type — a `GetHashCode()` override plus value equality
+   via a public `IEquatable<T>` (preferred) or an `Equals(object)` override (fallback) — so the base's
+   hand-written semantics (which the generator cannot see into) are honored rather than re-derived from its
+   public properties. A base providing only one half (equality without `GetHashCode`, or vice versa) is a
+   `CS0659`/`CS0661`-style bug and is *not* delegated to; its public properties are compared instead so the
+   generated pair stays self-consistent.
 
 This fixes scenarios where equality was incorrectly skipped in multi-level inheritance:
 

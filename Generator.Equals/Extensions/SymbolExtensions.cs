@@ -52,6 +52,20 @@ static class SymbolExtensions
         return symbol.GetAttributeIncludingInherited(metadata);
     }
 
+    /// <summary>
+    /// True if the method is a hand-written <c>public override bool Equals(object)</c>.
+    /// </summary>
+    public static bool IsEqualsObjectOverride(this IMethodSymbol method) =>
+        method is { Name: "Equals", IsOverride: true, MethodKind: MethodKind.Ordinary, DeclaredAccessibility: Accessibility.Public, Parameters.Length: 1 }
+        && method.Parameters[0].Type.SpecialType == SpecialType.System_Object
+        && method.ReturnType.SpecialType == SpecialType.System_Boolean;
+
+    /// <summary>
+    /// True if the method is a hand-written <c>public override int GetHashCode()</c>.
+    /// </summary>
+    public static bool IsGetHashCodeOverride(this IMethodSymbol method) =>
+        method is { Name: "GetHashCode", IsOverride: true, DeclaredAccessibility: Accessibility.Public, Parameters.Length: 0 };
+
     static AttributeData? GetAttributeIncludingInherited(this ISymbol symbol, AttributeMetadata metadata)
     {
         var current = symbol;

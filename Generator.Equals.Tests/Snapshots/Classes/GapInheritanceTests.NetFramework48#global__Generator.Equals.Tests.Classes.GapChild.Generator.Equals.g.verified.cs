@@ -45,6 +45,7 @@ namespace Generator.Equals.Tests.Classes
             if (ReferenceEquals(this, other)) return true;
             
             return base.Equals(other as global::Generator.Equals.Tests.Classes.GapParent)
+                && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.Age!, other.Age!)
                 && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.School!, other.School!)
                 ;
         }
@@ -56,6 +57,10 @@ namespace Generator.Equals.Tests.Classes
             var hashCode = new global::System.HashCode();
             
             hashCode.Add(base.GetHashCode());
+            hashCode.Add(
+                this.Age!,
+                global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default
+            );
             hashCode.Add(
                 this.School!,
                 global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default
@@ -110,6 +115,8 @@ namespace Generator.Equals.Tests.Classes
                 foreach (var __ineq in global::Generator.Equals.Tests.Classes.GapParent.EqualityComparer.Default.Inequalities(x, y, path))
                     yield return __ineq;
                 
+                if (!global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(x.Age!, y.Age!))
+                    yield return new global::Generator.Equals.Inequality(path.Append(global::Generator.Equals.MemberPathSegment.Property("Age")), x.Age, y.Age);
                 if (!global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(x.School!, y.School!))
                     yield return new global::Generator.Equals.Inequality(path.Append(global::Generator.Equals.MemberPathSegment.Property("School")), x.School, y.School);
             }

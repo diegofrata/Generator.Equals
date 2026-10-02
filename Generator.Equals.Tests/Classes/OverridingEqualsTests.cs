@@ -1,4 +1,6 @@
+using FluentAssertions;
 using Generator.Equals.Tests.Infrastructure;
+using static Generator.Equals.Tests.Infrastructure.InequalityHelpers;
 
 namespace Generator.Equals.Tests.Classes;
 
@@ -77,6 +79,26 @@ public partial class OverridingEqualsTests : SnapshotTestBase
     [MemberData(nameof(EqualityCases))]
     public void Equality(SeniorManager a, SeniorManager b, bool expected) =>
         EqualityAssert.Verify(a, b, expected);
+
+    // Regression for issue #86's Inequalities case: Manager (no [Equatable]) sits between two [Equatable]
+    // types and hand-writes Equals, comparing Department. A Department-only difference is unequal via
+    // base.Equals, so Inequalities must report it. Previously it delegated to Manager.EqualityComparer,
+    // which resolves to the inherited Person comparer and silently skipped Department (returning empty).
+    [Fact]
+    public void Inequalities_ReportsManualIntermediateMember()
+    {
+        var a = new SeniorManager(25, "IT", 1000);
+        var b = new SeniorManager(25, "Sales", 1000);
+
+        var diffs = SeniorManager.EqualityComparer.Default.Inequalities(a, b).ToList();
+
+        // The hand-written Manager is opaque, so the base portion is reported as ONE coarse inequality:
+        // an empty path (not a named member such as "Department") carrying the whole objects.
+        diffs.Should().Equal([Ineq(a, b)], "a hand-written base is opaque, so its diff is coarse");
+
+        SeniorManager.EqualityComparer.Default.Inequalities(a, a).Should()
+            .BeEmpty("equal instances have no inequalities");
+    }
 
     [Theory]
     [MemberData(nameof(TargetFrameworks))]
