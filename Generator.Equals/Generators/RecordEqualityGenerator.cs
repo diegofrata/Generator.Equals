@@ -7,25 +7,22 @@ namespace Generator.Equals.Generators
     class RecordEqualityGenerator : EqualityGeneratorBase
     {
         /// <summary>
-        /// Whether Inequalities must report the base portion coarsely via the <c>__BaseEquals</c> bridge:
-        /// a comparer ancestor exists, but the immediate base does not own its comparer (a non-[Equatable]
-        /// record intermediate is in between), so member-level delegation to the inherited comparer would
-        /// skip that intermediate's members. Ties bridge emission and its use to one predicate.
+        /// The <c>EqualityContract</c> guard, enforced by the generated <c>Equals</c> itself when it does not
+        /// chain to a base (a root record, or <c>IgnoreInheritedMembers</c>); a base record's <c>Equals</c>
+        /// enforces it on the real runtime types otherwise. <c>Inequalities</c> mirrors it so a contract
+        /// mismatch is reported rather than silently yielding nothing.
         /// </summary>
-        static bool NeedsBaseEqualityBridge(EqualityTypeModel model) =>
-            !model.IgnoreInheritedMembers
-            && model.BaseHasEquatable
-            && !model.ImmediateBaseHasComparer;
+        static TypeIdentityGuard? TypeIdentity(EqualityTypeModel model) =>
+            DelegatesToBase(model)
+                ? null
+                : new TypeIdentityGuard("EqualityContract == other.EqualityContract", "x.EqualityContract != y.EqualityContract");
 
         static void BuildEquals(
             EqualityTypeModel model,
             IndentedTextWriter writer
         )
         {
-            bool ignoreInheritedMembers = model.IgnoreInheritedMembers;
             var symbolName = model.Fullname;
-            var baseTypeName = model.BaseTypeName;
-            var baseTypeFullname = model.BaseTypeFullname;
 
             writer.WriteLine(InheritDocComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
@@ -38,15 +35,15 @@ namespace Generator.Equals.Generators
 
             writer.Indent++;
 
-            // For records, use base.Equals() to properly chain through the inheritance hierarchy
-            // This ensures that intermediate types with manual Equals overrides are called
-            if (baseTypeName == "object" || ignoreInheritedMembers)
+            // A record base always owns equality (compiler-synthesized or hand-written), so chain through
+            // base.Equals(); only a root (or IgnoreInheritedMembers) enforces the contract guard itself.
+            if (TypeIdentity(model) is { } guard)
             {
-                writer.WriteLine("!ReferenceEquals(other, null) && EqualityContract == other.EqualityContract");
+                writer.WriteLine($"!ReferenceEquals(other, null) && {guard.EqualsCondition}");
             }
             else
             {
-                writer.WriteLine($"base.Equals(({baseTypeFullname}?)other)");
+                writer.WriteLine($"base.Equals({model.BaseEqualsArgument})");
             }
 
             BuildMembersEquality(model.InheritedEqualityModels, writer, "this", "other");
@@ -63,9 +60,6 @@ namespace Generator.Equals.Generators
             IndentedTextWriter writer
         )
         {
-            bool ignoreInheritedMembers = model.IgnoreInheritedMembers;
-            var baseTypeName = model.BaseTypeName;
-
             writer.WriteLine(InheritDocComment);
             writer.WriteLine(GeneratedCodeAttributeDeclaration);
             writer.WriteLine(@"public override int GetHashCode()");
@@ -74,15 +68,11 @@ namespace Generator.Equals.Generators
             writer.WriteLine(@"var hashCode = new global::System.HashCode();");
             writer.WriteLine();
 
-            // For records, use base.GetHashCode() to properly chain through the inheritance hierarchy
-            if (baseTypeName == "object" || ignoreInheritedMembers)
-            {
-                writer.WriteLine("hashCode.Add(this.EqualityContract);");
-            }
-            else
-            {
-                writer.WriteLine("hashCode.Add(base.GetHashCode());");
-            }
+            // Mirror BuildEquals: chain through base.GetHashCode() when delegating, otherwise seed from
+            // the contract. Kept in lock-step with Equals so the Equals/GetHashCode contract holds.
+            writer.WriteLine(DelegatesToBase(model)
+                ? "hashCode.Add(base.GetHashCode());"
+                : "hashCode.Add(this.EqualityContract);");
 
             BuildMembersHashCode(model.InheritedEqualityModels, writer, "this");
             BuildMembersHashCode(model.BuildEqualityModels, writer, "this");
@@ -159,9 +149,11 @@ namespace Generator.Equals.Generators
             writer.AppendCloseBracket();
             writer.WriteLine();
 
+            BuildTypeMismatchInequality(writer, TypeIdentity(model));
+
             BuildBaseInequalities(model, writer,
-                memberLevel: !model.IgnoreInheritedMembers && model.ImmediateBaseHasComparer,
-                coarse: NeedsBaseEqualityBridge(model));
+                memberLevel: !model.IgnoreInheritedMembers && model.BaseEquality == BaseEqualityOwnership.Comparer,
+                coarse: UsesBaseEqualityBridge(model));
 
             BuildMembersInequalities(model.InheritedEqualityModels, writer, "x", "y");
             BuildMembersInequalities(model.BuildEqualityModels, writer, "x", "y");
@@ -179,13 +171,10 @@ namespace Generator.Equals.Generators
 
                 BuildGetHashCode(model, writer);
 
-                // A non-[Equatable] record intermediate below a comparer ancestor needs the bridge so
-                // the nested comparer's Inequalities can reach its (otherwise skipped) members.
-                if (NeedsBaseEqualityBridge(model))
-                {
-                    // A record binds to its typed Equals directly; no cast needed.
+                // A record base without its own comparer is opaque to the nested comparer's Inequalities;
+                // the bridge lets it ask base.Equals instead. A record binds to its typed Equals directly.
+                if (UsesBaseEqualityBridge(model))
                     BuildBaseEqualityBridge(model, writer, "other");
-                }
 
                 BuildNestedEqualityComparer(model, writer);
             });

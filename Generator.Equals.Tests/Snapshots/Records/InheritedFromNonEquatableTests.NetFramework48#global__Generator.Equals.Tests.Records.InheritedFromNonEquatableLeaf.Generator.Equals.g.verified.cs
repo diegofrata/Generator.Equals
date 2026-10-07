@@ -1,4 +1,4 @@
-﻿//HintName: global__Generator.Equals.Tests.Records.PrimitiveEqualitySample.Generator.Equals.g.cs
+﻿//HintName: global__Generator.Equals.Tests.Records.InheritedFromNonEquatableLeaf.Generator.Equals.g.cs
 
 #nullable enable
 #pragma warning disable CS0612,CS0618
@@ -6,16 +6,15 @@
 
 namespace Generator.Equals.Tests.Records
 {
-    partial record PrimitiveEqualitySample
+    partial record InheritedFromNonEquatableLeaf
     {
         /// <inheritdoc/>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-        public virtual bool Equals(global::Generator.Equals.Tests.Records.PrimitiveEqualitySample? other)
+        public virtual bool Equals(global::Generator.Equals.Tests.Records.InheritedFromNonEquatableLeaf? other)
         {
             return
-                !ReferenceEquals(other, null) && EqualityContract == other.EqualityContract
-                && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.Name!, other.Name!)
-                && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.Age!, other.Age!)
+                base.Equals((global::Generator.Equals.Tests.Records.InheritedFromNonEquatablePlainBase?)other)
+                && global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(this.B!, other.B!)
                 ;
         }
         
@@ -25,24 +24,24 @@ namespace Generator.Equals.Tests.Records
         {
             var hashCode = new global::System.HashCode();
             
-            hashCode.Add(this.EqualityContract);
+            hashCode.Add(base.GetHashCode());
             hashCode.Add(
-                this.Name!,
-                global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default
-            );
-            hashCode.Add(
-                this.Age!,
+                this.B!,
                 global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default
             );
             
             return hashCode.ToHashCode();
         }
         
+        // Non-virtual bridge to the base type's Equals, for use by the nested comparer.
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
+        private bool __BaseEquals(global::Generator.Equals.Tests.Records.InheritedFromNonEquatablePlainBase? other) => base.Equals(other);
+        
         /// <summary>
         /// An equality comparer for the enclosing type that uses the generated equality semantics.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-        public sealed class EqualityComparer : global::System.Collections.Generic.IEqualityComparer<global::Generator.Equals.Tests.Records.PrimitiveEqualitySample>
+        public sealed class EqualityComparer : global::System.Collections.Generic.IEqualityComparer<global::Generator.Equals.Tests.Records.InheritedFromNonEquatableLeaf>
         {
             /// <summary>
             /// Gets the default instance of the comparer.
@@ -50,7 +49,7 @@ namespace Generator.Equals.Tests.Records
             public static EqualityComparer Default { get; } = new EqualityComparer();
             
             /// <inheritdoc/>
-            public bool Equals(global::Generator.Equals.Tests.Records.PrimitiveEqualitySample? x, global::Generator.Equals.Tests.Records.PrimitiveEqualitySample? y)
+            public bool Equals(global::Generator.Equals.Tests.Records.InheritedFromNonEquatableLeaf? x, global::Generator.Equals.Tests.Records.InheritedFromNonEquatableLeaf? y)
             {
                 if (ReferenceEquals(x, y)) return true;
                 if (x is null || y is null) return false;
@@ -59,7 +58,7 @@ namespace Generator.Equals.Tests.Records
             }
             
             /// <inheritdoc/>
-            public int GetHashCode(global::Generator.Equals.Tests.Records.PrimitiveEqualitySample obj)
+            public int GetHashCode(global::Generator.Equals.Tests.Records.InheritedFromNonEquatableLeaf obj)
             {
                 return obj.GetHashCode();
             }
@@ -72,7 +71,7 @@ namespace Generator.Equals.Tests.Records
             /// <param name="path">The base path for difference reporting.</param>
             /// <returns>An enumerable of differences, where each difference contains the path, left value, and right value.</returns>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public global::System.Collections.Generic.IEnumerable<global::Generator.Equals.Inequality> Inequalities(global::Generator.Equals.Tests.Records.PrimitiveEqualitySample? x, global::Generator.Equals.Tests.Records.PrimitiveEqualitySample? y, global::Generator.Equals.MemberPath path = default)
+            public global::System.Collections.Generic.IEnumerable<global::Generator.Equals.Inequality> Inequalities(global::Generator.Equals.Tests.Records.InheritedFromNonEquatableLeaf? x, global::Generator.Equals.Tests.Records.InheritedFromNonEquatableLeaf? y, global::Generator.Equals.MemberPath path = default)
             {
                 if (ReferenceEquals(x, y)) yield break;
                 if (x is null || y is null)
@@ -81,16 +80,11 @@ namespace Generator.Equals.Tests.Records
                     yield break;
                 }
                 
-                if (x.EqualityContract != y.EqualityContract)
-                {
+                if (!x.__BaseEquals(y))
                     yield return new global::Generator.Equals.Inequality(path, x, y);
-                    yield break;
-                }
                 
-                if (!global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(x.Name!, y.Name!))
-                    yield return new global::Generator.Equals.Inequality(path.Append(global::Generator.Equals.MemberPathSegment.Property("Name")), x.Name, y.Name);
-                if (!global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(x.Age!, y.Age!))
-                    yield return new global::Generator.Equals.Inequality(path.Append(global::Generator.Equals.MemberPathSegment.Property("Age")), x.Age, y.Age);
+                if (!global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default.Equals(x.B!, y.B!))
+                    yield return new global::Generator.Equals.Inequality(path.Append(global::Generator.Equals.MemberPathSegment.Property("B")), x.B, y.B);
             }
         }
     }

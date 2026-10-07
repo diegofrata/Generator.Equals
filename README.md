@@ -279,7 +279,10 @@ partial class MyClass
 
 By default (`IgnoreInheritedMembers = false`), the generated code handles inherited members as follows:
 - If an ancestor owns equality — it has `[Equatable]`/a generated comparer, or hand-rolls a complete contract (a `GetHashCode()` override plus value equality via `IEquatable<T>` **or** an `Equals(object)` override) — the generated code calls `base.Equals()`/`base.GetHashCode()` to delegate to it. A public `IEquatable<T>` is preferred (delegation binds directly to it); `Equals(object)` is the fallback. Any plain classes *between* the decorated class and that ancestor (no `[Equatable]`, no equality of their own) have their public properties compared explicitly, since the ancestor knows nothing about them
+- A record base always owns its equality (compiler-synthesized or hand-written), so a derived record always delegates to it and never re-compares its members
 - Otherwise, all inherited properties from the entire chain are compared explicitly. A base that provides only one half — an `Equals`/`IEquatable` without `GetHashCode`, or vice versa — is treated this way too: delegating half a contract would break the `Equals`/`GetHashCode` invariant, so its public properties are compared instead
+
+`EqualityComparer.Inequalities` follows the same rules. When the base is delegated to via a generated comparer, its inequalities are reported member by member; when it is reached only through `base.Equals()` (a hand-written contract, or a record base without `[Equatable]`), the base portion is reported as a single whole-object inequality with an empty path. Likewise, when the generated `Equals` enforces a type-identity guard itself (`GetType()` for classes, `EqualityContract` for records), a mismatch is reported as a single whole-object inequality.
 
 Set `IgnoreInheritedMembers = true` to skip calling `base.Equals()` and ignore all inherited properties.
 This is useful when you want to completely redefine equality for a derived class without considering

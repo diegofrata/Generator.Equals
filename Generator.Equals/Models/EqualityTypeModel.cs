@@ -38,7 +38,6 @@ sealed record EqualityTypeModel
     public required SyntaxKind SyntaxKind { get; init; }
 
     public required string TypeName { get; init; }
-    public required string? BaseTypeName { get; init; }
 
     /// <summary>
     /// Fully qualified name of the base type (e.g., global::Namespace.BaseClass).
@@ -70,18 +69,11 @@ sealed record EqualityTypeModel
     public bool BaseHasEquatable => BaseEquality is BaseEqualityOwnership.Comparer or BaseEqualityOwnership.ComparerBehindManual;
 
     /// <summary>
-    /// Whether the IMMEDIATE base type exposes its own generated EqualityComparer. When false but
-    /// <see cref="BaseHasEquatable"/> is true, <c>{immediateBase}.EqualityComparer</c> resolves to an
-    /// inherited ancestor comparer that knows nothing about the intermediate's members. Records use this
-    /// to choose between member-level Inequalities delegation and the coarse bridge.
-    /// </summary>
-    public bool ImmediateBaseHasComparer { get; init; }
-
-    /// <summary>
-    /// For classes, the argument expression of the <c>base.Equals(...)</c> delegation call, cast so
-    /// overload resolution binds to the intended base overload (the immediate base's generated typed
-    /// Equals, a hand-written ancestor's public typed Equals, or <c>object</c> for a hand-written
-    /// <c>Equals(object)</c>). Null when <see cref="BaseEquality"/> is <see cref="BaseEqualityOwnership.None"/>.
+    /// The argument expression of the <c>base.Equals(...)</c> delegation call, cast so overload
+    /// resolution binds to the intended base overload: a record's immediate base typed Equals, the
+    /// immediate class base's generated typed Equals, a hand-written ancestor's public typed Equals, or
+    /// <c>object</c> for a hand-written <c>Equals(object)</c>. Null when <see cref="BaseEquality"/> is
+    /// <see cref="BaseEqualityOwnership.None"/>.
     /// </summary>
     public string? BaseEqualsArgument { get; init; }
 

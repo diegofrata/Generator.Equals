@@ -76,6 +76,12 @@ namespace Generator.Equals.Tests.Records
                     yield break;
                 }
                 
+                if (x.EqualityContract != y.EqualityContract)
+                {
+                    yield return new global::Generator.Equals.Inequality(path, x, y);
+                    yield break;
+                }
+                
                 if (!global::Generator.Equals.UnorderedEqualityComparer<global::System.Int32>.Default.Equals(x.Ints!, y.Ints!))
                 {
                     var __propPath = path.Append(global::Generator.Equals.MemberPathSegment.Property("Ints"));

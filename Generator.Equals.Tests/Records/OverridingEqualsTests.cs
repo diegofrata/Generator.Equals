@@ -59,9 +59,9 @@ public partial class OverridingEqualsTests : SnapshotTestBase
 
         var diffs = SeniorManager.EqualityComparer.Default.Inequalities(a, b).ToList();
 
-        // The non-[Equatable] Manager record is opaque to member-level delegation, so the base portion
-        // is reported as ONE coarse inequality: an empty path (not "Department") carrying the whole records.
-        diffs.Should().Equal([Ineq(a, b)], "a non-[Equatable] record intermediate is reported coarsely");
+        // Manager has no comparer of its own, so (like any record base reached only via base.Equals) the base
+        // portion is reported as ONE coarse inequality: an empty path (not "Department") carrying the whole records.
+        diffs.Should().Equal([Ineq(a, b)], "a record base without its own comparer is reported coarsely");
 
         SeniorManager.EqualityComparer.Default.Inequalities(a, a).Should()
             .BeEmpty("equal instances have no inequalities");
