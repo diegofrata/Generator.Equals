@@ -86,6 +86,12 @@ namespace Generator.Equals.Tests.Records
                     yield break;
                 }
                 
+                if (x.EqualityContract != y.EqualityContract)
+                {
+                    yield return new global::Generator.Equals.Inequality(path, x, y);
+                    yield break;
+                }
+                
                 if (!global::Generator.Equals.Tests.Records.CustomEqualityComparer1.Default.Equals(x.Name1!, y.Name1!))
                     yield return new global::Generator.Equals.Inequality(path.Append(global::Generator.Equals.MemberPathSegment.Property("Name1")), x.Name1, y.Name1);
                 if (!global::Generator.Equals.Tests.Records.CustomEqualityComparer2.Instance.Equals(x.Name2!, y.Name2!))

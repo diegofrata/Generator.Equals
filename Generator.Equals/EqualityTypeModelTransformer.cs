@@ -55,7 +55,6 @@ sealed class EqualityTypeModelTransformer
             return null;
         }
 
-        var baseTypeName = symbol.BaseType?.ToFQF();
         var baseTypeFullname = symbol.BaseType?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
         var typeName = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
@@ -81,13 +80,12 @@ sealed class EqualityTypeModelTransformer
             ? null
             : s => s is not IPropertySymbol prop || !ShouldSkipOverridingProperty(prop, attributesMetadata);
 
-        // One upward walk classifies how the base chain owns equality and yields the plain ancestors
+        // One upward walk classifies how the base chain owns equality and yields the plain class ancestors
         // (no equality of their own) below the equality-owning one. Those ancestors' members are collected
-        // and compared here, because whatever base.Equals() reaches knows nothing about them. Records are
-        // exempt when a comparer ancestor exists: a non-[Equatable] record intermediate has
-        // compiler-synthesized equality over its own members that base.Equals() already honors.
+        // and compared here, because whatever base.Equals() reaches knows nothing about them. A record base
+        // is never plain: its equality (compiler-synthesized or hand-written) is reached via base.Equals().
         var baseChain = ClassifyBaseEquality(symbol.BaseType, attributesMetadata);
-        var collectInherited = !ignoreInheritedMembers && (baseChain.Ownership == BaseEqualityOwnership.None || !symbol.IsRecord);
+        var collectInherited = !ignoreInheritedMembers && !baseChain.PlainAncestors.IsEmpty;
 
         var bems = EqualityMemberModelTransformer.BuildEqualityModels(symbol, attributesMetadata, explicitMode, filter);
         var inheritedModels = collectInherited
@@ -103,12 +101,10 @@ sealed class EqualityTypeModelTransformer
             IgnoreInheritedMembers = ignoreInheritedMembers,
             BuildEqualityModels = bems,
             IsSealed = symbol.IsSealed,
-            BaseTypeName = baseTypeName,
             BaseTypeFullname = baseTypeFullname,
             Fullname = fullname,
             SyntaxKind = _context.TargetNode.Kind(),
             BaseEquality = baseChain.Ownership,
-            ImmediateBaseHasComparer = baseChain.ImmediateBaseHasComparer,
             BaseEqualsArgument = baseChain.BaseEqualsArgument,
             InheritedEqualityModels = inheritedModels,
             GenerateClassEqualityOperators = generateClassEqualityOperators,
@@ -157,66 +153,81 @@ sealed class EqualityTypeModelTransformer
             && SymbolEqualityComparer.Default.Equals(m.Parameters[0].Type, type));
 
     /// <summary>
-    /// True if the type hand-rolls a complete equality contract — a <c>GetHashCode</c> override plus a
-    /// value <c>Equals</c> reachable via a base call: either a public typed <c>Equals(TSelf)</c>
-    /// (preferred, reported through <paramref name="hasTypedEquals"/>) or an <c>Equals(object)</c>
-    /// override (fallback). Not a record (whose equality is compiler-managed). Requiring GetHashCode keeps
-    /// delegation mutually consistent; callers exclude comparer-owning ancestors before this check.
+    /// True if the type owns equality that a <c>base.Equals</c> call reaches without a generated comparer.
+    /// Every record does: the compiler synthesizes a public typed <c>Equals(TSelf?)</c> (or the author
+    /// supplied one) together with <c>GetHashCode</c>. A class does when it hand-rolls a complete contract —
+    /// a <c>GetHashCode</c> override plus either a public typed <c>Equals(TSelf)</c> (preferred, reported
+    /// through <paramref name="hasTypedEquals"/>) or an <c>Equals(object)</c> override (fallback). Requiring
+    /// GetHashCode keeps delegation mutually consistent; callers exclude comparer-owning ancestors first.
     /// </summary>
-    static bool DeclaresManualEqualityPair(INamedTypeSymbol type, out bool hasTypedEquals)
+    static bool OwnsEqualityViaBaseCall(INamedTypeSymbol type, out bool hasTypedEquals)
     {
+        if (type.IsRecord)
+        {
+            hasTypedEquals = true;
+            return true;
+        }
+
         hasTypedEquals = false;
-        if (type.IsRecord || !type.GetMembers("GetHashCode").OfType<IMethodSymbol>().Any(SymbolExtensions.IsGetHashCodeOverride))
+        if (!type.GetMembers("GetHashCode").OfType<IMethodSymbol>().Any(SymbolExtensions.IsGetHashCodeOverride))
             return false;
 
         hasTypedEquals = DeclaresPublicTypedEquals(type);
         return hasTypedEquals || type.GetMembers("Equals").OfType<IMethodSymbol>().Any(SymbolExtensions.IsEqualsObjectOverride);
     }
 
+    /// <summary>
+    /// The <c>base.Equals(...)</c> argument that binds to <paramref name="target"/>'s equality: a record binds
+    /// to its typed <c>Equals</c> through a cast (a record base is always the immediate base); a class with a
+    /// public typed <c>Equals(TSelf)</c> through <c>as</c>; otherwise <c>object</c> so resolution reaches its
+    /// <c>Equals(object)</c> rather than an <c>[Equatable]</c> ancestor's generated <c>Equals(TAncestor?)</c>.
+    /// </summary>
+    static string BaseEqualsArgumentFor(INamedTypeSymbol target, bool hasTypedEquals) =>
+        target.IsRecord ? $"({target.ToFQF()}?)other"
+        : hasTypedEquals ? $"other as {target.ToFQF()}"
+        : "(object?) other";
+
     /// <summary>Result of <see cref="ClassifyBaseEquality"/>: everything the model needs to know about the base chain.</summary>
     readonly record struct BaseChain(
         BaseEqualityOwnership Ownership,
-        bool ImmediateBaseHasComparer,
         string? BaseEqualsArgument,
         ImmutableArray<INamedTypeSymbol> PlainAncestors);
 
     /// <summary>
     /// Classifies how the base chain owns equality in a single upward walk (see
     /// <see cref="BaseEqualityOwnership"/>), stopping at well-known bases (object/ValueType/Enum) that
-    /// never carry a user contract. Also yields the plain ancestors visited before the equality-owning one
-    /// (nearest first) and the class <c>base.Equals</c> argument: cast to the immediate base on the comparer
-    /// path; on the hand-written path, cast to the ancestor owning the contract when it exposes a public typed
-    /// <c>Equals(TSelf)</c> (it may sit behind plain intermediates, so casting to the immediate base would
-    /// miss it), otherwise to <c>object</c> so resolution reaches its <c>Equals(object)</c> rather than an
-    /// <c>[Equatable]</c> ancestor's generated <c>Equals(TAncestor?)</c>.
+    /// never carry a user contract. Also yields the plain class ancestors visited before the equality-owning
+    /// one (nearest first) and the <c>base.Equals</c> argument (see <see cref="BaseEqualsArgumentFor"/>):
+    /// bound to the immediate base on the comparer path, and on the base-call path to the ancestor owning
+    /// the contract (it may sit behind plain class intermediates, so binding to the immediate base would
+    /// miss it).
     /// </summary>
     static BaseChain ClassifyBaseEquality(INamedTypeSymbol? baseType, AttributesMetadata attributesMetadata)
     {
-        var immediateBaseHasComparer = baseType is { } b && OwnsEqualityViaComparer(b, attributesMetadata);
         var plainAncestors = ImmutableArray.CreateBuilder<INamedTypeSymbol>();
-        string? manualEqualsArgument = null;
+        string? baseCallArgument = null;
 
         for (var current = baseType; current != null && !IsWellKnownEqualityBase(current); current = current.BaseType)
         {
             if (OwnsEqualityViaComparer(current, attributesMetadata))
             {
-                return manualEqualsArgument is null
-                    ? new BaseChain(BaseEqualityOwnership.Comparer, immediateBaseHasComparer, $"other as {baseType!.ToFQF()}", plainAncestors.ToImmutable())
-                    : new BaseChain(BaseEqualityOwnership.ComparerBehindManual, immediateBaseHasComparer, manualEqualsArgument, plainAncestors.ToImmutable());
+                return baseCallArgument is null
+                    ? new BaseChain(BaseEqualityOwnership.Comparer, BaseEqualsArgumentFor(baseType!, hasTypedEquals: true), plainAncestors.ToImmutable())
+                    : new BaseChain(BaseEqualityOwnership.ComparerBehindManual, baseCallArgument, plainAncestors.ToImmutable());
             }
 
-            if (manualEqualsArgument is not null)
+            if (baseCallArgument is not null)
                 continue;
 
-            if (DeclaresManualEqualityPair(current, out var hasTypedEquals))
-                manualEqualsArgument = hasTypedEquals ? $"other as {current.ToFQF()}" : "(object?) other";
+            if (OwnsEqualityViaBaseCall(current, out var hasTypedEquals))
+                baseCallArgument = BaseEqualsArgumentFor(current, hasTypedEquals);
             else
                 plainAncestors.Add(current);
         }
 
-        return manualEqualsArgument is null
-            ? new BaseChain(BaseEqualityOwnership.None, immediateBaseHasComparer, null, plainAncestors.ToImmutable())
-            : new BaseChain(BaseEqualityOwnership.Manual, immediateBaseHasComparer, manualEqualsArgument, plainAncestors.ToImmutable());
+        return baseCallArgument is null
+            ? new BaseChain(BaseEqualityOwnership.None, null, plainAncestors.ToImmutable())
+            : new BaseChain(BaseEqualityOwnership.Manual, baseCallArgument, plainAncestors.ToImmutable());
     }
 
     /// <summary>

@@ -1,4 +1,4 @@
-﻿//HintName: global__Generator.Equals.Tests.Records.InheritedEqualityAttributesParent.Generator.Equals.g.cs
+﻿//HintName: global__Generator.Equals.Tests.Records.EqualityContractMismatchVehicle.Generator.Equals.g.cs
 
 #nullable enable
 #pragma warning disable CS0612,CS0618
@@ -6,15 +6,15 @@
 
 namespace Generator.Equals.Tests.Records
 {
-    partial record InheritedEqualityAttributesParent
+    partial record EqualityContractMismatchVehicle
     {
         /// <inheritdoc/>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-        public virtual bool Equals(global::Generator.Equals.Tests.Records.InheritedEqualityAttributesParent? other)
+        public virtual bool Equals(global::Generator.Equals.Tests.Records.EqualityContractMismatchVehicle? other)
         {
             return
                 !ReferenceEquals(other, null) && EqualityContract == other.EqualityContract
-                && global::Generator.Equals.OrderedEqualityComparer<global::System.Int32>.Default.Equals(this.Ints!, other.Ints!)
+                && global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(this.Vin!, other.Vin!)
                 ;
         }
         
@@ -26,8 +26,8 @@ namespace Generator.Equals.Tests.Records
             
             hashCode.Add(this.EqualityContract);
             hashCode.Add(
-                this.Ints!,
-                global::Generator.Equals.OrderedEqualityComparer<global::System.Int32>.Default
+                this.Vin!,
+                global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default
             );
             
             return hashCode.ToHashCode();
@@ -37,7 +37,7 @@ namespace Generator.Equals.Tests.Records
         /// An equality comparer for the enclosing type that uses the generated equality semantics.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-        public sealed class EqualityComparer : global::System.Collections.Generic.IEqualityComparer<global::Generator.Equals.Tests.Records.InheritedEqualityAttributesParent>
+        public sealed class EqualityComparer : global::System.Collections.Generic.IEqualityComparer<global::Generator.Equals.Tests.Records.EqualityContractMismatchVehicle>
         {
             /// <summary>
             /// Gets the default instance of the comparer.
@@ -45,7 +45,7 @@ namespace Generator.Equals.Tests.Records
             public static EqualityComparer Default { get; } = new EqualityComparer();
             
             /// <inheritdoc/>
-            public bool Equals(global::Generator.Equals.Tests.Records.InheritedEqualityAttributesParent? x, global::Generator.Equals.Tests.Records.InheritedEqualityAttributesParent? y)
+            public bool Equals(global::Generator.Equals.Tests.Records.EqualityContractMismatchVehicle? x, global::Generator.Equals.Tests.Records.EqualityContractMismatchVehicle? y)
             {
                 if (ReferenceEquals(x, y)) return true;
                 if (x is null || y is null) return false;
@@ -54,7 +54,7 @@ namespace Generator.Equals.Tests.Records
             }
             
             /// <inheritdoc/>
-            public int GetHashCode(global::Generator.Equals.Tests.Records.InheritedEqualityAttributesParent obj)
+            public int GetHashCode(global::Generator.Equals.Tests.Records.EqualityContractMismatchVehicle obj)
             {
                 return obj.GetHashCode();
             }
@@ -67,7 +67,7 @@ namespace Generator.Equals.Tests.Records
             /// <param name="path">The base path for difference reporting.</param>
             /// <returns>An enumerable of differences, where each difference contains the path, left value, and right value.</returns>
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Generator.Equals", "1.0.0.0")]
-            public global::System.Collections.Generic.IEnumerable<global::Generator.Equals.Inequality> Inequalities(global::Generator.Equals.Tests.Records.InheritedEqualityAttributesParent? x, global::Generator.Equals.Tests.Records.InheritedEqualityAttributesParent? y, global::Generator.Equals.MemberPath path = default)
+            public global::System.Collections.Generic.IEnumerable<global::Generator.Equals.Inequality> Inequalities(global::Generator.Equals.Tests.Records.EqualityContractMismatchVehicle? x, global::Generator.Equals.Tests.Records.EqualityContractMismatchVehicle? y, global::Generator.Equals.MemberPath path = default)
             {
                 if (ReferenceEquals(x, y)) yield break;
                 if (x is null || y is null)
@@ -82,21 +82,8 @@ namespace Generator.Equals.Tests.Records
                     yield break;
                 }
                 
-                if (!global::Generator.Equals.OrderedEqualityComparer<global::System.Int32>.Default.Equals(x.Ints!, y.Ints!))
-                {
-                    var __propPath = path.Append(global::Generator.Equals.MemberPathSegment.Property("Ints"));
-                    var __xList = x.Ints is null ? new global::System.Collections.Generic.List<global::System.Int32>() : new global::System.Collections.Generic.List<global::System.Int32>(x.Ints);
-                    var __yList = y.Ints is null ? new global::System.Collections.Generic.List<global::System.Int32>() : new global::System.Collections.Generic.List<global::System.Int32>(y.Ints);
-                    var __maxLen = global::System.Math.Max(__xList.Count, __yList.Count);
-                    
-                    for (var __i = 0; __i < __maxLen; __i++)
-                    {
-                        var __xVal = __i < __xList.Count ? (object?)__xList[__i] : null;
-                        var __yVal = __i < __yList.Count ? (object?)__yList[__i] : null;
-                        if (!global::System.Object.Equals(__xVal, __yVal))
-                            yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Index(__i)), __xVal, __yVal);
-                    }
-                }
+                if (!global::Generator.Equals.DefaultEqualityComparer<global::System.String>.Default.Equals(x.Vin!, y.Vin!))
+                    yield return new global::Generator.Equals.Inequality(path.Append(global::Generator.Equals.MemberPathSegment.Property("Vin")), x.Vin, y.Vin);
             }
         }
     }
