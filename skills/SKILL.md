@@ -116,7 +116,7 @@ foreach (var diff in MyType.EqualityComparer.Default.Inequalities(oldObj, newObj
 // Output: Addresses["home"].Street: 123 Main St -> 456 Oak Ave
 ```
 
-Nested `[Equatable]` objects in collections are auto-drilled — you get per-field diffs, not "entire object changed".
+Nested `[Equatable]` objects in ordered collections and dictionary values are auto-drilled — you get per-field diffs. Unordered sequences and sets report added/removed elements instead.
 
 ## Common Pitfalls
 
@@ -126,9 +126,9 @@ Nested `[Equatable]` objects in collections are auto-drilled — you get per-fie
 
 3. **Conflicting collection attributes** (GE007) — Only ONE of `[OrderedEquality]`, `[UnorderedEquality]`, `[SetEquality]` per property.
 
-4. **Hash code instability** — `[UnorderedEquality]`, `[SetEquality]`, and `[PrecisionEquality]` return hash code 0 or exclude from hashing. Types using these are poor dictionary keys.
+4. **Hashing** — `[UnorderedEquality]` combines element hashes independently of order. `[SetEquality]` returns 0, and `[PrecisionEquality]` is excluded from hashing. Set- and precision-only types therefore have poor hash distribution.
 
-5. **Inheritance with [Equatable]** — The generator walks the full inheritance chain. If any ancestor has `[Equatable]` or overrides `Equals()`, it calls `base.Equals()`. Use `IgnoreInheritedMembers = true` to opt out.
+5. **Inheritance with [Equatable]** — The generator walks the full inheritance chain. It delegates to an ancestor with `[Equatable]`/a generated comparer, or a complete manual equality contract: a `GetHashCode()` override plus public typed `Equals(T)` or an `Equals(object)` override. A partial contract is not delegated to; inherited public properties are compared instead. Use `IgnoreInheritedMembers = true` to opt out.
 
 6. **Overriding properties inherits attributes** — A `Child` overriding a `Parent`'s `[OrderedEquality] virtual int[] Values` automatically inherits `[OrderedEquality]`. Do NOT re-annotate unless you want to change behavior.
 
