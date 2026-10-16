@@ -67,13 +67,20 @@ namespace Generator.Equals.Tests.RecordStructs
                 if (!new global::Generator.Equals.UnorderedEqualityComparer<global::System.String>(global::System.StringComparer.OrdinalIgnoreCase).Equals(x.Names!, y.Names!))
                 {
                     var __propPath = path.Append(global::Generator.Equals.MemberPathSegment.Property("Names"));
-                    var __xSet = x.Names is null ? new global::System.Collections.Generic.HashSet<global::System.String>() : new global::System.Collections.Generic.HashSet<global::System.String>(x.Names);
-                    var __ySet = y.Names is null ? new global::System.Collections.Generic.HashSet<global::System.String>() : new global::System.Collections.Generic.HashSet<global::System.String>(y.Names);
-                    
-                    foreach (var __removed in global::System.Linq.Enumerable.Except(__xSet, __ySet))
-                        yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Removed()), __removed, null);
-                    
-                    foreach (var __added in global::System.Linq.Enumerable.Except(__ySet, __xSet))
+                    var __xList = x.Names is null ? new global::System.Collections.Generic.List<global::System.String>() : new global::System.Collections.Generic.List<global::System.String>(x.Names);
+                    var __remaining = y.Names is null ? new global::System.Collections.Generic.List<global::System.String>() : new global::System.Collections.Generic.List<global::System.String>(y.Names);
+                    if (__xList.Count == 0 && __remaining.Count == 0)
+                        yield return new global::Generator.Equals.Inequality(__propPath, x.Names, y.Names);
+                    var __elementComparer = global::System.StringComparer.OrdinalIgnoreCase;
+                    foreach (var __item in __xList)
+                    {
+                        var __match = __remaining.FindIndex(__candidate => __elementComparer.Equals(__item, __candidate));
+                        if (__match < 0)
+                            yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Removed()), __item, null);
+                        else
+                            __remaining.RemoveAt(__match);
+                    }
+                    foreach (var __added in __remaining)
                         yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Added()), null, __added);
                 }
             }
