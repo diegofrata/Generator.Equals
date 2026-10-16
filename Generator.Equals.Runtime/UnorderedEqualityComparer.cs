@@ -1,4 +1,5 @@
-﻿using System.CodeDom.Compiler;
+﻿using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -32,22 +33,36 @@ namespace Generator.Equals
                 y is ICollection<T> yCollection &&
                 xCollection.Count != yCollection.Count) return false;
 
-#pragma warning disable CS8714
-            var cnt = new Dictionary<T, int>(EqualityComparer);
-#pragma warning restore CS8714
-            
+            // Wrap elements in a value-type key so Dictionary accepts null elements too.
+            var cnt = new Dictionary<ValueTuple<T>, int>(new ElementKeyComparer(EqualityComparer));
+
             foreach (var s in x)
-                cnt[s] = (cnt.TryGetValue(s, out var v) ? v : 0) + 1;
+            {
+                var key = ValueTuple.Create(s);
+                cnt[key] = (cnt.TryGetValue(key, out var v) ? v : 0) + 1;
+            }
 
             foreach (var s in y)
             {
-                if (!cnt.ContainsKey(s))
+                var key = ValueTuple.Create(s);
+                if (!cnt.TryGetValue(key, out var count))
                     return false;
 
-                cnt[s]--;
+                cnt[key] = count - 1;
             }
 
             return cnt.Values.All(c => c == 0);
+        }
+
+        sealed class ElementKeyComparer : IEqualityComparer<ValueTuple<T>>
+        {
+            readonly IEqualityComparer<T> _comparer;
+
+            public ElementKeyComparer(IEqualityComparer<T> comparer) => _comparer = comparer;
+
+            public bool Equals(ValueTuple<T> x, ValueTuple<T> y) => _comparer.Equals(x.Item1, y.Item1);
+
+            public int GetHashCode(ValueTuple<T> obj) => obj.Item1 is null ? 0 : _comparer.GetHashCode(obj.Item1);
         }
 
         public int GetHashCode(IEnumerable<T>? obj)
