@@ -416,7 +416,7 @@ Paths are composed of segments:
 
 ### Drill-down
 
-When a collection element or dictionary value is itself an `[Equatable]` type, `Inequalities()` automatically drills down into its properties instead of reporting the entire object as changed. In the example above, the address change is reported as `Addresses["home"].Street` rather than the whole `Address` object.
+When an ordered collection element or dictionary value is itself an `[Equatable]` type, `Inequalities()` automatically drills down into its properties instead of reporting the entire object as changed. In the example above, the address change is reported as `Addresses["home"].Street` rather than the whole `Address` object. Unordered sequences and sets report added/removed elements instead.
 
 ### Base path
 
