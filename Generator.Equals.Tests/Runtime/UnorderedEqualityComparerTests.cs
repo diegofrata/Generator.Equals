@@ -39,6 +39,20 @@ public class UnorderedEqualityComparerTests
     }
 
     [Fact]
+    public void Equals_Should_distinguish_null_multiplicity_from_non_collections()
+    {
+        // Non-ICollection inputs skip the up-front length check, so multiplicity
+        // must be enforced purely by the counting pass.
+        var comparer = UnorderedEqualityComparer<string?>.Default;
+        IEnumerable<string?> a = new[] { null, "a", null }.Select(x => x);
+        IEnumerable<string?> moreNulls = new[] { null, "a", null, null }.Select(x => x);
+        IEnumerable<string?> fewerNulls = new[] { null, "a" }.Select(x => x);
+
+        comparer.Equals(a, moreNulls).Should().BeFalse();
+        comparer.Equals(a, fewerNulls).Should().BeFalse();
+    }
+
+    [Fact]
     public void Equals_Should_use_custom_comparer_with_null_elements()
     {
         var comparer = new UnorderedEqualityComparer<string?>(StringComparer.OrdinalIgnoreCase);

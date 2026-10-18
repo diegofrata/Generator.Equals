@@ -12,6 +12,8 @@ namespace Generator.Equals
 
         public IEqualityComparer<T> EqualityComparer { get; }
 
+        readonly ElementKeyComparer _keyComparer;
+
         public UnorderedEqualityComparer() : this(DefaultEqualityComparer<T>.Default)
         {
         }
@@ -19,6 +21,7 @@ namespace Generator.Equals
         public UnorderedEqualityComparer(IEqualityComparer<T> equalityComparer)
         {
             EqualityComparer = equalityComparer;
+            _keyComparer = new ElementKeyComparer(equalityComparer);
         }
 
         public bool Equals(IEnumerable<T>? x, IEnumerable<T>? y)
@@ -34,7 +37,7 @@ namespace Generator.Equals
                 xCollection.Count != yCollection.Count) return false;
 
             // Wrap elements in a value-type key so Dictionary accepts null elements too.
-            var cnt = new Dictionary<ValueTuple<T>, int>(new ElementKeyComparer(EqualityComparer));
+            var cnt = new Dictionary<ValueTuple<T>, int>(_keyComparer);
 
             foreach (var s in x)
             {
@@ -54,6 +57,7 @@ namespace Generator.Equals
             return cnt.Values.All(c => c == 0);
         }
 
+        [GeneratedCode("Generator.Equals", "1.0.0.0")]
         sealed class ElementKeyComparer : IEqualityComparer<ValueTuple<T>>
         {
             readonly IEqualityComparer<T> _comparer;
