@@ -116,7 +116,7 @@ foreach (var diff in MyType.EqualityComparer.Default.Inequalities(oldObj, newObj
 // Output: Addresses["home"].Street: 123 Main St -> 456 Oak Ave
 ```
 
-Nested `[Equatable]` objects in ordered collections and dictionary values are auto-drilled — you get per-field diffs. Unordered sequences and sets report added/removed elements instead.
+Nested `[Equatable]` objects in `[OrderedEquality]` collections and dictionary values are auto-drilled — you get per-field diffs. `[UnorderedEquality]`/`[SetEquality]` members report added/removed elements instead (a `null` collection versus an empty one is a single difference on the member). A collection member without one of those attributes is reported as one whole-member change.
 
 ## Common Pitfalls
 
@@ -126,9 +126,9 @@ Nested `[Equatable]` objects in ordered collections and dictionary values are au
 
 3. **Conflicting collection attributes** (GE007) — Only ONE of `[OrderedEquality]`, `[UnorderedEquality]`, `[SetEquality]` per property.
 
-4. **Hashing** — `[UnorderedEquality]` combines element hashes independently of order. `[SetEquality]` returns 0, and `[PrecisionEquality]` is excluded from hashing. Set- and precision-only types therefore have poor hash distribution.
+4. **Hashing** — `[UnorderedEquality]` XORs element hashes: order-independent, but elements repeated an even number of times cancel out (`[1, 1]` hashes like `[]`) and `null` elements are skipped. `[SetEquality]` returns 0, and `[PrecisionEquality]` is excluded from hashing. Types keyed mainly on such members have poor hash distribution.
 
-5. **Inheritance with [Equatable]** — The generator walks the full inheritance chain. It delegates to an ancestor with `[Equatable]`/a generated comparer, or a complete manual equality contract: a `GetHashCode()` override plus public typed `Equals(T)` or an `Equals(object)` override. A partial contract is not delegated to; inherited public properties are compared instead. Use `IgnoreInheritedMembers = true` to opt out.
+5. **Inheritance with [Equatable]** — The generator walks the full inheritance chain and delegates (`base.Equals()`/`base.GetHashCode()`) to the nearest ancestor that owns equality: one with `[Equatable]`/a generated comparer, any record base, or a class hand-rolling a complete contract — a `GetHashCode()` override plus either a public `Equals(TSelf)` (`IEquatable<TSelf>`) or an `Equals(object)` override, both declared on that same class. An ancestor with only part of that contract is treated as plain: the walk continues past it and its public properties are compared explicitly, as are those of any plain classes between the type and the owning ancestor. Use `IgnoreInheritedMembers = true` to opt out.
 
 6. **Overriding properties inherits attributes** — A `Child` overriding a `Parent`'s `[OrderedEquality] virtual int[] Values` automatically inherits `[OrderedEquality]`. Do NOT re-annotate unless you want to change behavior.
 
