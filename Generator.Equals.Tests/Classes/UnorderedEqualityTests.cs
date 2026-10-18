@@ -16,6 +16,25 @@ public partial class UnorderedEqualityTests : SnapshotTestBase
         [UnorderedEquality] public List<int>? Properties { get; set; }
     }
 
+    [Equatable]
+    public partial class NullableSample
+    {
+        [UnorderedEquality] public string?[] Values { get; set; } = [];
+    }
+
+    [Fact]
+    public void NullableElements_ShouldCompareAndReportDifferences()
+    {
+        var a = new NullableSample { Values = [null, "a", null] };
+        var b = new NullableSample { Values = ["a", null, null] };
+        var different = new NullableSample { Values = ["b", null, null] };
+
+        EqualityAssert.Verify(a, b, true);
+        NullableSample.EqualityComparer.Default.Inequalities(a, b).Should().BeEmpty();
+        EqualityAssert.Verify(a, different, false);
+        NullableSample.EqualityComparer.Default.Inequalities(a, different).Should().NotBeEmpty();
+    }
+
     [Fact]
     public void SameContentsDifferentOrder_ShouldBeEqual()
     {

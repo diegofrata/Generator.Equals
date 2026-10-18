@@ -25,6 +25,53 @@ public class UnorderedEqualityComparerTests
     }
 
     [Fact]
+    public void Equals_Should_count_null_elements()
+    {
+        var comparer = UnorderedEqualityComparer<string?>.Default;
+        string?[] a = [null, "a", null];
+        string?[] b = ["a", null, null];
+        string?[] different = ["a", null, "a"];
+
+        comparer.Equals(a, b).Should().BeTrue();
+        comparer.GetHashCode(a).Should().Be(comparer.GetHashCode(b));
+        comparer.Equals(a, different).Should().BeFalse();
+        comparer.Equals(different, a).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Equals_Should_distinguish_null_multiplicity_from_non_collections()
+    {
+        // Non-ICollection inputs skip the up-front length check, so multiplicity
+        // must be enforced purely by the counting pass.
+        var comparer = UnorderedEqualityComparer<string?>.Default;
+        IEnumerable<string?> a = new[] { null, "a", null }.Select(x => x);
+        IEnumerable<string?> moreNulls = new[] { null, "a", null, null }.Select(x => x);
+        IEnumerable<string?> fewerNulls = new[] { null, "a" }.Select(x => x);
+
+        comparer.Equals(a, moreNulls).Should().BeFalse();
+        comparer.Equals(a, fewerNulls).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Equals_Should_use_custom_comparer_with_null_elements()
+    {
+        var comparer = new UnorderedEqualityComparer<string?>(StringComparer.OrdinalIgnoreCase);
+        string?[] a = [null, "A", null];
+        string?[] b = ["a", null, null];
+
+        comparer.Equals(a, b).Should().BeTrue();
+        comparer.GetHashCode(a).Should().Be(comparer.GetHashCode(b));
+    }
+
+    [Fact]
+    public void Equals_Should_count_nullable_value_elements()
+    {
+        var comparer = UnorderedEqualityComparer<int?>.Default;
+        comparer.Equals([null, 1, null], [1, null, null]).Should().BeTrue();
+        comparer.Equals([null, 1, null], [1, null, 1]).Should().BeFalse();
+    }
+
+    [Fact]
     public void GetHashCode_Should_use_ValueComparer()
     {
         _sut.GetHashCode(_a).Should().Be(_sut.GetHashCode(_b));
