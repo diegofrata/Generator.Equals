@@ -85,21 +85,8 @@ namespace Generator.Equals.Tests.Records
                 if (!global::Generator.Equals.UnorderedEqualityComparer<global::System.Int32>.Default.Equals(x.Ints!, y.Ints!))
                 {
                     var __propPath = path.Append(global::Generator.Equals.MemberPathSegment.Property("Ints"));
-                    var __xList = x.Ints is null ? new global::System.Collections.Generic.List<global::System.Int32>() : new global::System.Collections.Generic.List<global::System.Int32>(x.Ints);
-                    var __remaining = y.Ints is null ? new global::System.Collections.Generic.List<global::System.Int32>() : new global::System.Collections.Generic.List<global::System.Int32>(y.Ints);
-                    if (__xList.Count == 0 && __remaining.Count == 0)
-                        yield return new global::Generator.Equals.Inequality(__propPath, x.Ints, y.Ints);
-                    var __elementComparer = global::Generator.Equals.DefaultEqualityComparer<global::System.Int32>.Default;
-                    foreach (var __item in __xList)
-                    {
-                        var __match = __remaining.FindIndex(__candidate => __elementComparer.Equals(__item, __candidate));
-                        if (__match < 0)
-                            yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Removed()), __item, null);
-                        else
-                            __remaining.RemoveAt(__match);
-                    }
-                    foreach (var __added in __remaining)
-                        yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Added()), null, __added);
+                    foreach (var __ineq in global::Generator.Equals.UnorderedEqualityComparer<global::System.Int32>.Default.Inequalities(x.Ints, y.Ints, __propPath))
+                        yield return __ineq;
                 }
             }
         }

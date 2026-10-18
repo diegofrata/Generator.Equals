@@ -414,8 +414,10 @@ Paths are composed of segments:
 | `Field` | `_count` | A field differs |
 | `Index` | `[0]` | An ordered collection element at index |
 | `Key` | `["home"]` | A dictionary entry by key |
-| `Added` | `[+]` | An element present only in the right set |
-| `Removed` | `[-]` | An element present only in the left set |
+| `Added` | `[+]` | An element present only in the right collection |
+| `Removed` | `[-]` | An element present only in the left collection |
+
+For `[UnorderedEquality]` and `[SetEquality]` members, elements are matched using the member's configured element comparer (so `"FOO"` and `"foo"` under `StringComparison.OrdinalIgnoreCase` are not reported as a change). `[UnorderedEquality]` also respects multiplicity: `[1, 1, 2]` versus `[1, 2, 2]` reports one `1` removed and one `2` added. A `null` collection compared with an empty one is reported as a single difference on the member itself.
 
 ### Drill-down
 

@@ -76,4 +76,52 @@ public class UnorderedEqualityComparerTests
     {
         _sut.GetHashCode(_a).Should().Be(_sut.GetHashCode(_b));
     }
+
+    static readonly MemberPath Path = new([MemberPathSegment.Property("Values")]);
+
+    [Fact]
+    public void Inequalities_Should_report_multiplicity_in_source_order()
+    {
+        var diffs = UnorderedEqualityComparer<int>.Default.Inequalities([3, 1, 1, 2], [2, 1, 4, 4], Path).ToList();
+
+        diffs.Select(d => d.Path.ToString()).Should().Equal("Values[-]", "Values[-]", "Values[+]", "Values[+]");
+        diffs.Select(d => d.Left).Should().Equal(new object?[] { 3, 1, null, null });
+        diffs.Select(d => d.Right).Should().Equal(new object?[] { null, null, 4, 4 });
+    }
+
+    [Fact]
+    public void Inequalities_Should_use_ValueComparer_and_match_nulls()
+    {
+        var comparer = new UnorderedEqualityComparer<string?>(StringComparer.OrdinalIgnoreCase);
+
+        var diffs = comparer.Inequalities([null, "A", null], ["a", "a", null], Path).ToList();
+
+        diffs.Select(d => d.Path.ToString()).Should().Equal("Values[-]", "Values[+]");
+        diffs[0].Left.Should().BeNull();
+        diffs[1].Right.Should().Be("a");
+    }
+
+    [Fact]
+    public void Inequalities_Should_report_null_versus_empty_on_the_member()
+    {
+        var comparer = UnorderedEqualityComparer<int>.Default;
+
+        comparer.Inequalities(null, [], Path).Should().ContainSingle().Which.Path.Should().Be(Path);
+        comparer.Inequalities([], null, Path).Should().ContainSingle().Which.Path.Should().Be(Path);
+        comparer.Inequalities(null, null, Path).Should().BeEmpty();
+        comparer.Inequalities(null, [1], Path).Should().ContainSingle().Which.Path.ToString().Should().Be("Values[+]");
+    }
+
+    [Fact]
+    public void Inequalities_Should_handle_one_shot_sequences()
+    {
+        var comparer = UnorderedEqualityComparer<int>.Default;
+        var enumerations = 0;
+        IEnumerable<int> OneShot() { enumerations++; yield return 1; yield return 1; }
+
+        var diffs = comparer.Inequalities(OneShot(), [1], Path).ToList();
+
+        diffs.Should().ContainSingle().Which.Path.ToString().Should().Be("Values[-]");
+        enumerations.Should().Be(1);
+    }
 }
