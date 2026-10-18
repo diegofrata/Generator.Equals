@@ -50,4 +50,39 @@ public class SetEqualityComparerTests
 
         _sut.Equals(a, b).Should().BeTrue();
     }
+
+    static readonly MemberPath Path = new([MemberPathSegment.Property("Values")]);
+
+    [Fact]
+    public void Inequalities_Should_use_ValueComparer()
+    {
+        var diffs = _sut.Inequalities([1, 2, 3], [-1, 2, 5], Path).ToList();
+
+        diffs.Select(d => d.Path.ToString()).Should().Equal("Values[-]", "Values[+]");
+        diffs[0].Left.Should().Be(3);
+        diffs[1].Right.Should().Be(5);
+    }
+
+    [Fact]
+    public void Inequalities_Should_use_set_comparer_when_no_ValueComparer()
+    {
+        var a = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "A", "b" };
+
+        var diffs = SetEqualityComparer<string>.Default.Inequalities(a, ["a", "c"], Path).ToList();
+
+        diffs.Select(d => d.Path.ToString()).Should().Equal("Values[-]", "Values[+]");
+        diffs[0].Left.Should().Be("b");
+        diffs[1].Right.Should().Be("c");
+    }
+
+    [Fact]
+    public void Inequalities_Should_report_null_versus_empty_on_the_member()
+    {
+        var comparer = SetEqualityComparer<int>.Default;
+
+        comparer.Inequalities(null, [], Path).Should().ContainSingle().Which.Path.Should().Be(Path);
+        comparer.Inequalities([], null, Path).Should().ContainSingle().Which.Path.Should().Be(Path);
+        comparer.Inequalities(null, null, Path).Should().BeEmpty();
+        comparer.Inequalities(null, [1], Path).Should().ContainSingle().Which.Path.ToString().Should().Be("Values[+]");
+    }
 }

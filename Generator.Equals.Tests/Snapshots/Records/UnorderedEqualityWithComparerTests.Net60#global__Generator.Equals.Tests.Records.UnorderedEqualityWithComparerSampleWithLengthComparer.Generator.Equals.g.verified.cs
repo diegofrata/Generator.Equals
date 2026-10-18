@@ -85,14 +85,8 @@ namespace Generator.Equals.Tests.Records
                 if (!new global::Generator.Equals.UnorderedEqualityComparer<global::System.String>(global::Generator.Equals.Tests.Records.UnorderedLengthEqualityComparer.Default).Equals(x.Values!, y.Values!))
                 {
                     var __propPath = path.Append(global::Generator.Equals.MemberPathSegment.Property("Values"));
-                    var __xSet = x.Values is null ? new global::System.Collections.Generic.HashSet<global::System.String>() : new global::System.Collections.Generic.HashSet<global::System.String>(x.Values);
-                    var __ySet = y.Values is null ? new global::System.Collections.Generic.HashSet<global::System.String>() : new global::System.Collections.Generic.HashSet<global::System.String>(y.Values);
-                    
-                    foreach (var __removed in global::System.Linq.Enumerable.Except(__xSet, __ySet))
-                        yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Removed()), __removed, null);
-                    
-                    foreach (var __added in global::System.Linq.Enumerable.Except(__ySet, __xSet))
-                        yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Added()), null, __added);
+                    foreach (var __ineq in new global::Generator.Equals.UnorderedEqualityComparer<global::System.String>(global::Generator.Equals.Tests.Records.UnorderedLengthEqualityComparer.Default).Inequalities(x.Values, y.Values, __propPath))
+                        yield return __ineq;
                 }
             }
         }

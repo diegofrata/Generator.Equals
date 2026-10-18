@@ -396,27 +396,17 @@ namespace Generator.Equals
         static void BuildUnorderedCollectionInequalities(EqualityMemberModel memberModel, IndentedTextWriter writer, string left, string right, string pathExpr)
         {
             var comparerEquals = GetComparerEquals(memberModel, left, right);
+            var comparerClassName = memberModel.EqualityType == EqualityType.SetEquality ? "SetEqualityComparer" : "UnorderedEqualityComparer";
+            var comparer = GetCollectionComparerExpression(comparerClassName, memberModel.TypeName, memberModel);
 
             writer.WriteLine($"if (!{comparerEquals})");
             writer.AppendOpenBracket();
 
             writer.WriteLine($"var __propPath = {pathExpr}.Append(global::Generator.Equals.MemberPathSegment.{(memberModel.IsField ? "Field" : "Property")}(\"{memberModel.MemberName}\"));");
-            if (memberModel.IsValueTypeCollection)
-            {
-                writer.WriteLine($"var __xSet = new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>({left}.{memberModel.MemberName});");
-                writer.WriteLine($"var __ySet = new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>({right}.{memberModel.MemberName});");
-            }
-            else
-            {
-                writer.WriteLine($"var __xSet = {left}.{memberModel.MemberName} is null ? new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>() : new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>({left}.{memberModel.MemberName});");
-                writer.WriteLine($"var __ySet = {right}.{memberModel.MemberName} is null ? new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>() : new global::System.Collections.Generic.HashSet<{memberModel.TypeName}>({right}.{memberModel.MemberName});");
-            }
-            writer.WriteLine();
-            writer.WriteLine("foreach (var __removed in global::System.Linq.Enumerable.Except(__xSet, __ySet))");
-            writer.WriteLine(1, "yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Removed()), __removed, null);");
-            writer.WriteLine();
-            writer.WriteLine("foreach (var __added in global::System.Linq.Enumerable.Except(__ySet, __xSet))");
-            writer.WriteLine(1, "yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Added()), null, __added);");
+            // The runtime comparer owns the diff algorithm (multiplicity, element comparer, null handling)
+            // so it lives in one testable place instead of being emitted into every generated type.
+            writer.WriteLine($"foreach (var __ineq in {comparer}.Inequalities({left}.{memberModel.MemberName}, {right}.{memberModel.MemberName}, __propPath))");
+            writer.WriteLine(1, "yield return __ineq;");
 
             writer.AppendCloseBracket();
         }

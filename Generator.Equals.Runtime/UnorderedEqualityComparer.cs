@@ -8,7 +8,7 @@ namespace Generator.Equals
     [GeneratedCode("Generator.Equals", "1.0.0.0")]
     public class UnorderedEqualityComparer<T> : IEqualityComparer<IEnumerable<T>>
     {
-        public static IEqualityComparer<IEnumerable<T>> Default { get; } = new UnorderedEqualityComparer<T>();
+        public static UnorderedEqualityComparer<T> Default { get; } = new UnorderedEqualityComparer<T>();
 
         public IEqualityComparer<T> EqualityComparer { get; }
 
@@ -55,6 +55,69 @@ namespace Generator.Equals
             }
 
             return cnt.Values.All(c => c == 0);
+        }
+
+        /// <summary>
+        /// Reports the element-level differences between two sequences compared as bags.
+        /// Every occurrence in <paramref name="x"/> with no counterpart in <paramref name="y"/>
+        /// (under the configured element comparer) is reported as removed, and every unmatched
+        /// occurrence in <paramref name="y"/> as added, so multiplicity is preserved. Null versus
+        /// empty has no element to point at and is reported as a single difference on
+        /// <paramref name="path"/> itself; null versus a non-empty sequence is treated as empty.
+        /// </summary>
+        public IEnumerable<Inequality> Inequalities(IEnumerable<T>? x, IEnumerable<T>? y, MemberPath path)
+        {
+            if (x is null && y is null)
+                yield break;
+
+            if (x is null || y is null)
+            {
+                if (!(x ?? y)!.Any())
+                {
+                    yield return new Inequality(path, x, y);
+                    yield break;
+                }
+
+                x ??= Array.Empty<T>();
+                y ??= Array.Empty<T>();
+            }
+
+            // x is walked twice below, so pin down one-shot sequences first.
+            var xs = x as ICollection<T> ?? x.ToList();
+
+            var cnt = new Dictionary<ValueTuple<T>, int>(_keyComparer);
+
+            foreach (var s in xs)
+            {
+                var key = ValueTuple.Create(s);
+                cnt[key] = (cnt.TryGetValue(key, out var v) ? v : 0) + 1;
+            }
+
+            var added = new List<T>();
+
+            foreach (var s in y)
+            {
+                var key = ValueTuple.Create(s);
+                if (cnt.TryGetValue(key, out var v) && v > 0)
+                    cnt[key] = v - 1;
+                else
+                    added.Add(s);
+            }
+
+            // Whatever count is left over was removed; walk x again so removals keep source order.
+            foreach (var s in xs)
+            {
+                var key = ValueTuple.Create(s);
+                var v = cnt[key];
+                if (v > 0)
+                {
+                    cnt[key] = v - 1;
+                    yield return new Inequality(path.Append(MemberPathSegment.Removed()), s, null);
+                }
+            }
+
+            foreach (var s in added)
+                yield return new Inequality(path.Append(MemberPathSegment.Added()), null, s);
         }
 
         [GeneratedCode("Generator.Equals", "1.0.0.0")]

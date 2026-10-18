@@ -116,14 +116,8 @@ namespace Generator.Equals.Tests.Classes
                 if (!new global::Generator.Equals.UnorderedEqualityComparer<global::System.String>(global::System.StringComparer.OrdinalIgnoreCase).Equals(x.Names!, y.Names!))
                 {
                     var __propPath = path.Append(global::Generator.Equals.MemberPathSegment.Property("Names"));
-                    var __xSet = x.Names is null ? new global::System.Collections.Generic.HashSet<global::System.String>() : new global::System.Collections.Generic.HashSet<global::System.String>(x.Names);
-                    var __ySet = y.Names is null ? new global::System.Collections.Generic.HashSet<global::System.String>() : new global::System.Collections.Generic.HashSet<global::System.String>(y.Names);
-                    
-                    foreach (var __removed in global::System.Linq.Enumerable.Except(__xSet, __ySet))
-                        yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Removed()), __removed, null);
-                    
-                    foreach (var __added in global::System.Linq.Enumerable.Except(__ySet, __xSet))
-                        yield return new global::Generator.Equals.Inequality(__propPath.Append(global::Generator.Equals.MemberPathSegment.Added()), null, __added);
+                    foreach (var __ineq in new global::Generator.Equals.UnorderedEqualityComparer<global::System.String>(global::System.StringComparer.OrdinalIgnoreCase).Inequalities(x.Names, y.Names, __propPath))
+                        yield return __ineq;
                 }
             }
         }

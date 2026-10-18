@@ -106,9 +106,7 @@ public partial class UnorderedEqualityWithComparerTests : SnapshotTestBase
 
         diffs.Should().BeEquivalentTo(new[]
         {
-            Ineq("FOO", null, Prop("Tags"), MemberPathSegment.Removed()),
             Ineq("BAR", null, Prop("Tags"), MemberPathSegment.Removed()),
-            Ineq(null, "foo", Prop("Tags"), MemberPathSegment.Added()),
             Ineq(null, "baz", Prop("Tags"), MemberPathSegment.Added())
         });
     }
@@ -123,9 +121,7 @@ public partial class UnorderedEqualityWithComparerTests : SnapshotTestBase
 
         diffs.Should().BeEquivalentTo(new[]
         {
-            Ineq("FOO", null, Prop("Names"), MemberPathSegment.Removed()),
             Ineq("BAR", null, Prop("Names"), MemberPathSegment.Removed()),
-            Ineq(null, "foo", Prop("Names"), MemberPathSegment.Added()),
             Ineq(null, "baz", Prop("Names"), MemberPathSegment.Added())
         });
     }
