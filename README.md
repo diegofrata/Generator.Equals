@@ -421,7 +421,7 @@ For `[UnorderedEquality]` and `[SetEquality]` members, elements are matched usin
 
 ### Drill-down
 
-When an ordered collection element or dictionary value is itself an `[Equatable]` type, `Inequalities()` automatically drills down into its properties instead of reporting the entire object as changed. In the example above, the address change is reported as `Addresses["home"].Street` rather than the whole `Address` object. Unordered sequences and sets report added/removed elements instead.
+When an `[OrderedEquality]` collection element or dictionary value is itself an `[Equatable]` type, `Inequalities()` automatically drills down into its properties instead of reporting the entire object as changed. In the example above, the address change is reported as `Addresses["home"].Street` rather than the whole `Address` object. `[UnorderedEquality]` and `[SetEquality]` members report added/removed elements instead (see above), and a collection member without one of those attributes is reported as a single whole-member change.
 
 ### Base path
 
