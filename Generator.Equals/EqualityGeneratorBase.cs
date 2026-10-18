@@ -504,6 +504,46 @@ namespace Generator.Equals
             }
         }
 
+        /// <summary>Whether Equals/GetHashCode chain through <c>base.Equals()</c>/<c>base.GetHashCode()</c>.</summary>
+        protected static bool DelegatesToBase(EqualityTypeModel model) =>
+            !model.IgnoreInheritedMembers && model.BaseEquality != BaseEqualityOwnership.None;
+
+        /// <summary>
+        /// Whether the delegated chain starts with a base reached only through <c>base.Equals</c> (a
+        /// hand-written class contract or any record base), which is opaque to (inherited) comparers:
+        /// Inequalities then reports the base portion coarsely through the <c>__BaseEquals</c> bridge.
+        /// One predicate drives both the bridge emission and its use so they cannot drift.
+        /// </summary>
+        protected static bool UsesBaseEqualityBridge(EqualityTypeModel model) =>
+            !model.IgnoreInheritedMembers
+            && model.BaseEquality is BaseEqualityOwnership.Manual or BaseEqualityOwnership.ComparerBehindManual;
+
+        /// <summary>
+        /// The type-identity guard a generator enforces itself (when no comparer root enforces it on the
+        /// real runtime types): <see cref="EqualsCondition"/> is the <c>this</c>/<c>other</c> expression
+        /// that <c>Equals</c> requires, <see cref="MismatchCondition"/> the <c>x</c>/<c>y</c> expression on
+        /// which <c>Inequalities</c> reports a whole-object inequality. Both methods consume the same
+        /// instance so the guard cannot exist in one without the other.
+        /// </summary>
+        protected readonly record struct TypeIdentityGuard(string EqualsCondition, string MismatchCondition);
+
+        /// <summary>
+        /// Emits the Inequalities counterpart of a type-identity guard: different types are unequal as a
+        /// whole, so the objects themselves are reported (no member can be blamed) and enumeration stops.
+        /// </summary>
+        protected static void BuildTypeMismatchInequality(IndentedTextWriter writer, TypeIdentityGuard? guard)
+        {
+            if (guard is not { } g)
+                return;
+
+            writer.WriteLine($"if ({g.MismatchCondition})");
+            writer.AppendOpenBracket();
+            writer.WriteLine("yield return new global::Generator.Equals.Inequality(path, x, y);");
+            writer.WriteLine("yield break;");
+            writer.AppendCloseBracket();
+            writer.WriteLine();
+        }
+
         /// <summary>
         /// Emits the private <c>__BaseEquals</c> bridge that lets the nested comparer reach the base
         /// type's <c>Equals</c> through a non-virtual base call (which cannot be written from inside the
