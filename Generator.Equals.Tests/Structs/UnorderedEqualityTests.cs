@@ -15,6 +15,23 @@ public partial class UnorderedEqualityTests : SnapshotTestBase
         [UnorderedEquality] public List<int>? Properties { get; init; }
     }
 
+    [Equatable]
+    public partial struct NullableSample
+    {
+        [UnorderedEquality] public string?[] Values { get; init; }
+    }
+
+    [Fact]
+    public void NullableElements_ShouldCompareAndReportDifferences()
+    {
+        var a = new NullableSample { Values = [null, "a", null] };
+        var b = new NullableSample { Values = ["a", null, null] };
+        var different = new NullableSample { Values = ["b", null, null] };
+
+        EqualityAssert.VerifyStruct(a, b, true);
+        EqualityAssert.VerifyStruct(a, different, false);
+    }
+
     public static TheoryData<Sample, Sample, bool> EqualityCases => new()
     {
         // Both null

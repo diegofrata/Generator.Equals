@@ -6,28 +6,17 @@ namespace Generator.Equals.Generators
 {
     sealed class ClassEqualityGenerator : EqualityGeneratorBase
     {
-        /// <summary>Whether Equals/GetHashCode chain through <c>base.Equals()</c>/<c>base.GetHashCode()</c>.</summary>
-        static bool DelegatesToBase(EqualityTypeModel model) =>
-            !model.IgnoreInheritedMembers && model.BaseEquality != BaseEqualityOwnership.None;
-
         /// <summary>
-        /// Whether the delegated chain contains a hand-written contract, which is opaque to (inherited)
-        /// comparers: Inequalities then reports the base portion coarsely through the <c>__BaseEquals</c>
-        /// bridge. One predicate drives both the bridge emission and its use so they cannot drift.
+        /// The exact-runtime-type guard, enforced by the generated <c>Equals</c> itself unless a generated
+        /// comparer root enforces it on the real runtime types even when reached through <c>base.Equals</c>.
+        /// A hand-written base offers no such guarantee (a loose <c>obj is Animal a</c> accepts any
+        /// subclass), so the check is kept in every other case. <c>Inequalities</c> mirrors it so a
+        /// runtime-type mismatch is reported rather than silently yielding nothing.
         /// </summary>
-        static bool UsesBaseEqualityBridge(EqualityTypeModel model) =>
-            !model.IgnoreInheritedMembers
-            && model.BaseEquality is BaseEqualityOwnership.Manual or BaseEqualityOwnership.ComparerBehindManual;
-
-        /// <summary>
-        /// Whether the generated <c>Equals</c> enforces <c>other.GetType() == this.GetType()</c> itself.
-        /// A generated comparer root enforces it on the real runtime types even when reached through
-        /// <c>base.Equals</c>; a hand-written base offers no such guarantee (a loose <c>obj is Animal a</c>
-        /// accepts any subclass), so the check is kept in every other case. <c>Inequalities</c> mirrors this
-        /// so a runtime-type mismatch is reported rather than silently yielding nothing.
-        /// </summary>
-        static bool ChecksExactRuntimeType(EqualityTypeModel model) =>
-            model.IgnoreInheritedMembers || !model.BaseHasEquatable;
+        static TypeIdentityGuard? TypeIdentity(EqualityTypeModel model) =>
+            model.IgnoreInheritedMembers || !model.BaseHasEquatable
+                ? new TypeIdentityGuard("other.GetType() == this.GetType()", "x.GetType() != y.GetType()")
+                : null;
 
         static void BuildDelegatingMethods(
             EqualityTypeModel model,
@@ -83,9 +72,9 @@ namespace Generator.Equals.Generators
             writer.WriteLine("if (ReferenceEquals(this, other)) return true;");
             writer.WriteLine();
 
-            if (ChecksExactRuntimeType(model))
+            if (TypeIdentity(model) is { } guard)
             {
-                writer.WriteLine("return other.GetType() == this.GetType()");
+                writer.WriteLine($"return {guard.EqualsCondition}");
                 writer.Indent++;
                 if (DelegatesToBase(model))
                     writer.WriteLine($"&& base.Equals({model.BaseEqualsArgument})");
@@ -204,17 +193,7 @@ namespace Generator.Equals.Generators
             writer.AppendCloseBracket();
             writer.WriteLine();
 
-            if (ChecksExactRuntimeType(model))
-            {
-                // Mirror Equals' exact-runtime-type guard: different runtime types are unequal as a whole,
-                // so report the objects themselves (no member can be blamed) and stop.
-                writer.WriteLine("if (x.GetType() != y.GetType())");
-                writer.AppendOpenBracket();
-                writer.WriteLine("yield return new global::Generator.Equals.Inequality(path, x, y);");
-                writer.WriteLine("yield break;");
-                writer.AppendCloseBracket();
-                writer.WriteLine();
-            }
+            BuildTypeMismatchInequality(writer, TypeIdentity(model));
 
             BuildBaseInequalities(model, writer,
                 memberLevel: !model.IgnoreInheritedMembers && model.BaseEquality == BaseEqualityOwnership.Comparer,
